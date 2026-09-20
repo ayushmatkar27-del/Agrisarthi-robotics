@@ -1,0 +1,472 @@
+================================================================================
+              AGRISARTHI — UI / UX DESIGN & PAGE FLOW DOCUMENT
+         Visual Design System, Section Layouts, User Flows & Interactions
+================================================================================
+
+
+1. DESIGN PHILOSOPHY & VISUAL IDENTITY
+================================================================================
+
+Style              : Clean Light Green Farming / Agricultural Aesthetic
+Theme              : Light cream-green (#f0f9f0) base with rich Emerald
+                     (#059669) accent. Inspired by Earth Rover's clean
+                     agricultural website (earthrover.farm) and modern
+                     agri-tech product pages.
+Feel               : Fresh, natural, farm-connected. The website evokes
+                     open green fields and smart technology working together.
+                     Sensor values tick in real-time, cards have soft green
+                     borders, and the overall palette feels organic and alive.
+Target Audience    : Investors, competition judges (SIH, Techathon, Eureka),
+                     and potential farm operator customers.
+
+Official Brand Logo   : Custom corporate emblem fusing an autonomous rover sensor
+                     lens/circuit track with an agricultural green sprouting leaf.
+                     Emblem saved at /images/agrisarthi_logo.jpg and /assets/.
+                     Integrated into Navbar, Footer, and Favicon.
+
+Color Gamut System (Defined 5-Zone Architecture — Eliminates White-Page Fatigue):
+  Rather than a repetitive, flat white or monotone light-green page, AgriSarthi uses
+  an intentional 5-zone agricultural & industrial color gamut that alternates dynamically:
+  • Zone 1 — Earth Rover High-Impact Editorial (Canvas #fbfdfb):
+    Stark, high-contrast pitch-black typography (#081a0e) with vibrant chlorophyll
+    agritech green (#16a34a) color blocking (e.g. "PURE LIGHT. ZERO CHEMICALS").
+  • Zone 2 — OTTO Industrial Concrete & Field Stone (Canvas #dbe5db to #e4ede4):
+    Muted warm stone canvas with crisp white elevated product cards, ruled spec divider
+    lines, and interactive METRIC / IMPERIAL unit toggle.
+  • Zone 3 — AgriTech Night / Obsidian Cockpit (Canvas #09170e to #0e2114):
+    Deep forest obsidian telemetry HUD with glowing neon emerald (#22c55e), night-vision
+    IR/thermal camera, and radar waypoint map. Breaks up the light page with intense contrast.
+  • Zone 4 — Warm Loam & Solar Harvest (Canvas #faf6ee with amber #d97706 & loam #c25e2e):
+    Earthy sun-warmed agricultural tones applied to the Farm ROI & Payback Engine.
+  • Zone 5 — Organic Field Mist & Sage (Canvas #eef5ee):
+    Clean, structured tone for the Pitch Deck Carousel, Founding Team, and Lab Contacts.
+
+Bespoke Industrial AgriTech Typography System (Non-AI Generated Aesthetic):
+  Eliminates the generic "AI-generated default sans" look by utilizing authentic European
+  agtech (Earth Rover) & autonomous industrial robotics (OTTO Motors) typographic hierarchy:
+  • Display / Headline Font  : Archivo (Weights: 700, 800, 900)
+    Condensed, punchy, heavyweight industrial grotesque. Used with `heading-earth` and
+    `heading-otto` classes for bold uppercase titles (e.g. "MEET AGRISARTHI™", "PURE LIGHT.").
+  • Display Accent Font      : Syne (Weights: 700, 800)
+    Boutique geometric display serif/sans hybrid for distinctive agtech branding.
+  • Editorial Body Font      : Plus Jakarta Sans (Weights: 400, 500, 600)
+    Crisp, highly legible geometric sans with generous line-heights and neutral warmth.
+  • Tactical Telemetry Font  : JetBrains Mono (Weights: 500, 600, 700)
+    Uppercase-tracked kicker tags, live sensor outputs, and hardware model codes.
+  • Action Buttons           : .btn-earth-pill (Solid vibrant green #16a34a rounded pill
+    with white bold uppercase text, matching Earth Rover reference).
+
+
+2. GLOBAL UI PATTERNS & DYNAMIC SCROLL ANIMATIONS
+================================================================================
+
+Dynamic Scroll-Triggered Content Reveal & Pop System:
+  Inspired by modern robotics platforms (e.g. OTTO Motors), the application uses
+  a custom IntersectionObserver-powered animation engine (`ScrollReveal.jsx`):
+  • Scroll-Triggered Pop & Spring:
+    Cards, headlines, and data panels pop into place (`scale-[0.90] → scale-100`,
+    `opacity-0 → opacity-100`, `translate-y-6 → translate-y-0`) as the user scrolls.
+  • Staggered Cascade:
+    Sibling cards pop sequentially with 80ms to 200ms delays (`delay={index * 80}`).
+  • Directional Sliders:
+    Supports `slide-left`, `slide-right`, `slide-up`, and `pop` animations with
+    hardware-accelerated `cubic-bezier(0.16, 1, 0.3, 1)` easing curves.
+
+Glassmorphism Panels (Light Farming Theme):
+  Panels use frosted-white glass styling with backdrop-blur (16px),
+  semi-transparent white backgrounds, and thin green-tinted borders:
+    .glass-panel       — White frost (82% opacity), subtle green border
+    .glass-panel-glow  — White frost (90%) + emerald border + green glow
+    .glass-card        — White frost (78%), hover-lift (translateY -2px)
+                         with emerald border highlight on hover
+
+Micro-Animations:
+  • Ping dots (animate-ping) on live status indicators
+  • Pulse glow (animate-pulse-glow, 3s cycle) on rover schematics
+  • Hover translateY shifts on all interactive cards
+  • Smooth scroll behavior (scroll-smooth on <html>)
+  • Border color transitions on card hover (transparent → emerald)
+  • Scale-up on active tab buttons (scale-105)
+
+--------------------------------------------------------------------------------
+PAGE 1: HOME (Route: `/`)
+--------------------------------------------------------------------------------
+The primary landing hub introducing AgriSarthi's autonomous farming mission:
+
+  1. HERO HEADING BLOCK (Rockwell Automation | OTTO Industrial Robotics Layout)
+     • Background: Full-width cinematic real-field view of the AgriSarthi autonomous
+       rover in agricultural crops (/images/agrisarthi_hero_rover.jpg) with all
+       poster overlay text/graphics removed, positioned on the right half with 
+       multi-stop dark gradient on the left for crisp white typography contrast.
+     • Category Kicker: "AGRISARTHI AUTONOMOUS MOBILE ROVERS" (tracked font-mono)
+     • Main Headline: "Build your autonomous farm workforce"
+       - Typography: Inter neo-grotesque font, light weight (350), tight tracking
+         (-0.035em), crisp pure white, exactly matching the reference design.
+     • Sub-headline: "Put AgriSarthi to work. There's an autonomous field rover
+       for all of the common precision scouting, micro-weeding, and soil monitoring
+       jobs on your farm, no matter how big or small."
+     • Side-by-Side Dual Action Buttons:
+       - [WATCH DEMO →]         : Solid white button, black text, right arrow
+       - [GET STARTED NOW →]    : Ghost button, dark bg, white border, white text
+
+  2. DYNAMIC "WHY AGRISARTHI ROVERS" 2-COLUMN ACCORDION (Matches 00:01 in video)
+     • Headline: "Your precision agriculture needs, built into every Rover"
+     • Left Column: Dynamic telemetry simulation screen that automatically adapts
+       to the currently active feature (Stereo AI vision, micro-sprayer calibration,
+       dual-brain serial bus, bifacial solar charging).
+     • Right Column: 4 stacked interactive accordion cards with pop-on-scroll:
+       1. High-Performance Field Safety & AI Vision (24.2 FPS YOLOv8)
+       2. Sub-Millimeter AI Micro-Weeding & Targeted Spray (72% Chemical Savings)
+       3. Dual-Brain Fail-Safe Architecture (14ms Telemetry Latency)
+       4. 24/7 Solar & Opportunistic Field Charging (8-10h Single Charge)
+     • Accordion expands smoothly on click/hover with active emerald highlight.
+
+  3. LIVE HOLOGRAPHIC ROVER TELEMETRY CARD
+     • Pops up into view with spring animation (`ScrollReveal animation="pop"`).
+     • Unit ID: AGRISARTHI-SENTINEL // UNIT-01 (ONLINE • PATROLLING)
+     • 6 Live sensor cards: Soil Moisture, Ambient Temp, Air Quality (MQ-2),
+       YOLOv8 Vision FPS, Obstacle Range (cm), and HUD Launch CTA.
+     • Background ticks every 2.5s via liveTelemetry state.
+
+  4. REAL-TIME FLEET STATUS TICKER
+     • Full-width animated ribbon:
+       "14 Active Rovers" | "3,450+ Acres" | "14ms Latency"
+
+  5. DYNAMIC "AGRISARTHI ROVER LINEUP" SELECTOR (Matches 00:02 - 00:04 in video)
+     • Kicker: "THE AGRISARTHI ROVER LINEUP"
+     • Title: "There's an AgriSarthi for every farm"
+     • Interactive Metric / Imperial Unit Toggle Switch (kg / lbs, hectares / acres).
+     • Left: Vertical list of models with payload badges.
+     • Right: Dynamic popping card with specs, animated schematic, and [EXPLORE →] button.
+
+  6. "THE SECRET TO EFFICIENCY IS IN THE SOFTWARE" (Matches 00:05 in video)
+     • 2 large feature cards popping in on scroll:
+       - AgriSarthi Mission Control Fleet Management
+       - YOLOv8 Edge Autonomy & Vision PipelinePreview Cards (Sentinel, Weeder, Scout) with spec highlights
+     • [View All Rovers →] CTA button navigating to `/rovers`
+
+--------------------------------------------------------------------------------
+PAGE 2: ROVERS (Route: `/rovers`)
+--------------------------------------------------------------------------------
+Dedicated standalone showcase page for the complete modular rover fleet:
+
+  • Sticky Subnav & Action Bar:
+    - "Autonomous Fleet Portfolio" status indicator
+    - [Compare Hardware Specs] → links to `/services#tech-specs`
+    - [Book Field Pilot]       → opens 3-step pilot modal
+  • Comprehensive Rover Series Fleet Showcase:
+    - 3 Interactive Rover Selector Tabs:
+      [AgriSarthi Sentinel (Flagship)] [Precision Weeder] [Soil Core & Canopy Scout]
+    - Active Rover Feature Checklist (5 items with ✓ icons)
+    - Multi-tier Deployment Pricing (RaaS Subscription / Per-Acre / Outright Purchase)
+    - Interactive Chassis Schematic with floating sensor callouts
+    - Hardware Spec Badges (Computing Brain, Battery Runtime, Coverage, Mesh)
+  • Bottom Implement Customization & Cross-Navigation Banner:
+    - [Explore RaaS Subscription Plans →] → links to `/services`
+    - [Launch Live Mission Control HUD →]  → links to `/mission-control`
+
+--------------------------------------------------------------------------------
+PAGE 2: LIVE DEMO HUD (Route: `/mission-control`)
+--------------------------------------------------------------------------------
+Dedicated mission control simulator giving users a pilot-seat experience:
+
+  • Mission Control Header: Teleoperation Suite, GPS lock, active rover status
+  • Simulated Low-Latency Video Stream with real-time YOLOv8 bounding boxes
+  • Interactive Virtual Drive Pad (WASD / Joystick controls)
+  • Dynamic Sensor Cluster:
+    - Real-time soil moisture gauge
+    - Ambient temperature and air quality dials
+    - Ultrasonic obstacle distance proximity bar
+    - Battery discharge & solar generation curves
+  • Real-time Event & AI Alert Telemetry Stream
+  • One-click emergency stop & return-to-base triggers
+
+--------------------------------------------------------------------------------
+PAGE 3: SERVICES & ENGINEERING (Route: `/services`)
+--------------------------------------------------------------------------------
+Dedicated commercial & technical services hub for farmers, cooperatives, & engineers:
+
+  • Sticky In-Page Quick Navigation Bar:
+    [RaaS Plans]  |  [ROI Calculator]  |  [Architecture & Specs]
+
+  1. ROBOTS AS A SERVICE (RaaS) PRICING (id="raas")
+     • Zero-CapEx subscription model for modern precision agriculture
+     • 3 Tiered Plans:
+       - Smallholder Scout (₹4,999/mo) — Autonomous soil scouting & alerts
+       - Commercial Farm Pro (₹14,999/mo, ★ Most Popular) — Weed detection & targeted micro-spray
+       - Estate & Cooperative (Custom SLA) — Multi-rover swarm coordination
+     • Direct booking triggers on each plan
+
+  2. INTERACTIVE FARM ROI & PAYBACK CALCULATOR (id="roi-calc")
+     • Custom farm parameter inputs:
+       - Farm Size slider (1 to 200+ Acres)
+       - Crop selector (Sugarcane, Cotton, Grapes, Wheat, Vegetables)
+     • Dynamic financial projection metrics:
+       - Annual Chemical Spray Savings (up to 70%)
+       - Water Conservation & Irrigation Optimization (up to 40%)
+       - Labor Shortage Mitigation (up to 65%)
+       - Estimated Payback Horizon (months)
+
+  3. HARDWARE SPECS & DUAL BRAIN ARCHITECTURE (id="tech-specs")
+     • Deep technical breakdown of Dual-Controller Design:
+       - ESP32 Sub-Brain: Real-time motor PWM, kinematics, emergency obstacle stop
+       - Raspberry Pi 4 Master Brain: YOLOv8 neural inference, ROS 2, LTE cloud sync
+     • Complete Sensor Suite Matrix:
+       - Capacitive Soil Moisture (Analog, 3.3V)
+       - DHT22 Ambient Temperature & Humidity
+       - MQ-2 Harmful Gas / Decomposition Sensor
+       - HC-SR04 Ultrasonic Collision Avoidance
+       - Sound / Acoustic Sensor for mechanical monitoring
+     • Mesh Networking & Cloud Telemetry pipeline diagram
+
+--------------------------------------------------------------------------------
+PAGE 4: ABOUT & VENTURES (Route: `/about`)
+--------------------------------------------------------------------------------
+Comprehensive company background, validation proof, investment materials, and lab contact:
+
+  • Sticky In-Page Quick Navigation Bar:
+    [Impact & Awards]  |  [Pitch Deck & TAM]  |  [Contact Lab]
+
+  1. FIELD IMPACT, AWARDS & PROOF (id="impact")
+     • Prestigious competition validation:
+       - 🏆 1st Prize Winners — Techathon 3.0 (₹2,00,000 cash grant)
+       - 🌟 Eureka! Asia's Largest Business Model Finalist (E-Cell IIT Bombay)
+       - 🛡️ Smart India Hackathon (SIH) Hardware Finalist
+     • Field Trials & Before/After Proof metrics:
+       - 72% pesticide runoff reduction
+       - 3.8x faster early pest detection compared to manual walking
+       - 99.2% uptime across mud and furrow conditions
+
+  2. STARTUP PITCH DECK & INVESTOR ROOM (id="investors")
+     • Interactive 4-slide Pitch Deck Carousel:
+       - Slide 1: The Problem (Labor scarcity, input costs, late disease detection)
+       - Slide 2: The Solution (Modular autonomous field rover ecosystem)
+       - Slide 3: Market Opportunity & TAM ($12.8B Global Agri-Robotics TAM)
+       - Slide 4: Team & Traction (RaaS unit economics & milestones)
+     • Market TAM / SAM / SOM Metrics breakdown
+     • Core Engineering & Founding Team (2 Members):
+       - Ayush Matkar (Co-Founder & Robotics Tech Developer) [Official Portrait: /images/ayush_matkar.jpg]
+       - Atharva Pachpol (Co-Founder — Market Analysis, Research & AI Developer) [Official Portrait: /images/atharva_pachpol.png]
+
+  3. CONTACT & ROBOTICS LAB CHANNEL (id="contact")
+     • JSPM Narhe Technical Campus (JSPM NTC Pune), Dept. of E&CE
+     • Direct WhatsApp Hotline (one-tap instant connection)
+     • Official Lab Email & Phone channels
+     • Interactive Contact & Collaboration Form:
+       - Full Name, Email, Organization / Farm Name
+       - Role Selector: Farmer, Cooperative Head, Investor, Researcher
+       - Project message textarea with success feedback
+
+--------------------------------------------------------------------------------
+GLOBAL FOOTER (All Pages)
+--------------------------------------------------------------------------------
+Clean light-green agricultural footer (`bg-[#edf7ed]`):
+  • Brand logo and mission statement
+  • Section links mapped to React Router routes & hash anchors
+  • Institutional attribution: Developed by Ayush Matkar & Atharva Pachpol (JSPM Narhe Technical Campus)
+  • Direct "Book Farm Pilot" CTA
+  • Back-to-Top smooth-scroll button
+
+
+
+4. MODAL / OVERLAY FLOWS
+================================================================================
+
+4.1 Book Demo Modal (BookDemoModal.jsx)
+─────────────────────────────────────────
+Trigger:  Any "Book Demo" or "Book Farm Pilot" button on the page.
+Type:     Full-screen overlay modal with 3-step wizard flow.
+Backdrop: Semi-transparent dark (slate-950/80) + backdrop-blur.
+
+  Step 1 — SELECT ROVER MODEL
+    ┌─────────────────────────────────────────────────┐
+    │  "Choose Your Rover"                            │
+    │                                                 │
+    │  ┌──────────┐ ┌──────────┐ ┌──────────┐        │
+    │  │ Sentinel │ │ Weeder   │ │ Scout    │        │
+    │  │ (select) │ │          │ │          │        │
+    │  └──────────┘ └──────────┘ └──────────┘        │
+    │                                                 │
+    │                              [Next →]           │
+    └─────────────────────────────────────────────────┘
+
+  Step 2 — FARM DETAILS FORM
+    ┌─────────────────────────────────────────────────┐
+    │  "Tell Us About Your Farm"                      │
+    │                                                 │
+    │  Farm Name:     [__________________________]    │
+    │  Location:      [__________________________]    │
+    │  Farm Size:     [____] acres                    │
+    │  Primary Crop:  [__________________________]    │
+    │  Contact Email: [__________________________]    │
+    │  Phone:         [__________________________]    │
+    │                                                 │
+    │  [← Back]                     [Submit Request]  │
+    └─────────────────────────────────────────────────┘
+
+  Step 3 — SUCCESS CONFIRMATION
+    ┌─────────────────────────────────────────────────┐
+    │              🎉 CONFETTI ANIMATION 🎉           │
+    │                                                 │
+    │  ✅ "Pilot Request Submitted!"                  │
+    │                                                 │
+    │  "Our robotics team will contact you within     │
+    │   24 hours to schedule your field deployment."  │
+    │                                                 │
+    │                [Close]                           │
+    └─────────────────────────────────────────────────┘
+
+Close:    X button (top-right), Escape key, or clicking backdrop.
+Exit:     Restores body scroll, resets wizard state.
+
+
+4.2 Rover Deep-Dive Modal (RoverDeepDiveModal.jsx) — NEW
+─────────────────────────────────────────────────────────
+Trigger:  "Explore Rover" / "View Hardware" buttons in Fleet section.
+Type:     Large centered modal (max-w-5xl, max-h-92vh) with internal
+          scrollable content area, sticky header, sticky footer, and
+          5 tabbed content panels.
+Backdrop: slate-950/80 + backdrop-blur-md.
+Close:    X button, Escape key, "Close Window" footer button.
+
+  ┌──────── Sticky Header ────────────────────────────────────┐
+  │  🤖 AgriSarthi Sentinel V1  [FLAGSHIP]  [🏆 Winner]      │
+  │  "Autonomous Smart Farm Monitoring..."                    │
+  │                                    [Book Demo] [X Close]  │
+  ├──────── Tab Navigation Bar ───────────────────────────────┤
+  │  [Hardware & Prototype] [Features] [Specs] [BOM] [Slides] │
+  ├──────── Scrollable Content Area ──────────────────────────┤
+  │                                                            │
+  │  TAB 1: HARDWARE & PROTOTYPE                              │
+  │    ┌────────────────────────────────────────────────────┐  │
+  │    │ LEFT: Real rover photo (rover_prototype.jpeg)      │  │
+  │    │       with floating sensor callout badges          │  │
+  │    │       "ACTUAL LAB PROTOTYPE V1" badge overlay      │  │
+  │    │ RIGHT: Physical architecture description           │  │
+  │    │        4 metric cards (Chassis, Dual MCU,          │  │
+  │    │        Battery, Edge AI)                           │  │
+  │    └────────────────────────────────────────────────────┘  │
+  │    6 Challenge→Solution cards in 2-column grid             │
+  │                                                            │
+  │  TAB 2: FEATURES & CAPABILITIES                           │
+  │    4 Expandable Accordions (click to expand/collapse):     │
+  │      ▶ Autonomous Scouting & Edge YOLOv8 Vision           │
+  │      ▼ Multi-Depth Soil & Micro-Climate Diagnostics       │
+  │         (expanded: description + 3-column detail grid)     │
+  │      ▶ Precision Micro-Targeting & Weed Neutralization    │
+  │      ▶ Zero Emissions & Soil Preservation                 │
+  │    Accordion icon changes from chevron-down to chevron-up  │
+  │    Active accordion has emerald background icon.           │
+  │                                                            │
+  │  TAB 3: FULL TECH SPECS SHEET                             │
+  │    Full-width table with 20 rows:                          │
+  │    Subsystem | Parameter | Specification                   │
+  │    (Computing, Drivetrain, Power, Sensors, Connectivity)   │
+  │    Row hover highlighting, monospace font.                 │
+  │                                                            │
+  │  TAB 4: ₹12k BOM & ECONOMICS                             │
+  │    BOM table (8 line items + total row).                   │
+  │    3-column comparison: Imported (₹2.5L+) vs              │
+  │    AgriSarthi (₹12k) vs RaaS (₹499/acre).                │
+  │                                                            │
+  │  TAB 5: SLIDE DECK SCHEMATICS                            │
+  │    6 slide selector buttons.                               │
+  │    Large slide image display (slide_1.png to slide_6.png). │
+  │    "View full size" external link.                         │
+  │                                                            │
+  ├──────── Sticky Footer ────────────────────────────────────┤
+  │  "AgriSarthi Robotics • JSPM Narhe Technical Campus..."   │
+  │                         [Close Window] [Schedule Trial]    │
+  └────────────────────────────────────────────────────────────┘
+
+
+5. STATE MANAGEMENT & DATA FLOW
+================================================================================
+
+App.jsx manages all global state and passes data down via props:
+
+  App.jsx (Root)
+    ├── liveTelemetry state (updates every 2.5s via setInterval)
+    │     Values: battery, signal, speed, moisture, temp, humidity,
+    │             gas, sound, distance
+    │     Consumed by: Hero, MissionControlDemo
+    │
+    ├── fleetStats state
+    │     Values: activeRovers, totalAcres, latency
+    │     Consumed by: LiveStatusTicker
+    │
+    ├── isDemoModalOpen state
+    │     Toggled by: handleOpenDemoModal / onClose
+    │     Controls: BookDemoModal visibility
+    │
+    ├── preselectedRover state
+    │     Set when "Book Demo" clicked with rover ID
+    │     Passed to: BookDemoModal (pre-selects rover in step 1)
+    │
+    └── handleNavigate function
+          Smooth-scrolls to any section by element ID
+          Passed to: Navbar, Hero, Footer
+
+
+6. USER INTERACTION FLOWS
+================================================================================
+
+6.1  First Visit Flow (Investor / Judge)
+      Landing → See hero headline & award badges → Scan telemetry card →
+      Click "Launch Mission Control" → Scroll through HUD → Browse
+      Fleet Section tabs → View pricing → Check ROI calculator →
+      Read tech specs → See awards → View team → Contact or Book Demo.
+
+6.2  Farmer / Customer Flow
+      Landing → See "Book Farm Pilot" CTA → Click → 3-step modal →
+      Select rover → Enter farm details → Submit → Receive confirmation.
+      OR: Click WhatsApp CTA → Direct chat with team.
+
+6.3  Deep-Dive Technical Flow (New Modal)
+      Fleet Section → Click "Explore Rover" → Deep-Dive Modal opens →
+      Browse tabs: Hardware (real photo) → Features (accordions) →
+      Specs (table) → BOM (economics) → Slides (schematics) →
+      Click "Schedule Trial" → Closes modal → Opens Book Demo Modal.
+
+
+7. ANIMATION & TRANSITION SPECIFICATIONS
+================================================================================
+
+Element                    | Animation Detail
+---------------------------|-----------------------------------------------
+Live ping dot              | animate-ping (Tailwind built-in, infinite)
+Rover schematic            | animate-pulse-glow (custom, 3s ease-in-out,
+                           | scale 1→1.04, opacity 0.4→0.9)
+Card hover                 | translateY(-2px), border-color emerald,
+                           | box-shadow emerald/15, 0.3s cubic-bezier
+Navbar scroll              | bg transparent → glassmorphism, py-5 → py-3,
+                           | 0.3s duration
+Tab button active          | scale-105, emerald bg, shadow-xl, 0.3s
+Accordion expand           | animate-fadeIn (custom CSS), content slides in
+Modal open                 | animate-fadeIn on backdrop, body overflow hidden
+Modal close                | body overflow restored, state reset
+Telemetry values           | Update every 2.5s, numbers change in place
+                           | (no animation on value change, feels "live")
+Hero photo hover           | scale(1.05), 500ms transition
+Confetti (demo success)    | canvas-confetti burst, triggered on step 3
+
+
+8. ACCESSIBILITY & SEO
+================================================================================
+
+  • Semantic HTML: section, header, nav, main, footer, h1-h6 hierarchy
+  • Single <h1> per page (in Hero section)
+  • Descriptive <title> tag: "AgriSarthi Robotics — Autonomous AI-Powered
+    Smart Farm Monitoring Fleet"
+  • Meta description with keywords
+  • All interactive elements have unique IDs
+  • Keyboard navigable modals (Escape to close)
+  • body overflow management (prevents scroll behind modals)
+  • Responsive at all breakpoints (mobile-first Tailwind utilities)
+  • High contrast text on dark backgrounds
+  • aria attributes on interactive elements where applicable
+
+
+================================================================================
+                    END OF UI / UX DESIGN DOCUMENT
+================================================================================

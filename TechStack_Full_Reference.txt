@@ -1,0 +1,361 @@
+================================================================================
+             AGRISARTHI — FULL TECHNOLOGY STACK DOCUMENTATION
+                    Where Each Technology Is Used & Why
+================================================================================
+
+
+1. FRONTEND WEB APPLICATION
+================================================================================
+
+Technology         | Version  | Where Used & Why
+-------------------|----------|--------------------------------------------------
+React 19           | ^19.0.0  | Core UI framework. Powers components across the
+                   |          | website — Navbar, Hero, Fleet showcase, Mission
+                   |          | Control HUD, ROI Calculator, Pricing, Contact
+                   |          | form, and all interactive modal overlays.
+                   |          |
+React Router DOM 7 | ^7.3.0   | Multi-page client-side router. Manages 5 dedicated
+                   |          | page routes: Home (/), Rovers (/rovers), Mission
+                   |          | Control (/mission-control), Services (/services),
+                   |          | and About (/about). Clicking the AgriSarthi logo
+                   |          | instantly navigates to Home (/). Includes
+                   |          | ScrollToTop on route changes.
+                   |          |
+Vite 6             | ^6.2.0   | Build tool & dev server. Provides instant HMR
+                   |          | (Hot Module Replacement) during development and
+                   |          | fast production bundling with tree-shaking. Runs
+                   |          | on localhost:3000 for local development.
+                   |          |
+@vitejs/plugin-    | ^4.3.4   | Enables JSX transformation and React Fast Refresh
+react              |          | inside Vite. Applied in vite.config.js.
+                   |          |
+TailwindCSS 4      | ^4.3.3   | Utility-first CSS framework. Used across EVERY
+                   |          | component for rapid styling — 5-zone gamut colors,
+                   |          | responsive breakpoints (sm/md/lg/xl), spacing,
+                   |          | typography, flex/grid layouts, border-radius,
+                   |          | shadows, and glassmorphism effects.
+                   |          |
+@tailwindcss/vite  | ^4.3.3   | TailwindCSS v4 Vite plugin. Integrated in
+                   |          | vite.config.js to compile Tailwind styles via
+                   |          | the `@import "tailwindcss"` directive in
+                   |          | index.css.
+                   |          |
+Lucide React       | ^1.16.0  | Icon library. Provides 100+ crisp SVG icons used
+                   |          | throughout the website for: navigation items
+                   |          | (Bot, Phone, Menu), sensor indicators (Droplets,
+                   |          | Activity, Eye, Radio), action buttons (Play,
+                   |          | Sparkles, ArrowRight), and section headers
+                   |          | (Award, Layers, Cpu, Shield).
+                   |          |
+Canvas Confetti    | ^1.9.4   | Used in the BookDemoModal component to trigger
+                   |          | a celebratory confetti animation when a user
+                   |          | successfully completes the 3-step demo booking
+                   |          | form.
+
+
+2. FONTS & TYPOGRAPHY
+================================================================================
+
+Font                | Where Used
+--------------------|-------------------------------------------------------
+Outfit / Plus       | Primary body and editorial font (--font-sans /
+Jakarta Sans        | --font-earth). All paragraph text, descriptions,
+                    | feature lists, pricing, and form labels.
+                    |
+Space Grotesk /     | Heading font (--font-heading / .heading-earth /
+Archivo             | .heading-otto). All h1–h6 tags, section titles,
+                    | and hero headlines. Heavyweight industrial grotesque.
+                    |
+Space Mono /        | Monospace font (--font-mono). Used for technical data
+JetBrains Mono      | displays: telemetry readouts, sensor values, model IDs,
+                    | kicker labels, spec sheets, and code-like UI elements.
+                    |
+All fonts loaded    | Via Google Fonts in index.html with `rel="preconnect"`
+                    | for optimal performance and no layout shift.
+
+
+3. CUSTOM CSS DESIGN SYSTEM (index.css)
+================================================================================
+
+Feature                  | Where Used
+-------------------------|--------------------------------------------------
+5-Zone Color Gamut       | Eliminates white-page fatigue through dynamic
+                         | alternating agricultural & industrial canvas zones:
+                         | • Zone 1: Light sage (#f4f9f4)
+                         | • Zone 2: Crisp white (#ffffff)
+                         | • Zone 3: Mint tint (#eaf5ea)
+                         | • Zone 4: Off-white canvas (#fbfdfb)
+                         | • Zone 5: Deep field footer (#edf7ed)
+                         | • Header & HUD: Obsidian cockpit (#090e0b / #070b09)
+                         |
+.btn-earth-pill          | High-contrast vibrant green (#16a34a) rounded pill
+                         | action button with white bold uppercase tracking.
+                         |
+ScrollReveal Engine      | Custom IntersectionObserver component (`ScrollReveal.jsx`)
+(Dynamic Pop & Spring)   | popping cards and content smoothly into view as user
+                         | scrolls down (`pop`, `slide-up`, `staggered cascade`).
+                         |
+.glass-panel             | Glassmorphism with blur(16px) + semi-transparent
+                         | bg. Used in Navbar (scrolled state), info cards.
+                         |
+.glass-panel-glow        | Glass + emerald glow border + box-shadow. Used
+                         | in Fleet showcase panel, WhatsApp CTA card,
+                         | Rover Deep Dive Modal.
+                         |
+.glass-card              | Subtler glass with hover lift animation. Used in
+                         | Hero telemetry grid cards, spec badges, sensor
+                         | value tiles, pricing cards.
+                         |
+.text-gradient-emerald   | Gradient text: #34d399 → #10b981 → #059669.
+                         | Applied to headline highlight text and section accents.
+                         |
+Custom Scrollbar         | Clean subtle track with emerald hover thumb.
+
+
+4. MULTI-PAGE & COMPONENT ARCHITECTURE
+================================================================================
+
+4.1 Dedicated Pages (src/pages/):
+--------------------------------------------------------------------------------
+Page File                | Route               | Description & Sections
+-------------------------|---------------------|---------------------------------
+HomePage.jsx             | /                   | Main landing hub: OTTO-style Hero,
+                         |                     | "Why AgriSarthi" 2-col accordion,
+                         |                     | Live holographic telemetry preview,
+                         |                     | Fleet stats ticker, Rover lineup
+                         |                     | selector, Software advantage cards.
+                         |
+RoversPage.jsx           | /rovers             | Dedicated fleet showcase: Sentinel,
+                         |                     | Weeder, and Scout models, interactive
+                         |                     | chassis schematic with sensor callouts,
+                         |                     | specs sheet, and deep-dive modal.
+                         |
+MissionControlPage.jsx   | /mission-control    | Live Mission Control HUD simulator:
+                         |                     | simulated camera stream with YOLOv8
+                         |                     | bounding boxes, virtual drive controls,
+                         |                     | live telemetry dials, battery graph.
+                         |
+ServicesPage.jsx         | /services           | Commercial & technical hub: RaaS
+                         |                     | subscription pricing tiers, Farm ROI
+                         |                     | & Payback Calculator, Dual-Brain
+                         |                     | hardware architecture & specs.
+                         |
+AboutPage.jsx            | /about              | Validation & contacts hub: Field Impact
+                         |                     | & Proof, Startup Pitch Deck carousel,
+                         |                     | Founding Team cards, Direct WhatsApp
+                         |                     | & Robotics Lab contact form.
+
+4.2 Components (src/components/):
+--------------------------------------------------------------------------------
+Component File           | Purpose & What It Renders
+-------------------------|--------------------------------------------------
+Navbar.jsx               | Fixed top navigation bar. Brand logo (AGRISARTHI),
+                         | active route highlights, search bar, "Contact Us"
+                         | CTA button, mobile hamburger menu. Logo links to `/`.
+                         |
+Hero.jsx                 | OTTO-style industrial Hero block with dual CTAs,
+                         | and holographic live telemetry preview card.
+                         |
+ScrollReveal.jsx         | IntersectionObserver wrapper powering dynamic pop
+                         | and reveal animations on scroll.
+                         |
+LiveStatusTicker.jsx     | Horizontal scrolling ticker bar showing fleet stats.
+                         |
+FleetSection.jsx         | Rover Series showcase with tabbed rover selector.
+                         |
+MissionControlDemo.jsx   | Interactive Mission Control HUD simulator.
+                         |
+RaaSPricing.jsx          | Robots-as-a-Service subscription pricing tiers.
+                         |
+RoiCalculator.jsx        | Interactive Farm ROI & Payback calculator.
+                         |
+TechArchitecture.jsx     | Hardware specs & Dual-Brain architecture section.
+                         |
+ImpactAndProof.jsx       | Field impact, awards, and before/after proof.
+                         |
+InvestorRoom.jsx         | Startup pitch deck carousel, TAM metrics, and
+                         | Founding Team cards (Ayush Matkar & Atharva Pachpol).
+                         |
+ContactSection.jsx       | Contact form, direct WhatsApp card, and lab address.
+                         |
+Footer.jsx               | Agricultural footer with navigation links,
+                         | attribution to Ayush Matkar & Atharva Pachpol
+                         | (JSPM Narhe Technical Campus), and back-to-top button.
+                         |
+BookDemoModal.jsx        | 3-step interactive modal overlay for booking a
+                         | farm pilot demo with confetti celebration.
+                         |
+RoverDeepDiveModal.jsx   | Deep-dive scrollable modal with 5 tabbed panels:
+                         | Hardware Prototype, Features, Specs, BOM, Slides.
+
+
+5. DATA FILES (src/data/)
+================================================================================
+
+File              | Contents & Where Consumed
+------------------|--------------------------------------------------
+fleetData.js      | ROVER_FLEET array (3 rover objects: sentinel,
+                  | weeder, scout — each with id, name, subtitle,
+                  | badge, status, tagline, specs, features, pricing).
+                  | RAAS_PLANS array (3 pricing tiers).
+                  | Consumed by: FleetSection.jsx, RaaSPricing.jsx,
+                  | BookDemoModal.jsx.
+                  |
+teamData.js       | TEAM_DATA array (2 founding team members):
+                  | • Ayush Matkar — Co-Founder & Robotics Tech Developer
+                  |   Avatar: /images/ayush_matkar.jpg
+                  | • Atharva Pachpol — Co-Founder — Market Analysis,
+                  |   Research & AI Developer
+                  |   Avatar: /images/atharva_pachpol.png
+                  |   Institution: JSPM Narhe Technical Campus, Pune
+                  | AWARDS_DATA array (3 awards: Techathon 3.0,
+                  | Eureka! IIT Bombay, Smart India Hackathon).
+                  | Consumed by: InvestorRoom.jsx, ImpactAndProof.jsx.
+
+
+6. ROVER HARDWARE TECH STACK (Physical Prototype)
+================================================================================
+
+Layer              | Technology                   | Where Used
+-------------------|------------------------------|-----------------------------
+Primary Brain      | Raspberry Pi 4 (4GB LPDDR4)  | Runs YOLOv8n inference,
+                   |                              | OpenCV row-following,
+                   |                              | video streaming, and
+                   |                              | WebSocket communication.
+                   |                              |
+Co-Processor       | ESP32 Dual-Core 240MHz       | Motor PWM control, sensor
+                   |                              | ADC reading loops, battery
+                   |                              | voltage monitoring, and
+                   |                              | LoRa/Wi-Fi telemetry.
+                   |                              |
+AI Model           | YOLOv8n (Ultralytics Nano)   | Edge object detection on
+                   |                              | Pi 4 CPU. Detects humans,
+                   |                              | animals, pests, obstacles.
+                   |                              |
+Vision Library     | OpenCV (Python)              | Path-following algorithms,
+                   |                              | image preprocessing, and
+                   |                              | bounding box rendering.
+                   |                              |
+Motor Control      | L298N / BTS7960 H-Bridge     | Drives 4x DC geared motors
+                   |                              | with variable speed PWM
+                   |                              | from ESP32 GPIO pins.
+                   |                              |
+Sensors            | Capacitive Soil Moisture     | Analog soil moisture via ADC
+                   | DHT22 Temp & Humidity        | Digital temp/humidity sensor
+                   | MQ-2 Gas Sensor              | Analog gas concentration
+                   | Sound Level Sensor           | Decibel ambient noise
+                   | PIR Motion Sensor            | Night-time intruder detect
+                   | HC-SR04 Ultrasonic (x3)      | Obstacle distance (2-400cm)
+                   |                              |
+Camera             | Pi Camera V2 / USB HD 120°   | Live video stream, YOLOv8
+                   |                              | input feed.
+                   |                              |
+Battery            | 12V 6.0Ah LiFePO4 / Li-Ion   | Main power with 3S BMS for
+                   |                              | overcharge and over-discharge
+                   |                              | protection.
+                   |                              |
+Solar Panel        | 25W Monocrystalline          | Optional trickle charging
+                   |                              | via foldable panel.
+                   |                              |
+Connectivity       | LoRa SX1278 (433MHz Mesh)    | Long-range field telemetry
+                   | SIM7600 4G LTE               | Cloud data uplink
+                   | Wi-Fi 802.11 b/g/n           | Local AP mode for direct
+                   |                              | laptop/phone dashboard.
+                   |                              |
+Chassis            | 4WD Rocker-Bogie Suspension  | All-terrain frame with
+                   |                              | 120mm ground clearance.
+                   |                              | 460mm x 380mm x 290mm.
+
+
+7. PRESENTATION & DOCUMENTATION TOOLS
+================================================================================
+
+Technology         | Where Used
+-------------------|--------------------------------------------------
+python-pptx        | build_sih_real_text_pptx.py script. Programmatic
+                   | PowerPoint generation — replaces slide background
+                   | images and overlays precise text boxes for the SIH
+                   | and Techathon presentation decks.
+                   |
+PowerShell Scripts | export_slides.ps1 — exports PPTX slides to PNG
+                   | render_slides.ps1 — renders slide images
+                   | render_final.ps1 — final rendering pipeline
+                   |
+pypdf              | PDF reading and page counting for documentation.
+                   |
+Pillow (PIL)       | prepare_clean_backgrounds.py — image processing
+                   | for clean slide background extraction and cropping.
+
+
+8. BUILD & DEPLOYMENT
+================================================================================
+
+Tool               | Command              | Purpose
+-------------------|----------------------|-----------------------------------
+npm                | npm install          | Install all dependencies
+Vite Dev Server    | npm run dev          | Local development (localhost:3000)
+Vite Build         | npm run build        | Production bundle to dist/ folder
+Vite Preview       | npm run preview      | Preview production build locally
+
+Build Output:
+  dist/index.html                   1.62 kB (gzip: 0.91 kB)
+  dist/assets/index-*.css          64.01 kB (gzip: 10.45 kB)
+  dist/assets/index-*.js          350.15 kB (gzip: 95.01 kB)
+  Total Build Time: ~2.2s
+
+
+9. PROJECT FILE STRUCTURE
+================================================================================
+
+Smart farm monitoring rover/
+├── index.html                    # HTML entry point (loads React via Vite)
+├── package.json                  # Dependencies & npm scripts
+├── vite.config.js                # Vite config (React + TailwindCSS plugins)
+├── public/
+│   └── images/
+│       ├── agrisarthi_logo.jpg   # Brand emblem (rover + leaf)
+│       ├── ayush_matkar.jpg      # Official portrait (Ayush Matkar)
+│       ├── atharva_pachpol.png   # Official portrait (Atharva Pachpol)
+│       ├── agrisarthi_hero_rover.jpg # Hero front view rover
+│       ├── rover_prototype.jpeg  # Physical hardware prototype
+│       ├── slide_1.png           # SIH/Techathon slide exports
+│       ├── slide_2.png
+│       ├── slide_3.png
+│       ├── slide_4.png
+│       ├── slide_5.png
+│       └── slide_6.png
+├── src/
+│   ├── main.jsx                  # React DOM render entry
+│   ├── App.jsx                   # Root component, router & state
+│   ├── index.css                 # 5-zone gamut & industrial CSS system
+│   ├── pages/
+│   │   ├── HomePage.jsx          # Route: /
+│   │   ├── RoversPage.jsx        # Route: /rovers
+│   │   ├── MissionControlPage.jsx# Route: /mission-control
+│   │   ├── ServicesPage.jsx      # Route: /services
+│   │   └── AboutPage.jsx         # Route: /about
+│   ├── components/
+│   │   ├── Navbar.jsx            # Fixed navigation with brand logo
+│   │   ├── Hero.jsx              # Landing hero + telemetry preview
+│   │   ├── ScrollReveal.jsx      # Dynamic scroll pop & reveal engine
+│   │   ├── LiveStatusTicker.jsx  # Scrolling fleet stats ribbon
+│   │   ├── FleetSection.jsx      # Rover model showcase
+│   │   ├── MissionControlDemo.jsx# Interactive HUD simulator
+│   │   ├── RaaSPricing.jsx       # Subscription pricing tiers
+│   │   ├── RoiCalculator.jsx     # Interactive ROI calculator
+│   │   ├── TechArchitecture.jsx  # Hardware architecture section
+│   │   ├── ImpactAndProof.jsx    # Awards & impact metrics
+│   │   ├── InvestorRoom.jsx      # Pitch deck & founding team
+│   │   ├── ContactSection.jsx    # Contact form & lab links
+│   │   ├── Footer.jsx            # Site footer with attribution
+│   │   ├── BookDemoModal.jsx     # Demo booking 3-step modal
+│   │   └── RoverDeepDiveModal.jsx# Deep-dive scrollable modal
+│   └── data/
+│       ├── fleetData.js          # Rover fleet & RaaS plan data
+│       └── teamData.js           # Team members & awards data
+└── dist/                         # Production build output
+
+
+================================================================================
+                      END OF TECH STACK DOCUMENTATION
+================================================================================

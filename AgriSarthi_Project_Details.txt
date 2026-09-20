@@ -1,0 +1,288 @@
+================================================================================
+                   AGRISARTHI — SMART FARM MONITORING ROVER
+                        COMPLETE PROJECT DOCUMENTATION
+================================================================================
+
+
+1. PROJECT OVERVIEW
+================================================================================
+
+Project Name    : AgriSarthi — Autonomous AI-Powered Smart Farm Monitoring Rover
+Tagline         : "Your Farm. Monitored Continuously."
+Institution     : JSPM Narhe Technical Campus, Pune
+                  Department of Electronics & Computer Engineering
+Award           : 🏆 1st Prize Winners — Techathon 3.0 (₹2,00,000 Cash Grant)
+Competition     : Eureka! Asia's Largest Business Model Competition (IIT Bombay)
+                  Smart India Hackathon (SIH) — Regional Innovation Award
+
+AgriSarthi is an autonomous, low-cost smart agricultural monitoring rover 
+designed to empower small to medium-scale Indian farmers with real-time 
+field intelligence. It uses dual-microcontroller hardware, multi-modal 
+environmental sensors, computer vision (YOLOv8 & OpenCV), and a 
+cloud-connected web/mobile dashboard to provide continuous 24/7 crop 
+health, soil parameter, and security monitoring.
+
+
+2. TEAM MEMBERS
+================================================================================
+
+Name                 | Role                                                  | Institution
+---------------------|-------------------------------------------------------|---------------------------
+Ayush Matkar         | Co-Founder & Robotics Tech Developer                  | JSPM Narhe Technical Campus, Pune
+Atharva Pachpol      | Co-Founder — Market Analysis, Research & AI Developer | JSPM Narhe Technical Campus, Pune
+
+Focus Areas per member:
+  • Ayush Matkar     — Robotics Technology Development, System Architecture, Dual-Brain (ESP32 + Raspberry Pi 4),
+                       Hardware Integration, Power Distribution & Mission Control Telemetry
+  • Atharva Pachpol  — Market Analysis & Agricultural Research, Edge YOLOv8 AI Vision Inference,
+                       Autonomous Navigation Kinematics & Field Deployments
+
+
+3. THE PROBLEM WE SOLVE
+================================================================================
+
+Over 85% of Indian farmers lack access to precision monitoring tools. 
+Key challenges in modern farming:
+
+  1. LATE DETECTION
+     Diseases, pests, and nutrient issues go unnoticed until significant 
+     crop damage has occurred (30–40% foliage loss before manual detection).
+
+  2. MANUAL MONITORING IS INFEASIBLE
+     Not practical to physically inspect large fields regularly, especially
+     during extreme heat, nighttime, or monsoons.
+
+  3. IRRIGATION UNCERTAINTY
+     Lack of real-time soil moisture data leads to over-irrigation or 
+     under-irrigation, wasting water & reducing yield.
+
+  4. CLIMATE RISKS
+     Droughts, floods, heat waves, and erratic rainfall patterns threaten 
+     crops with no early warning system in place.
+
+  5. LIMITED CONNECTIVITY
+     Remote farming areas often lack reliable internet and expert advisory 
+     services, leaving farmers isolated.
+
+  6. PROHIBITIVE COSTS
+     Conventional solutions — tractors (₹6L+), agri-drones (₹4L+), and 
+     imported agri-robots (₹2.5L–₹5L) — are unaffordable for smallholders.
+
+
+4. OUR SOLUTION — AGRISARTHI
+================================================================================
+
+An autonomous rover platform that provides:
+
+  • CONTINUOUS 24/7 FIELD MONITORING
+    Autonomous rover collects real-time field data from multiple field zones.
+
+  • EARLY DETECTION VIA EDGE AI
+    AI analyzes camera feed and sensor data to detect disease, pest 
+    intrusion, and environmental risks at the earliest stage.
+
+  • WORKS IN LOW CONNECTIVITY
+    On-device Edge AI (YOLOv8 on Raspberry Pi 4) reduces dependency on 
+    internet. Syncs data when connection is available.
+
+  • SMARTER RESOURCE USAGE
+    Soil moisture intelligence supports precision irrigation and input 
+    decisions, reducing water and chemical waste.
+
+
+5. HARDWARE ARCHITECTURE (DUAL-CONTROLLER DESIGN)
+================================================================================
+
+Layer             | Controller              | Responsibilities
+------------------|-------------------------|------------------------------------
+Low-Level Control | ESP32 Microcontroller   | Motor control, sensor reading &
+                  |                         | data acquisition, low-power battery
+                  |                         | management, telemetry transmission.
+High-Level Control| Raspberry Pi 4 (4GB)    | Video streaming (24 FPS), YOLOv8
+                  |                         | object detection, OpenCV path
+                  |                         | navigation, WebSocket/HTTP
+                  |                         | communication.
+
+
+6. SENSOR & ACTUATOR SUITE
+================================================================================
+
+  • Soil Moisture Sensor — Capacitive sensor for real-time soil hydration
+  • DHT22              — Ambient temperature (-40°C to 80°C) & relative
+                          humidity (0–100% RH)
+  • MQ-2 Gas Sensor    — Air quality, smoke, methane, and hazardous gas
+                          detection in fields/greenhouses
+  • Sound Level Sensor — Ambient noise & anomaly detection (decibel meter)
+  • PIR Motion Sensor  — Passive Infrared motion detection for nocturnal
+                          security & intruder alerts
+  • HC-SR04 Ultrasonic — Real-time obstacle detection & collision avoidance
+                          (3x array, 2cm–400cm range)
+  • Camera Module      — Pi Camera V2 / HD USB 120° Wide FOV with live 
+                          RTSP/WebRTC stream
+  • Drivetrain         — 4WD High-Torque DC Geared Motors with L298N/BTS7960
+                          motor driver modules
+  • Power Supply       — 12V 6.0Ah LiFePO4/Li-Ion with 3S Smart BMS &
+                          25W Solar Trickle Charging Panel
+
+
+7. SOFTWARE & AI CAPABILITIES
+================================================================================
+
+7.1 Computer Vision & Object Detection
+  • Model: Custom-trained YOLOv8n (Nano) optimized for Raspberry Pi edge
+  • Detectable Classes:
+      - Humans / Farm Workers
+      - Stray Animals / Cattle / Pests
+      - Field Hazards / Obstacles
+      - Crop Disease & Weed Detection (Expansion Module)
+  • Performance: Real-time inferencing @ 24+ FPS with bounding box 
+    overlay & confidence scores
+
+7.2 Autonomous Navigation
+  • Autonomous Mode:
+      - OpenCV-based row/path-following algorithm
+      - HC-SR04 ultrasonic array for dynamic obstacle detection & stopping
+      - Automatic waypointing & perimeter patrolling
+  • Manual Remote Control Mode:
+      - Low-latency WebSocket joystick/button control via web dashboard
+
+7.3 Multi-Page Dashboard & Cloud Web Application
+  • Architecture: React 19 + React Router DOM 7 multi-page application with 
+    smooth routing and persistent top navigation. Clicking brand logo routes 
+    directly to Home (/).
+  • Dedicated 5-Page Structure:
+      1. Home (/) — OTTO-style industrial hero, "Why AgriSarthi" 2-col 
+         interactive accordion, live holographic telemetry preview, fleet 
+         status ticker, rover lineup selector, and software autonomy cards.
+      2. Rovers (/rovers) — Dedicated modular fleet showcase (Sentinel, 
+         Weeder, Scout), interactive chassis schematic with sensor callouts, 
+         spec badges, and deep-dive hardware modal.
+      3. Mission Control (/mission-control) — Interactive pilot-seat HUD 
+         simulator with simulated camera stream, real-time YOLOv8 bounding 
+         boxes, virtual drive controls, sensor dials, and emergency triggers.
+      4. Services (/services) — Zero-CapEx Robots-as-a-Service (RaaS) tiers, 
+         interactive Farm ROI & Payback Engine (savings vs. manual labor), 
+         and Dual-Brain hardware architecture specs.
+      5. About (/about) — Prestigious awards & field proof, 4-slide investor 
+         pitch deck carousel, founding team cards (Ayush Matkar & Atharva 
+         Pachpol with official portraits), and direct WhatsApp & lab contact form.
+  • Design & Aesthetics: Clean 5-zone agricultural & industrial color gamut 
+    eliminating white-page fatigue, industrial typography hierarchy (Outfit, 
+    Space Grotesk, Space Mono), and scroll-triggered pop animations.
+
+
+8. BILL OF MATERIALS (BOM) — ₹12,000 PROTOTYPE
+================================================================================
+
+Component                                    | Cost (INR)| Purpose
+---------------------------------------------|-----------|----------------------
+Raspberry Pi 4 (4GB) + Heatsink Fan          | ₹4,500    | Runs YOLOv8 & OpenCV
+ESP32 Dual-Core Dev Board                    | ₹450      | Motor & sensor loops
+4WD Rocker-Bogie Chassis & Wheels            | ₹1,800    | All-terrain body
+4x High-Torque Geared DC Motors + Driver     | ₹1,200    | L298N H-bridge
+12V Rechargeable Li-ion Battery & BMS        | ₹1,600    | Overcharge protection
+Sensor Suite (Soil, DHT22, MQ-2, Ultrasonic) | ₹1,150    | Calibrated sensors
+HD Camera Rig + Pan-Tilt Mount               | ₹850      | Wide-angle crop lens
+Wiring, Connectors, Buck Converters          | ₹450      | 12V to 5V rails
+---------------------------------------------|-----------|----------------------
+TOTAL                                        | ₹12,000   | Lowest-cost smart rover
+
+
+9. BUSINESS MODEL
+================================================================================
+
+9.1 Revenue Streams:
+  • ROVER SALES
+      - Prototype: ~₹12,000
+      - Field-ready V1: ₹75,000 – ₹1,00,000
+      - Advanced V2: ~₹3,00,000
+
+  • FARMING-AS-A-SERVICE (FaaS / RaaS)
+      - ₹250 – ₹500 per acre
+      - Monitoring + Advisory
+      - Targeted Spraying / Irrigation
+      - Suitable for FPOs & large farms
+
+  • SOFTWARE & DATA SERVICES
+      - App subscription (₹999 – ₹2,999 / mo)
+      - Data analytics & reports
+      - AI model updates
+      - Web dashboard for cooperatives
+
+  • AMC & SUPPORT
+      - ₹15,000 – ₹25,000 / yr
+      - Maintenance & servicing
+      - Hardware upgrades
+      - On-site / remote support
+
+9.2 Market Opportunity:
+  • TAM: ₹42,000 Cr ($5.2B) Indian Precision Ag Market by 2028
+  • SAM: 28M Hectares under commercial cash crops & horticulture
+  • Hardware unit cost: ~₹38,000 (High gross margins)
+
+
+10. SCALABILITY ROADMAP
+================================================================================
+
+  Phase 1 — Small Farms (Individual Farmers)
+  Phase 2 — FPOs / Cooperatives (Cluster Deployment)
+  Phase 3 — Large Farms (Commercial Agriculture)
+  Phase 4 — Multi-Rover Deployment (Farm Network / Swarm)
+
+  Modular Expansion Path:
+    Monitoring → Understanding → Acting → Automating
+    (Camera+Sensors) → (Crop/Pest/Disease) → (Irrigation/Spraying) → (Future Ops)
+
+
+11. IMPACT & BENEFITS
+================================================================================
+
+  FOR FARMERS:
+    • Early alerts about crop risks
+    • Remote monitoring of fields
+    • Faster response and action
+    • Reduced manual effort
+
+  FOR CROPS:
+    • Early disease and pest detection
+    • Continuous crop-health monitoring
+    • Identify stress at early stage
+    • Targeted and timely intervention
+
+  FOR RESOURCES:
+    • Soil moisture based irrigation
+    • Optimized use of water, fertilizers and inputs
+    • Reduced wastage of resources
+    • Supports cost-efficient farming
+
+  FOR ENVIRONMENT:
+    • Heat stress and climate risk alerts
+    • Drought and excess rainfall indicators
+    • Supports eco-friendly farming practices
+    • Reduces overuse of chemicals
+
+
+12. AWARDS & RECOGNITION
+================================================================================
+
+  🏆 1st Prize — Techathon 3.0
+     ₹2,00,000 Cash Grant
+     JSPM Narhe Technical Campus & Industry Partners
+     "Awarded for autonomous field navigation and cost-effective 
+      dual-controller IoT architecture."
+
+  🌟 Eureka! Asia's Largest Business Model Competition
+     Top Agri-Tech Finalist
+     E-Cell IIT Bombay
+     "Selected for high-scalability RaaS commercialization."
+
+  🏅 Smart India Hackathon (SIH)
+     Regional Innovation Award
+     Ministry of Education & AICTE
+     "Recognized for edge computer vision pest detection and 
+      real-time farmer security alerts."
+
+
+================================================================================
+                        END OF PROJECT DOCUMENTATION
+================================================================================

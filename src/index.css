@@ -1,0 +1,237 @@
+@import "tailwindcss";
+
+/* Root Theme Design System — Light Green Farming & Industrial AgTech Theme */
+:root {
+  --font-display: 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-syne: 'Syne', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-sans: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Core Gamut Palette */
+  --bg-main: #f0f6f0;
+  --panel-bg: rgba(255, 255, 255, 0.92);
+  --color-forest: #081a0e;
+  --color-leaf: #15803d;
+  --color-earth-pill: #16a34a;
+  --color-loam: #b45309;
+  --color-stone: #e5ede5;
+  --color-obsidian: #0a180f;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: var(--bg-main);
+  color: #132a1c;
+  overflow-x: hidden;
+  background-image: linear-gradient(180deg, #f2f7f2 0%, #e6efe6 50%, #f0f6f0 100%);
+  background-attachment: fixed;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display);
+  letter-spacing: -0.025em;
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-syne {
+  font-family: var(--font-syne);
+}
+
+.font-body {
+  font-family: var(--font-sans);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+/* Earth Rover & OTTO Inspired Typography */
+.heading-earth {
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: -0.035em;
+  line-height: 0.95;
+}
+
+.heading-otto {
+  font-family: var(--font-display);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.kicker-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+/* Color Gamut Zone Rules */
+.gamut-zone-mist {
+  background: linear-gradient(180deg, #f3f8f3 0%, #e8f2e8 100%);
+  border-color: #d1e2d2;
+}
+
+.gamut-zone-stone {
+  background: linear-gradient(180deg, #e3ece3 0%, #d8e4d8 100%);
+  border-color: #c4d7c5;
+}
+
+.gamut-zone-obsidian {
+  background: radial-gradient(circle at 50% 0%, #112819 0%, #09170e 100%);
+  color: #f2fbf4;
+  border-color: rgba(34, 197, 94, 0.25);
+}
+
+.gamut-zone-harvest {
+  background: linear-gradient(180deg, #faf7f2 0%, #f4eee3 100%);
+  border-color: #e5dbc9;
+}
+
+.gamut-zone-clean {
+  background: #fbfdfb;
+}
+
+/* Earth Rover Pill Button */
+.btn-earth-pill {
+  background-color: #16a34a;
+  color: #ffffff;
+  border-radius: 9999px;
+  font-family: var(--font-display);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  transition: all 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 4px 14px rgba(22, 163, 74, 0.3);
+}
+
+.btn-earth-pill:hover {
+  background-color: #15803d;
+  transform: translateY(-1px) scale(1.02);
+  box-shadow: 0 6px 20px rgba(22, 163, 74, 0.4);
+}
+
+/* Glassmorphism & Elevated Panels */
+.glass-panel {
+  background: rgba(255, 255, 255, 0.88);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(21, 128, 61, 0.16);
+}
+
+.glass-panel-glow {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(16px);
+  border: 1px solid rgba(21, 128, 61, 0.28);
+  box-shadow: 0 10px 30px -10px rgba(21, 128, 61, 0.15);
+}
+
+.glass-card {
+  background: rgba(255, 255, 255, 0.85);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(21, 128, 61, 0.15);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(22, 163, 74, 0.50);
+  transform: translateY(-3px);
+  box-shadow: 0 12px 32px -8px rgba(21, 128, 61, 0.22);
+}
+
+/* Grid & Radial Patterns — Subtle green grid */
+.bg-grid-pattern {
+  background-size: 40px 40px;
+  background-image: 
+    linear-gradient(to right, rgba(5, 150, 105, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(5, 150, 105, 0.07) 1px, transparent 1px);
+}
+
+.bg-radial-gradient {
+  background: radial-gradient(circle at 50% 0%, rgba(5, 150, 105, 0.12), transparent 70%);
+}
+
+/* Text Gradients */
+.text-gradient-emerald {
+  background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-blue {
+  background: linear-gradient(135deg, #2563eb 0%, #1d4ed8 50%, #1e40af 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.text-gradient-amber {
+  background: linear-gradient(135deg, #d97706 0%, #b45309 50%, #92400e 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+/* Pulse Glow Keyframes */
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.04);
+  }
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 3s ease-in-out infinite;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Custom Scrollbar — Green theme */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: #e8f5e8;
+}
+::-webkit-scrollbar-thumb {
+  background: #a7d7a7;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+
+input[type="range"] {
+  accent-color: #059669;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 5px;
+}
