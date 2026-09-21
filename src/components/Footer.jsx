@@ -48,9 +48,9 @@ export default function Footer({ onOpenDemo }) {
               className="group inline-flex items-center"
             >
               <img 
-                src="/images/agrisarthi_logo_full.png" 
-                alt="AgriSarthi — Farm Smarter Together" 
-                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+                src="/images/agrisarthi_logo_transparent.png" 
+                alt="AgriSarthi Robotics" 
+                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105 filter drop-shadow-[0_2px_10px_rgba(34,197,94,0.3)]" 
               />
             </Link>
 

@@ -88,23 +88,23 @@ export default function Navbar({ onOpenDemo }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           
-          {/* Brand Logo with Official AgriSarthi Leaf Wordmark */}
+          {/* Brand Logo with New AgriSarthi Autonomous Robotics Emblem */}
           <Link 
             to="/"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="flex items-center gap-2 bg-white/95 px-3 py-1.5 rounded-xl border border-white/50 shadow-md group-hover:bg-white transition-all transform group-hover:scale-105">
+            <div className="flex items-center gap-2 transition-all transform group-hover:scale-105">
               <img 
-                src="/images/agrisarthi_wordmark.png" 
-                alt="AgriSarthi" 
-                className="h-6 sm:h-7 w-auto object-contain"
+                src="/images/agrisarthi_logo_transparent.png" 
+                alt="AgriSarthi Robotics" 
+                className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_0_16px_rgba(34,197,94,0.45)]"
               />
             </div>
 
-            <span className="text-gray-500 font-light text-lg">|</span>
+            <span className="hidden sm:inline text-white/20 font-light text-lg">|</span>
 
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <span className="text-xs sm:text-sm font-semibold tracking-widest text-emerald-400 uppercase font-mono">
                 ROBOTICS
               </span>

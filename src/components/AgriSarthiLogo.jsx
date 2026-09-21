@@ -15,12 +15,10 @@ export default function AgriSarthiLogo({
   showBadge = false,
   badgeText = 'ROBOTICS'
 }) {
-  const logoSrc = withTagline 
-    ? '/images/agrisarthi_logo_full.png' 
-    : '/images/agrisarthi_wordmark.png';
+  const logoSrc = '/images/agrisarthi_logo_transparent.png';
 
   return (
-    <div className={`inline-flex items-center gap-2.5 select-none ${onDark ? 'filter drop-shadow-[0_1px_6px_rgba(255,255,255,0.7)]' : ''}`}>
+    <div className={`inline-flex items-center gap-2.5 select-none ${onDark ? 'filter drop-shadow-[0_0_12px_rgba(34,197,94,0.4)]' : ''}`}>
       <img
         src={logoSrc}
         alt="AgriSarthi Logo"
