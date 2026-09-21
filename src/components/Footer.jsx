@@ -45,14 +45,13 @@ export default function Footer({ onOpenDemo }) {
             <Link 
               to="/" 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className="flex items-center gap-3 group inline-flex"
+              className="group inline-flex items-center"
             >
-              <div className="flex items-center justify-center w-9 h-9 rounded-xl overflow-hidden border border-emerald-500/30 shadow-lg shadow-emerald-500/20 group-hover:scale-105 transition-transform">
-                <img src="/images/agrisarthi_logo.jpg" alt="AgriSarthi Logo" className="w-full h-full object-cover" />
-              </div>
-              <span className="font-extrabold text-lg text-green-950 font-mono tracking-tight">
-                AGRI<span className="text-emerald-700">SARTHI</span> ROBOTICS
-              </span>
+              <img 
+                src="/images/agrisarthi_logo_full.png" 
+                alt="AgriSarthi — Farm Smarter Together" 
+                className="h-10 sm:h-12 w-auto object-contain transition-transform group-hover:scale-105" 
+              />
             </Link>
 
             <p className="text-gray-600 text-xs leading-relaxed max-w-sm">

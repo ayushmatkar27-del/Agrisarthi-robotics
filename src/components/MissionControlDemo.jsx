@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { 
   Bot, 
   Play, 
@@ -32,18 +33,30 @@ import {
   Activity
 } from 'lucide-react';
 
-export default function MissionControlDemo({ liveTelemetry, onOpenDemo }) {
+export default function MissionControlDemo({ liveTelemetry, onOpenDemo, onShowSimulation }) {
+  const navigate = useNavigate();
+
   // Navigation & Control States
   const [controlMode, setControlMode] = useState('autonomous'); // 'autonomous' | 'manual'
   const [roverSpeed, setRoverSpeed] = useState(1.2);
   const [isEmergencyBrake, setIsEmergencyBrake] = useState(false);
   const [lastCommand, setLastCommand] = useState('AUTONOMOUS_PATROL');
   
-  // Camera & AI Vision States
+  // Camera & Visualizer States (Camera vs 3D Simulation Stream)
+  const [streamSource, setStreamSource] = useState('camera'); // 'camera' | 'simulation'
   const [cameraFilter, setCameraFilter] = useState('rgb'); // 'rgb' | 'ir' | 'thermal'
   const [showBoundingBoxes, setShowBoundingBoxes] = useState(true);
   const [flashlightOn, setFlashlightOn] = useState(false);
   const [capturedSnaps, setCapturedSnaps] = useState(0);
+
+  const handleGoSimulation = () => {
+    if (onShowSimulation) {
+      onShowSimulation();
+    } else {
+      navigate('/mission-control?view=simulation');
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   // Zone Map State
   const [activeZone, setActiveZone] = useState('Zone B (South Orchard)');
@@ -120,24 +133,43 @@ export default function MissionControlDemo({ liveTelemetry, onOpenDemo }) {
             </p>
           </div>
 
-          {/* Quick HUD Telemetry Status Bar */}
-          <div className="flex flex-wrap items-center gap-3 bg-[#0f2416] border border-emerald-500/30 p-3 rounded-2xl font-mono text-xs">
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/20">
-              <span className={`w-2 h-2 rounded-full ${isEmergencyBrake ? 'bg-red-500 animate-ping' : 'bg-emerald-400 animate-pulse'}`}></span>
-              <span className="text-gray-400">Mode:</span>
-              <strong className={isEmergencyBrake ? 'text-red-400' : 'text-emerald-400 uppercase'}>
-                {isEmergencyBrake ? 'HALTED' : controlMode}
-              </strong>
-            </div>
+          {/* Quick HUD Telemetry Status Bar & Highlighted Show Simulation Button */}
+          <div className="flex flex-wrap items-center gap-3">
+            
+            {/* SEPARATE HIGHLIGHTED SHOW SIMULATION OPTION */}
+            <button
+              onClick={handleGoSimulation}
+              className="relative group px-4 py-2.5 rounded-2xl bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 hover:from-emerald-400 hover:to-green-300 text-slate-950 font-bold text-xs sm:text-sm font-mono flex items-center gap-2 shadow-[0_0_30px_rgba(34,197,94,0.55)] ring-2 ring-emerald-300 transition-all transform hover:scale-105 active:scale-95"
+            >
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-slate-950"></span>
+              </span>
+              <Sparkles className="w-4 h-4 text-slate-950 animate-pulse" />
+              <span className="tracking-wide">SHOW 3D SIMULATION</span>
+              <span className="px-1.5 py-0.5 rounded bg-black/25 text-slate-950 text-[10px] font-black uppercase tracking-wider">
+                3D Live
+              </span>
+            </button>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/20 text-gray-300">
-              <Radio className="w-3.5 h-3.5 text-blue-400" />
-              <span>Latency: <strong className="text-blue-400">14ms</strong></span>
-            </div>
+            <div className="flex flex-wrap items-center gap-3 bg-[#0f2416] border border-emerald-500/30 p-3 rounded-2xl font-mono text-xs">
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/20">
+                <span className={`w-2 h-2 rounded-full ${isEmergencyBrake ? 'bg-red-500 animate-ping' : 'bg-emerald-400 animate-pulse'}`}></span>
+                <span className="text-gray-400">Mode:</span>
+                <strong className={isEmergencyBrake ? 'text-red-400' : 'text-emerald-400 uppercase'}>
+                  {isEmergencyBrake ? 'HALTED' : controlMode}
+                </strong>
+              </div>
 
-            <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/20 text-gray-300">
-              <BatteryCharging className="w-3.5 h-3.5 text-emerald-400" />
-              <span>BMS: <strong className="text-emerald-400">{liveTelemetry?.battery ?? 84}%</strong></span>
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/20 text-gray-300">
+                <Radio className="w-3.5 h-3.5 text-blue-400" />
+                <span>Latency: <strong className="text-blue-400">14ms</strong></span>
+              </div>
+
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-black/40 border border-emerald-500/20 text-gray-300">
+                <BatteryCharging className="w-3.5 h-3.5 text-emerald-400" />
+                <span>BMS: <strong className="text-emerald-400">{liveTelemetry?.battery ?? 84}%</strong></span>
+              </div>
             </div>
           </div>
         </div>
@@ -145,7 +177,7 @@ export default function MissionControlDemo({ liveTelemetry, onOpenDemo }) {
         {/* Master HUD Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Main Visualizer: YOLOv8 Live Camera Stream (Col-Span 7) */}
+          {/* Main Visualizer: YOLOv8 Live Camera Stream / 3D Simulation (Col-Span 7) */}
           <div className="lg:col-span-7 space-y-4">
             <div className="relative rounded-3xl bg-[#08140b] border border-emerald-500/30 overflow-hidden shadow-2xl">
               
@@ -153,36 +185,75 @@ export default function MissionControlDemo({ liveTelemetry, onOpenDemo }) {
               <div className="absolute top-0 left-0 right-0 z-20 p-4 bg-gradient-to-b from-black/80 via-black/40 to-transparent flex items-center justify-between font-mono text-xs">
                 <div className="flex items-center gap-2">
                   <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></div>
-                  <span className="text-white font-bold tracking-wider">LIVE CAM // 1080p @ 24.2 FPS</span>
+                  <span className="text-white font-bold tracking-wider">
+                    {streamSource === 'simulation' ? '3D FARM SCOUT SIMULATION' : 'LIVE CAM // 1080p @ 24.2 FPS'}
+                  </span>
                   <span className="px-2 py-0.5 rounded text-[10px] bg-purple-500/30 text-purple-300 border border-purple-500/40">
-                    YOLOv8n-AGRI
+                    {streamSource === 'simulation' ? 'THREE.JS 3D' : 'YOLOv8n-AGRI'}
                   </span>
                 </div>
 
                 <div className="flex items-center gap-2">
+                  {/* Inline 3D Simulation Switcher Button */}
                   <button
-                    onClick={() => setShowBoundingBoxes(!showBoundingBoxes)}
-                    className={`px-2.5 py-1 rounded-lg border text-[11px] flex items-center gap-1 transition ${
-                      showBoundingBoxes ? 'bg-purple-500/30 text-purple-300 border-purple-500/40' : 'bg-black/60 text-gray-400 border-white/20'
+                    onClick={() => setStreamSource(streamSource === 'camera' ? 'simulation' : 'camera')}
+                    className={`px-2.5 py-1 rounded-lg border text-[11px] font-mono flex items-center gap-1 transition ${
+                      streamSource === 'simulation'
+                        ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-[0_0_12px_rgba(16,185,129,0.4)]'
+                        : 'bg-emerald-500/20 text-emerald-300 border-emerald-500/40 hover:bg-emerald-500/30 shadow-[0_0_10px_rgba(16,185,129,0.2)]'
                     }`}
+                    title="Toggle Camera Stream or Interactive 3D Farm Simulation"
                   >
-                    {showBoundingBoxes ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
-                    <span>AI Tags</span>
+                    <Sparkles className="w-3 h-3" />
+                    <span>{streamSource === 'simulation' ? '📹 YOLO Cam' : '🌱 3D Sim'}</span>
                   </button>
 
-                  <button
-                    onClick={() => setFlashlightOn(!flashlightOn)}
-                    className={`p-1.5 rounded-lg border transition ${
-                      flashlightOn ? 'bg-amber-500/30 text-amber-300 border-amber-500/40' : 'bg-black/60 text-gray-400 border-white/20'
-                    }`}
-                    title="Toggle Aux Spotlight"
-                  >
-                    <Sun className="w-3.5 h-3.5" />
-                  </button>
+                  {streamSource === 'camera' && (
+                    <>
+                      <button
+                        onClick={() => setShowBoundingBoxes(!showBoundingBoxes)}
+                        className={`px-2.5 py-1 rounded-lg border text-[11px] flex items-center gap-1 transition ${
+                          showBoundingBoxes ? 'bg-purple-500/30 text-purple-300 border-purple-500/40' : 'bg-black/60 text-gray-400 border-white/20'
+                        }`}
+                      >
+                        {showBoundingBoxes ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
+                        <span>AI Tags</span>
+                      </button>
+
+                      <button
+                        onClick={() => setFlashlightOn(!flashlightOn)}
+                        className={`p-1.5 rounded-lg border transition ${
+                          flashlightOn ? 'bg-amber-500/30 text-amber-300 border-amber-500/40' : 'bg-black/60 text-gray-400 border-white/20'
+                        }`}
+                        title="Toggle Aux Spotlight"
+                      >
+                        <Sun className="w-3.5 h-3.5" />
+                      </button>
+                    </>
+                  )}
                 </div>
               </div>
 
-              {/* Simulated Camera Video Canvas */}
+              {/* Visualizer Canvas: Inline 3D Simulation OR Simulated Camera Feed */}
+              {streamSource === 'simulation' ? (
+                <div className="relative h-[380px] sm:h-[440px] w-full bg-[#08140b]">
+                  <iframe 
+                    src="/simulation/index.html" 
+                    title="Inline 3D Simulation"
+                    className="w-full h-full border-0 block"
+                    allow="fullscreen"
+                  />
+                  <div className="absolute bottom-3 right-3 z-20">
+                    <button
+                      onClick={handleGoSimulation}
+                      className="px-3 py-1.5 rounded-xl bg-black/80 hover:bg-emerald-950 text-emerald-300 hover:text-white border border-emerald-500/40 text-[11px] font-mono flex items-center gap-1 shadow-lg transition"
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Full Simulation View ↗</span>
+                    </button>
+                  </div>
+                </div>
+              ) : (
               <div className={`relative h-[340px] sm:h-[400px] w-full flex items-center justify-center transition-colors duration-500 overflow-hidden ${
                 cameraFilter === 'ir' ? 'bg-[#031c0c]' : cameraFilter === 'thermal' ? 'bg-gradient-to-tr from-purple-950 via-red-950 to-amber-950' : 'bg-[#07130a]'
               }`}>
@@ -251,8 +322,9 @@ export default function MissionControlDemo({ liveTelemetry, onOpenDemo }) {
                 </div>
 
               </div>
+            )}
 
-              {/* Camera Filter Selection Footer */}
+            {/* Camera Filter Selection Footer */}
               <div className="p-3 bg-[#0c1c11] border-t border-emerald-900/60 flex flex-wrap items-center justify-between gap-3 text-xs">
                 <div className="flex items-center gap-2">
                   <span className="text-gray-400 font-mono text-[11px]">Vision Spectrum:</span>

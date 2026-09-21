@@ -131,6 +131,8 @@ export default function App() {
               />
             } 
           />
+          <Route path="/roi" element={<Navigate to="/services#roi-calc" replace />} />
+          <Route path="/roi-calculator" element={<Navigate to="/services#roi-calc" replace />} />
 
           {/* Grouped About Route: Impact & Proof, Pitch Deck & TAM, Contact Lab */}
           <Route 

@@ -62,7 +62,9 @@ export default function Navbar({ onOpenDemo }) {
     e.preventDefault();
     if (!searchQuery.trim()) return;
     const q = searchQuery.toLowerCase();
-    if (q.includes('rover') || q.includes('fleet') || q.includes('sentinel') || q.includes('weeder') || q.includes('scout')) {
+    if (q.includes('sim') || q.includes('3d') || q.includes('farm')) {
+      navigate('/mission-control?view=simulation');
+    } else if (q.includes('rover') || q.includes('fleet') || q.includes('sentinel') || q.includes('weeder') || q.includes('scout')) {
       navigate('/rovers');
     } else if (q.includes('control') || q.includes('hud') || q.includes('camera') || q.includes('drive')) {
       navigate('/mission-control');
@@ -86,21 +88,18 @@ export default function Navbar({ onOpenDemo }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between">
           
-          {/* Brand Logo with Vertical Divider (Rockwell | OTTO style) */}
+          {/* Brand Logo with Official AgriSarthi Leaf Wordmark */}
           <Link 
             to="/"
             onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
             className="flex items-center gap-3 cursor-pointer group"
           >
-            <div className="flex items-center gap-2.5">
+            <div className="flex items-center gap-2 bg-white/95 px-3 py-1.5 rounded-xl border border-white/50 shadow-md group-hover:bg-white transition-all transform group-hover:scale-105">
               <img 
-                src="/images/agrisarthi_logo.jpg" 
-                alt="AgriSarthi Logo" 
-                className="w-8 h-8 rounded-full object-cover border border-emerald-400/60 shadow-md group-hover:scale-105 transition-transform"
+                src="/images/agrisarthi_wordmark.png" 
+                alt="AgriSarthi" 
+                className="h-6 sm:h-7 w-auto object-contain"
               />
-              <span className="font-extrabold text-lg sm:text-xl tracking-widest text-white font-mono">
-                AGRISARTHI
-              </span>
             </div>
 
             <span className="text-gray-500 font-light text-lg">|</span>
