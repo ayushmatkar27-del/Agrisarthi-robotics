@@ -98,7 +98,7 @@ export default function Navbar({ onOpenDemo }) {
               <img 
                 src="/images/agrisarthi_logo_transparent.png" 
                 alt="AgriSarthi Robotics" 
-                className="h-10 sm:h-12 w-auto object-contain filter drop-shadow-[0_0_16px_rgba(34,197,94,0.45)]"
+                className="h-10 sm:h-12 w-auto object-contain"
               />
             </div>
 
