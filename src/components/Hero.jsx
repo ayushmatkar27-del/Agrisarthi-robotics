@@ -199,7 +199,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
                 />
               </div>
               <p className="text-base sm:text-lg text-stone-600 leading-relaxed font-normal">
-                Your autonomous field companion equipped with precision edge image processing, Artificial Intelligence, and satellite RTK navigation. AgriSarthi can weed, scout, and analyze your fields all on its own.
+                Your autonomous field companion equipped with precision edge image processing, Artificial Intelligence, and satellite RTK navigation. AgriSarthi can scout, monitor, and analyze your fields all on its own.
               </p>
               <div className="pt-2">
                 <button
@@ -235,52 +235,52 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
             </div>
           </div>
 
-          {/* Huge Editorial Statement: PURE LIGHT. ZERO CHEMICALS */}
+          {/* Huge Editorial Statement: Tailored to AgriSarthi Smart Farm Monitoring Rover */}
           <ScrollReveal animation="fade" className="text-center max-w-4xl mx-auto my-16">
             <h2 className="heading-earth text-5xl sm:text-7xl md:text-8xl tracking-tight leading-[0.92] text-stone-950">
-              PURE LIGHT.<br />
-              <span className="text-[#16a34a]">ZERO CHEMICALS</span>
+              REAL-TIME INTELLIGENCE.<br />
+              <span className="text-[#16a34a]">ZERO BLIND SPOTS</span>
             </h2>
             <p className="text-base sm:text-xl text-stone-600 max-w-2xl mx-auto mt-6 leading-relaxed font-normal">
-              Battery and solar-powered, AgriSarthi is 100% electric, whisper-quiet, and eliminates toxic chemical overspray through precision laser & micro-dosing actuators.
+              Solar-powered and 24/7 autonomous, AgriSarthi patrols crop rows day and night — replacing exhausting manual field walks with edge AI computer vision, continuous soil intelligence, and instant farmer alerts.
             </p>
           </ScrollReveal>
 
-          {/* 3 Core Capability Columns matching Earth Rover (WEEDING, SCOUTING, CONTROL) */}
+          {/* 3 Core Monitoring Capability Columns (IOT SENSING, AI VISION, 24/7 PATROL) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 pt-8 border-t border-stone-200">
             <div className="space-y-3">
               <h3 className="heading-earth text-2xl sm:text-3xl text-stone-950 tracking-tight">
-                WEEDING
+                IOT SENSING
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
-                AgriSarthi uses proprietary edge YOLOv8 AI models to detect weeds, distinguishing invasive species from crops before targeting the growth point with precise micro-actuation to eliminate weeds without damaging crops.
+                Equipped with an onboard ESP32 multi-sensor suite measuring capacitive soil moisture, ambient humidity, temperature, and air quality to trigger precision irrigation and prevent crop stress before damage occurs.
               </p>
               <div className="text-[11px] font-mono text-emerald-800 font-bold uppercase tracking-wider">
-                Patent-Pending Sub-2mm Actuator
+                Real-Time Soil & Climate Telemetry
               </div>
             </div>
 
             <div className="space-y-3">
               <h3 className="heading-earth text-2xl sm:text-3xl text-stone-950 tracking-tight">
-                SCOUTING
+                AI VISION
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
-                Through multi-spectral deep-learning vision, our robot is able to inspect crops at leaf-level, collecting real-time and precise farm data, including detailed NDVI maps, plant health status, and canopy growth rates.
+                Onboard Raspberry Pi 4 executes edge YOLOv8 deep learning at 24.2 FPS, detecting invasive weeds, foliar leaf blights, and pest infestations at individual plant-level for pinpoint spot treatment.
               </p>
               <div className="text-[11px] font-mono text-emerald-800 font-bold uppercase tracking-wider">
-                Continuous Multi-Spectral Telemetry
+                Edge YOLOv8 Pest & Disease AI
               </div>
             </div>
 
             <div className="space-y-3">
               <h3 className="heading-earth text-2xl sm:text-3xl text-stone-950 tracking-tight">
-                CONTROL
+                24/7 PATROL
               </h3>
               <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
-                AgriSarthi navigates furrow beds autonomously with centimeter accuracy using satellite-based navigation with RTK position correction and fail-safe dual-brain obstacle detection for reliable day & night shifts.
+                AgriSarthi navigates furrow beds autonomously with centimeter RTK accuracy, ultrasonic obstacle stop, and night-vision cameras to safeguard farms 24/7 from stray cattle, hazards, and theft.
               </p>
               <div className="text-[11px] font-mono text-emerald-800 font-bold uppercase tracking-wider">
-                Centimeter RTK-GPS Accuracy
+                Centimeter RTK Autonomous Mobility
               </div>
             </div>
           </div>

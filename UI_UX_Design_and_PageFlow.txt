@@ -109,7 +109,20 @@ The primary landing hub introducing AgriSarthi's autonomous farming mission:
        - [WATCH DEMO →]         : Solid white button, black text, right arrow
        - [GET STARTED NOW →]    : Ghost button, dark bg, white border, white text
 
-  2. DYNAMIC "WHY AGRISARTHI ROVERS" 2-COLUMN ACCORDION (Matches 00:01 in video)
+  2. SMART FARM MONITORING ROVER STATEMENT & 3 CORE CAPABILITIES
+     • Massive Editorial Headline: "REAL-TIME INTELLIGENCE. ZERO BLIND SPOTS"
+     • Subtitle: "Solar-powered and 24/7 autonomous, AgriSarthi patrols crop rows
+       day and night — replacing exhausting manual field walks with edge AI
+       computer vision, continuous soil intelligence, and instant farmer alerts."
+     • 3 Core Monitoring Capability Columns:
+       1. IOT SENSING: ESP32 multi-sensor suite (capacitive soil hydration, DHT22
+          ambient temperature & humidity, MQ-2 gas, and ambient sound).
+       2. AI VISION: Raspberry Pi 4 edge YOLOv8 deep learning at 24.2 FPS for early
+          foliar disease and weed detection.
+       3. 24/7 PATROL: Centimeter RTK furrow navigation, ultrasonic obstacle stop,
+          and night-vision cameras to protect crops from stray cattle and theft.
+
+  3. DYNAMIC "WHY AGRISARTHI ROVERS" 2-COLUMN ACCORDION (Matches 00:01 in video)
      • Headline: "Your precision agriculture needs, built into every Rover"
      • Left Column: Dynamic telemetry simulation screen that automatically adapts
        to the currently active feature (Stereo AI vision, micro-sprayer calibration,
