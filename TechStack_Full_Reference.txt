@@ -308,22 +308,28 @@ Build Output:
 ================================================================================
 
 Smart farm monitoring rover/
-├── index.html                    # HTML entry point (loads React via Vite)
+├── index.html                    # HTML entry point (loads React via Vite, new favicon)
 ├── package.json                  # Dependencies & npm scripts
-├── vite.config.js                # Vite config (React + TailwindCSS plugins)
+├── vite.config.js                # Vite config (React + TailwindCSS v4 plugins)
+├── vercel.json                   # Vercel SPA rewrite routing configuration
 ├── public/
+│   ├── simulation/               # Standalone WebGL Three.js 3D Simulation
+│   │   ├── index.html            # WebGL canvas container & overlay controls
+│   │   ├── simulation.js         # Three.js scene, camera & lighting engine
+│   │   ├── rover.js              # 4WD kinematic model & waypoint tracker
+│   │   ├── farm.js               # Terrain generator, soil & crop row meshes
+│   │   ├── textures.js           # Procedural canvas textures & bump maps
+│   │   └── style.css             # Simulation HUD & control overlay styles
 │   └── images/
-│       ├── agrisarthi_logo.jpg   # Brand emblem (rover + leaf)
-│       ├── ayush_matkar.jpg      # Official portrait (Ayush Matkar)
-│       ├── atharva_pachpol.png   # Official portrait (Atharva Pachpol)
-│       ├── agrisarthi_hero_rover.jpg # Hero front view rover
-│       ├── rover_prototype.jpeg  # Physical hardware prototype
-│       ├── slide_1.png           # SIH/Techathon slide exports
-│       ├── slide_2.png
-│       ├── slide_3.png
-│       ├── slide_4.png
-│       ├── slide_5.png
-│       └── slide_6.png
+│       ├── agrisarthi_logo_transparent.png # High-res transparent robotics logo
+│       ├── agrisarthi_rover_emblem.png     # Circular rover emblem (favicon)
+│       ├── agrisarthi_wordmark.png         # Isolated 3D emerald typography
+│       ├── agrisarthi_logo_dark.png        # Original dark-background master logo
+│       ├── ayush_matkar.jpg                # Official portrait (Ayush Matkar)
+│       ├── atharva_pachpol.png             # Official portrait (Atharva Pachpol)
+│       ├── agrisarthi_hero_rover.jpg       # Hero front view rover
+│       ├── rover_prototype.jpeg            # Physical hardware prototype
+│       └── slide_1.png to slide_6.png      # SIH/Techathon slide exports
 ├── src/
 │   ├── main.jsx                  # React DOM render entry
 │   ├── App.jsx                   # Root component, router & state
@@ -331,12 +337,14 @@ Smart farm monitoring rover/
 │   ├── pages/
 │   │   ├── HomePage.jsx          # Route: /
 │   │   ├── RoversPage.jsx        # Route: /rovers
-│   │   ├── MissionControlPage.jsx# Route: /mission-control
+│   │   ├── MissionControlPage.jsx# Route: /mission-control (HUD default)
 │   │   ├── ServicesPage.jsx      # Route: /services
 │   │   └── AboutPage.jsx         # Route: /about
 │   ├── components/
-│   │   ├── Navbar.jsx            # Fixed navigation with brand logo
-│   │   ├── Hero.jsx              # Landing hero + telemetry preview
+│   │   ├── Navbar.jsx            # Responsive navigation & mobile drawer
+│   │   ├── Hero.jsx              # Landing hero + responsive feature stepper
+│   │   ├── SimulationViewer.jsx  # Three.js 3D simulation iframe viewer
+│   │   ├── AgriSarthiLogo.jsx    # Reusable SVG/PNG brand component
 │   │   ├── ScrollReveal.jsx      # Dynamic scroll pop & reveal engine
 │   │   ├── LiveStatusTicker.jsx  # Scrolling fleet stats ribbon
 │   │   ├── FleetSection.jsx      # Rover model showcase
@@ -354,6 +362,34 @@ Smart farm monitoring rover/
 │       ├── fleetData.js          # Rover fleet & RaaS plan data
 │       └── teamData.js           # Team members & awards data
 └── dist/                         # Production build output
+
+
+10. MOBILE RESPONSIVE ENGINE & VIEWPORT SPECIFICATIONS
+================================================================================
+
+10.1 BREAKPOINT ADAPTATION ARCHITECTURE
+     • Mobile Breakpoint Threshold: < 1024px (Tailwind lg: boundary)
+     • Desktop Pinned Stepper vs. Mobile Scroll:
+       - Desktop (>= 1024px): 340vh sticky pinned scroll engine that progresses
+         through features 01 -> 02 -> 03 -> 04 as user scrolls downward.
+       - Mobile (< 1024px): Switches to height: auto with natural vertical
+         flow, preventing scroll trapping and viewport overflow bugs. Each
+         feature card (01 to 04) is directly tap-to-expand, instantly
+         synchronizing the telemetry visualizer card above it.
+
+10.2 TOUCH ERGONOMICS & MINIMUM HIT TARGETS
+     • Mobile Navigation Drawer:
+       - 44px minimum touch target height across all drawer navigation links.
+       - High-contrast emerald active state with trailing navigation arrow indicators.
+       - Dual high-visibility CTAs: Green pill "CONTACT US" + bordered "BOOK PILOT DEMO".
+     • Mission Control Steering D-Pad:
+       - Touch-optimized 4-way direction pad with active haptic visual feedback.
+       - Emergency Hard Stop full-width button with high-contrast red-to-green state.
+
+10.3 ZERO-BLUR HIGH-DPI DISPLAY OPTIMIZATION
+     • Removed rasterization-degrading CSS filters (e.g. drop-shadow blur).
+     • Alpha-keyed PNG assets with color de-multiplication to eliminate dark
+       edge fringes on OLED and Retina mobile screens (iPhone, Samsung Galaxy).
 
 
 ================================================================================

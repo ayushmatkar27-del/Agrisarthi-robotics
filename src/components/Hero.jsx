@@ -23,12 +23,23 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
   const navigate = useNavigate();
   const [activeFeatureIndex, setActiveFeatureIndex] = useState(0);
   const [scrollProgress, setScrollProgress] = useState(0);
+  const [isMobile, setIsMobile] = useState(false);
   const scrollSectionRef = useRef(null);
 
-  // Pinned scroll-driven stepper engine
+  // Responsive mobile screen check
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 1024);
+    };
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
+
+  // Pinned scroll-driven stepper engine (active on desktop)
   useEffect(() => {
     const handleScroll = () => {
-      if (!scrollSectionRef.current) return;
+      if (window.innerWidth < 1024 || !scrollSectionRef.current) return;
       const rect = scrollSectionRef.current.getBoundingClientRect();
       const totalScrollable = rect.height - window.innerHeight;
       
@@ -51,7 +62,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
   const handleSelectFeature = (index) => {
     setActiveFeatureIndex(index);
-    if (scrollSectionRef.current) {
+    if (!isMobile && scrollSectionRef.current) {
       const rect = scrollSectionRef.current.getBoundingClientRect();
       const totalScrollable = rect.height - window.innerHeight;
       const targetProgress = (index + 0.15) / 4;
@@ -132,7 +143,8 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
             {/* Main Headline: Bold Grotesque Industrial Heading (Earth Rover / OTTO Style) */}
             <h1 className="heading-earth text-4xl sm:text-6xl md:text-7xl lg:text-[76px] text-white tracking-[-0.035em] leading-[0.98] mb-6">
-              BUILD YOUR AUTONOMOUS<br className="hidden sm:inline" />
+              BUILD YOUR AUTONOMOUS{' '}
+              <br className="hidden sm:inline" />
               <span className="text-[#22c55e]">FARM WORKFORCE</span>
             </h1>
 
@@ -285,10 +297,10 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
       */}
       <section 
         ref={scrollSectionRef} 
-        className="relative bg-[#eef5ee]" 
-        style={{ height: '340vh' }}
+        className="relative bg-[#eef5ee] py-8 lg:py-0" 
+        style={{ height: isMobile ? 'auto' : '340vh' }}
       >
-        <div className="sticky top-0 min-h-screen pt-16 sm:pt-20 pb-6 flex flex-col justify-start border-b border-green-200/80 overflow-hidden">
+        <div className="lg:sticky lg:top-0 lg:min-h-screen pt-4 sm:pt-6 lg:pt-16 pb-6 flex flex-col justify-start border-b border-green-200/80 overflow-visible lg:overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             
             {/* Section Kicker Header with Dynamic Step Pill */}

@@ -177,7 +177,7 @@ export default function Navbar({ onOpenDemo }) {
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }, 150);
               }}
-              className="btn-earth-pill px-5 sm:px-6 py-2.5 text-xs tracking-wider flex items-center gap-2 cursor-pointer"
+              className="btn-earth-pill hidden sm:flex px-5 sm:px-6 py-2.5 text-xs tracking-wider items-center gap-2 cursor-pointer"
             >
               <span>CONTACT US</span>
               <ArrowRight className="w-3.5 h-3.5" />
@@ -187,10 +187,10 @@ export default function Navbar({ onOpenDemo }) {
             <div className="flex lg:hidden items-center">
               <button
                 onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-                className="p-2 rounded bg-white/10 text-gray-300 hover:text-white border border-white/10 cursor-pointer"
+                className="p-2 rounded-xl bg-white/10 text-gray-300 hover:text-white border border-white/10 cursor-pointer"
                 aria-label="Toggle menu"
               >
-                {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+                {mobileMenuOpen ? <X className="w-5 h-5 text-emerald-400" /> : <Menu className="w-5 h-5" />}
               </button>
             </div>
 
@@ -202,29 +202,45 @@ export default function Navbar({ onOpenDemo }) {
       {/* Mobile Drawer Menu */}
       {mobileMenuOpen && (
         <div className="lg:hidden bg-[#0a0f0d]/98 border-b border-white/10 px-6 py-6 space-y-4 backdrop-blur-2xl shadow-2xl animate-in slide-in-from-top duration-200 text-white">
-          <div className="flex flex-col space-y-3">
+          <div className="flex flex-col space-y-2">
             {navLinks.map((link) => (
               <button
                 key={link.path}
                 onClick={() => handleNavClick(link.path)}
-                className={`text-left py-2.5 text-xs font-semibold tracking-[0.18em] transition cursor-pointer border-b border-white/5 ${
+                className={`text-left py-3 text-sm font-semibold tracking-[0.15em] transition cursor-pointer border-b border-white/5 flex items-center justify-between ${
                   isCurrentRoute(link.path)
                     ? 'text-emerald-400 font-bold'
                     : 'text-gray-300 hover:text-white'
                 }`}
               >
-                {link.label}
+                <span>{link.label}</span>
+                <ArrowRight className={`w-3.5 h-3.5 ${isCurrentRoute(link.path) ? 'text-emerald-400' : 'text-gray-600'}`} />
               </button>
             ))}
           </div>
 
-          <div className="pt-2 flex flex-col gap-2">
+          <div className="pt-2 flex flex-col gap-2.5">
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                navigate('/about#contact');
+                setTimeout(() => {
+                  const el = document.getElementById('contact');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }, 150);
+              }}
+              className="btn-earth-pill w-full py-3 text-center text-xs tracking-wider flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-950/40"
+            >
+              <span>CONTACT US</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+
             <button
               onClick={() => {
                 setMobileMenuOpen(false);
                 onOpenDemo();
               }}
-              className="w-full py-3 rounded-sm text-center text-xs font-bold uppercase tracking-wider text-slate-950 bg-white hover:bg-gray-200 shadow-md flex items-center justify-center gap-2"
+              className="w-full py-3 rounded-full text-center text-xs font-bold uppercase tracking-wider text-white bg-white/10 hover:bg-white/20 border border-white/20 shadow-md flex items-center justify-center gap-2 cursor-pointer"
             >
               <span>BOOK PILOT DEMO</span>
               <ArrowRight className="w-3.5 h-3.5" />

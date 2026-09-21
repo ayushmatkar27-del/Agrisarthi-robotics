@@ -283,6 +283,48 @@ TOTAL                                        | ₹12,000   | Lowest-cost smart r
       real-time farmer security alerts."
 
 
+13. LATEST PLATFORM UPGRADES & ENHANCEMENTS (2026 UPDATE)
+================================================================================
+
+13.1  DUAL-ENGINE MISSION CONTROL ARCHITECTURE
+      • Primary View: Live Teleoperation HUD is set as the default view upon
+        visiting /mission-control. Features simulated 1080p @ 24.2 FPS YOLOv8
+        vision inference with dynamic bounding boxes, live ESP32 sensor suite
+        (soil hydration, DHT22 temp/humidity, MQ-2 gas, ambient acoustic decibels),
+        4WD chassis D-pad steering controls, and active telemetry logs.
+      • Secondary View: 1-click seamless toggle into the WebGL Three.js 3D
+        Farm Field Simulation with autonomous rover physics, furrow waypoint
+        targeting, and real-time obstacle evasion.
+      • Header Optimization: Removed redundant top subheader bars for a
+        clean, unified, full-screen industrial command interface.
+
+13.2  NEW OFFICIAL AUTONOMOUS BRANDING & FAVICON
+      • High-Resolution Autonomous Robotics Emblem: Features the 4WD autonomous
+        rover inside an agricultural leaf emblem with forward sensor mast and
+        precision furrow tracks, paired with 3D emerald botanical typography.
+      • Retina Transparency: Fully keyed alpha transparency without dark halos
+        or CSS blur filters, ensuring crisp 1:1 pixel rendering on both dark
+        glassmorphic navigation headers and bright backgrounds.
+      • Browser Favicon: Circular autonomous rover emblem configured as the
+        official tab icon in index.html.
+
+13.3  COMPREHENSIVE MOBILE CAPABILITY & TOUCH ERGONOMICS
+      • Adaptive Hero Section: Natural text wrapping and responsive button
+        stacking for comfortable one-handed mobile tapping.
+      • Responsive Feature Stepper: On screens < 1024px, the "Why AgriSarthi Rovers"
+        section transitions from a pinned 340vh desktop scroll container to a
+        natural, fully scrollable vertical card layout with touch-expandable
+        accordions and synchronized live telemetry updates.
+      • Mobile Drawer Navigation: Dedicated slide-down navigation drawer
+        featuring high-contrast route navigation links, quick contact access,
+        and instant Pilot Demo booking.
+
+13.4  CONTINUOUS CLOUD DEPLOYMENT & VERCEL AUTOMATION
+      • Connected to GitHub Repository: https://github.com/ayushmatkar27-del/Agrisarthi-robotics.git
+      • Automatic live cloud deployment on vercel.com with optimized Vite
+        production bundling (~2.3s build time, gzip compression).
+
+
 ================================================================================
                         END OF PROJECT DOCUMENTATION
 ================================================================================

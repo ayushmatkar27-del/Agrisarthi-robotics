@@ -467,6 +467,38 @@ Confetti (demo success)    | canvas-confetti burst, triggered on step 3
   • aria attributes on interactive elements where applicable
 
 
+9. MOBILE USER EXPERIENCE & RESPONSIVE DESIGN SPECIFICATION
+================================================================================
+
+9.1  MOBILE NAVIGATION & BRAND IDENTITY
+     • Compact Header: On mobile viewports (< 640px), the "CONTACT US" button
+       is concealed from the top header to ensure the brand logo and search icon
+       have generous breathing room.
+     • Sliding Navigation Drawer: Clicking the animated hamburger icon triggers
+       a backdrop-blurred top-down drawer (#0a0f0d/98) featuring:
+       - 5 full-width route links with subtle trailing arrow indicators.
+       - High-contrast green pill CTA ("CONTACT US →") with smooth scroll to contact form.
+       - Distinct bordered CTA ("BOOK PILOT DEMO →") opening the 3-step trial modal.
+
+9.2  ADAPTIVE "WHY AGRISARTHI ROVERS" INTERACTIVE STEPPER
+     • Desktop Mode (>= 1024px): Pinned 340vh sticky viewport. As user scrolls down,
+       progress bar fills and features 01 -> 02 -> 03 -> 04 cycle smoothly while
+       the live telemetry graphic dynamically updates.
+     • Mobile Mode (< 1024px): Switches to height: auto with full vertical overflow.
+       Features 01 to 04 are presented as tap-to-expand interactive cards.
+       Tapping any card immediately reveals its full engineering description and
+       synchronizes the live telemetry card above it without scroll trapping.
+
+9.3  DUAL-ENGINE MISSION CONTROL ON MOBILE
+     • Default HUD Routing: /mission-control lands directly on the 2D live telemetry
+       dashboard without intermediate redundant subheaders.
+     • Touch Steering Pad: 4-way direction buttons designed with ergonomic finger
+       spacing for teleoperation on smartphones.
+     • 1-Click 3D WebGL Simulation: Prominent glowing green button enables instant
+       switch to the 3D Farm Field simulation, featuring a dedicated "Telemetry HUD"
+       return button.
+
+
 ================================================================================
                     END OF UI / UX DESIGN DOCUMENT
 ================================================================================
