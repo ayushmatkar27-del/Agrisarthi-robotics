@@ -288,11 +288,11 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
         className="relative bg-[#eef5ee]" 
         style={{ height: '340vh' }}
       >
-        <div className="sticky top-0 min-h-screen pt-20 sm:pt-24 pb-8 flex flex-col justify-center border-b border-green-200/80 overflow-hidden">
+        <div className="sticky top-0 min-h-screen pt-16 sm:pt-20 pb-6 flex flex-col justify-start border-b border-green-200/80 overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
             
             {/* Section Kicker Header with Dynamic Step Pill */}
-            <div className="flex items-center justify-between gap-4 mb-2">
+            <div className="flex items-center justify-between gap-4 mb-1.5 sm:mb-2">
               <div className="flex items-center gap-3">
                 <span className="kicker-label text-emerald-800 whitespace-nowrap text-xs sm:text-sm font-bold">
                   WHY AGRISARTHI ROVERS
@@ -301,7 +301,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
               </div>
 
               {/* Dynamic Step Tracker Badge */}
-              <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-950 text-xs sm:text-sm font-mono font-bold shadow-sm">
+              <div className="flex items-center gap-2 px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-950 text-xs sm:text-sm font-mono font-bold shadow-sm">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-ping"></span>
                 <span>STEP {activeFeatureIndex + 1} OF 4</span>
                 <span className="text-gray-500 font-medium hidden sm:inline">• Scroll to proceed</span>
@@ -309,17 +309,17 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
             </div>
 
             {/* Title & Subtitle */}
-            <div className="max-w-3xl mb-4 sm:mb-6">
-              <h2 className="heading-otto text-3xl sm:text-4xl md:text-5xl text-stone-950 tracking-tight font-extrabold">
+            <div className="max-w-3xl mb-3 sm:mb-4">
+              <h2 className="heading-otto text-2xl sm:text-3xl md:text-4xl lg:text-[42px] text-stone-950 tracking-tight font-extrabold leading-tight">
                 Your precision agriculture needs, built into every Rover
               </h2>
-              <p className="text-sm sm:text-base text-gray-700 mt-2 sm:mt-3 leading-relaxed font-normal">
+              <p className="text-xs sm:text-sm md:text-base text-gray-700 mt-1.5 sm:mt-2 leading-relaxed font-normal">
                 Every detail in the AgriSarthi autonomous fleet has been engineered to drive maximum crop yield, zero pesticide waste, and continuous soil intelligence for farms like yours.
               </p>
             </div>
 
             {/* Interactive Scroll Progress Bar */}
-            <div className="w-full bg-green-200/80 h-2 rounded-full mb-6 relative overflow-hidden shadow-inner">
+            <div className="w-full bg-green-200/80 h-2 rounded-full mb-4 sm:mb-5 relative overflow-hidden shadow-inner">
               <div 
                 className="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-200 rounded-full"
                 style={{ width: `${Math.min(100, Math.max(10, scrollProgress * 100))}%` }}
@@ -327,17 +327,17 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
             </div>
 
             {/* DYNAMIC SCROLLING 2-COLUMN ACCORDION */}
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 items-stretch">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-stretch">
               
               {/* Left Column: Dynamic Visual Showcase Card (Updates with active item) */}
               <div className="lg:col-span-6">
-                <div className="bg-[#0b140e] rounded-2xl border border-green-800/40 p-6 md:p-7 text-white h-full flex flex-col justify-between relative overflow-hidden shadow-xl shadow-emerald-950/20">
+                <div className="bg-[#0b140e] rounded-2xl border border-green-800/40 p-5 md:p-6 text-white h-full flex flex-col justify-between relative overflow-hidden shadow-xl shadow-emerald-950/20">
                   
                   {/* Background Glow */}
                   <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/15 blur-[80px] rounded-full pointer-events-none"></div>
 
                   {/* Header of Visual */}
-                  <div className="flex items-center justify-between pb-3.5 border-b border-white/10 relative z-10">
+                  <div className="flex items-center justify-between pb-3 border-b border-white/10 relative z-10">
                     <div className="flex items-center gap-2">
                       <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
                       <span className="text-xs sm:text-sm font-mono font-bold uppercase tracking-wider text-emerald-400">
@@ -350,65 +350,65 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
                   </div>
 
                   {/* Center Interactive Simulation Display */}
-                  <div className="my-5 relative z-10 bg-[#060a07]/80 rounded-xl p-5 border border-emerald-500/20">
-                    <div className="flex items-center justify-between mb-3">
+                  <div className="my-3 sm:my-4 relative z-10 bg-[#060a07]/80 rounded-xl p-4 sm:p-5 border border-emerald-500/20">
+                    <div className="flex items-center justify-between mb-2.5 sm:mb-3">
                       <span className="text-xs sm:text-sm text-gray-300 font-mono font-semibold">Simulated Field Telemetry:</span>
                       <span className="text-xs sm:text-sm font-mono font-bold text-emerald-300">{featureItems[activeFeatureIndex].visualStat}</span>
                     </div>
 
                     {/* Dynamic Graphic depending on selected feature */}
                     {activeFeatureIndex === 0 && (
-                      <div className="space-y-3">
-                        <div className="h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-3 text-center">
-                          <Eye className="w-7 h-7 text-emerald-400 mb-1.5 animate-pulse" />
-                          <span className="text-sm sm:text-base font-mono font-bold text-emerald-200">Stereo AI Camera Active • 24.2 FPS</span>
-                          <span className="text-xs sm:text-sm text-gray-300 font-medium">Bounding Boxes: [Weed: 94%] [Crop Row: 98%]</span>
+                      <div className="space-y-2.5">
+                        <div className="h-24 sm:h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-2.5 text-center">
+                          <Eye className="w-6 h-6 text-emerald-400 mb-1 animate-pulse" />
+                          <span className="text-xs sm:text-sm font-mono font-bold text-emerald-200">Stereo AI Camera Active • 24.2 FPS</span>
+                          <span className="text-[11px] sm:text-xs text-gray-300 font-medium">Bounding Boxes: [Weed: 94%] [Crop Row: 98%]</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2.5 text-xs sm:text-sm font-mono">
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Front Radar: <strong className="text-emerald-300 font-bold">Clear (128 cm)</strong></div>
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Obstacle Stop: <strong className="text-emerald-300 font-bold">ARMED (0ms)</strong></div>
+                        <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-mono">
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Front Radar: <strong className="text-emerald-300 font-bold">Clear (128 cm)</strong></div>
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Obstacle Stop: <strong className="text-emerald-300 font-bold">ARMED (0ms)</strong></div>
                         </div>
                       </div>
                     )}
 
                     {activeFeatureIndex === 1 && (
-                      <div className="space-y-3">
-                        <div className="h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-3 text-center">
-                          <Crosshair className="w-7 h-7 text-emerald-400 mb-1.5 animate-spin" style={{ animationDuration: '6s' }} />
-                          <span className="text-sm sm:text-base font-mono font-bold text-emerald-200">Targeted Micro-Sprayer Calibration</span>
-                          <span className="text-xs sm:text-sm text-gray-300 font-medium">Precision: Sub-2mm direct droplet deposition</span>
+                      <div className="space-y-2.5">
+                        <div className="h-24 sm:h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-2.5 text-center">
+                          <Crosshair className="w-6 h-6 text-emerald-400 mb-1 animate-spin" style={{ animationDuration: '6s' }} />
+                          <span className="text-xs sm:text-sm font-mono font-bold text-emerald-200">Targeted Micro-Sprayer Calibration</span>
+                          <span className="text-[11px] sm:text-xs text-gray-300 font-medium">Precision: Sub-2mm direct droplet deposition</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2.5 text-xs sm:text-sm font-mono">
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Chemical Waste: <strong className="text-emerald-300 font-bold">-72% Runoff</strong></div>
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Nozzle Pressure: <strong className="text-emerald-300 font-bold">2.4 Bar Micro</strong></div>
+                        <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-mono">
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Chemical Waste: <strong className="text-emerald-300 font-bold">-72% Runoff</strong></div>
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Nozzle Pressure: <strong className="text-emerald-300 font-bold">2.4 Bar Micro</strong></div>
                         </div>
                       </div>
                     )}
 
                     {activeFeatureIndex === 2 && (
-                      <div className="space-y-3">
-                        <div className="h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-3 text-center">
-                          <Cpu className="w-7 h-7 text-emerald-400 mb-1.5 animate-bounce" />
-                          <span className="text-sm sm:text-base font-mono font-bold text-emerald-200">Dual-Brain Serial Communication Bus</span>
-                          <span className="text-xs sm:text-sm text-gray-300 font-medium">ESP32 (Kinematics) ◄-► Raspberry Pi 4 (Vision)</span>
+                      <div className="space-y-2.5">
+                        <div className="h-24 sm:h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-2.5 text-center">
+                          <Cpu className="w-6 h-6 text-emerald-400 mb-1 animate-bounce" />
+                          <span className="text-xs sm:text-sm font-mono font-bold text-emerald-200">Dual-Brain Serial Communication Bus</span>
+                          <span className="text-[11px] sm:text-xs text-gray-300 font-medium">ESP32 (Kinematics) ◄-► Raspberry Pi 4 (Vision)</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2.5 text-xs sm:text-sm font-mono">
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Motor PWM: <strong className="text-emerald-300 font-bold">100% Real-time</strong></div>
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Neural Latency: <strong className="text-emerald-300 font-bold">14 ms Edge</strong></div>
+                        <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-mono">
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Motor PWM: <strong className="text-emerald-300 font-bold">100% Real-time</strong></div>
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Neural Latency: <strong className="text-emerald-300 font-bold">14 ms Edge</strong></div>
                         </div>
                       </div>
                     )}
 
                     {activeFeatureIndex === 3 && (
-                      <div className="space-y-3">
-                        <div className="h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-3 text-center">
-                          <Sun className="w-7 h-7 text-amber-400 mb-1.5 animate-pulse" />
-                          <span className="text-sm sm:text-base font-mono font-bold text-amber-200">Bifacial Solar Top Deck Charging</span>
-                          <span className="text-xs sm:text-sm text-gray-300 font-medium">Solar Supplementation: +2.5 hours runtime per day</span>
+                      <div className="space-y-2.5">
+                        <div className="h-24 sm:h-28 rounded-lg bg-emerald-950/40 border border-emerald-500/30 flex flex-col items-center justify-center p-2.5 text-center">
+                          <Sun className="w-6 h-6 text-amber-400 mb-1 animate-pulse" />
+                          <span className="text-xs sm:text-sm font-mono font-bold text-amber-200">Bifacial Solar Top Deck Charging</span>
+                          <span className="text-[11px] sm:text-xs text-gray-300 font-medium">Solar Supplementation: +2.5 hours runtime per day</span>
                         </div>
-                        <div className="grid grid-cols-2 gap-2.5 text-xs sm:text-sm font-mono">
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Battery Level: <strong className="text-emerald-300 font-bold">84% (Li-ion)</strong></div>
-                          <div className="p-2.5 rounded bg-white/10 text-gray-200">Solar Output: <strong className="text-amber-300 font-bold">42 Watts Peak</strong></div>
+                        <div className="grid grid-cols-2 gap-2 text-xs sm:text-sm font-mono">
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Battery Level: <strong className="text-emerald-300 font-bold">84% (Li-ion)</strong></div>
+                          <div className="p-2 rounded bg-white/10 text-gray-200">Solar Output: <strong className="text-amber-300 font-bold">42 Watts Peak</strong></div>
                         </div>
                       </div>
                     )}
@@ -430,41 +430,41 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
               </div>
 
               {/* Right Column: Stacked Dynamic Feature Cards (Activated step by step) */}
-              <div className="lg:col-span-6 flex flex-col justify-between space-y-3">
+              <div className="lg:col-span-6 flex flex-col justify-between space-y-2 sm:space-y-2.5">
                 {featureItems.map((item, index) => {
                   const isActive = activeFeatureIndex === index;
                   return (
                     <div
                       key={item.id}
                       onClick={() => handleSelectFeature(index)}
-                      className={`p-4 sm:p-5 rounded-2xl transition-all duration-300 cursor-pointer border ${
+                      className={`p-3.5 sm:p-4 rounded-2xl transition-all duration-300 cursor-pointer border ${
                         isActive
                           ? 'bg-white shadow-xl border-emerald-500 ring-2 ring-emerald-500/25 translate-x-2'
                           : 'bg-white/80 hover:bg-white border-green-200/80 hover:border-green-300 hover:translate-x-1'
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3.5">
-                          <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center text-sm sm:text-base font-bold font-mono transition-colors ${
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold font-mono transition-colors ${
                             isActive ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 font-extrabold' : 'bg-green-100 text-green-800'
                           }`}>
                             0{index + 1}
                           </div>
-                          <h3 className={`text-base sm:text-lg font-bold transition-colors ${
+                          <h3 className={`text-sm sm:text-base font-bold transition-colors ${
                             isActive ? 'text-green-950' : 'text-gray-800'
                           }`}>
                             {item.title}
                           </h3>
                         </div>
-                        <ChevronRight className={`w-5 h-5 transition-transform duration-300 ${
+                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
                           isActive ? 'rotate-90 text-emerald-600' : 'text-gray-400'
                         }`} />
                       </div>
 
                       {/* Expandable Content that smoothly appears */}
                       {isActive && (
-                        <div className="mt-3.5 pt-3.5 border-t border-green-100 animate-in fade-in duration-300">
-                          <p className="text-sm sm:text-base text-gray-700 leading-relaxed font-normal">
+                        <div className="mt-2.5 pt-2.5 border-t border-green-100 animate-in fade-in duration-300">
+                          <p className="text-xs sm:text-sm text-gray-700 leading-relaxed font-normal">
                             {item.description}
                           </p>
                         </div>
