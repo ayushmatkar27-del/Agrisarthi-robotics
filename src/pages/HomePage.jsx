@@ -19,7 +19,7 @@ export default function HomePage({ onOpenDemo, liveTelemetry, fleetStats }) {
 
   return (
     <>
-      {/* Hero Section with Heading Block, Earth Rover Pure Light Section & Pinned Accordion */}
+      {/* Hero Section with Heading Block, Industrial Row Patrol Section & Pinned Accordion */}
       <Hero 
         onOpenDemo={() => onOpenDemo('sentinel')}
         liveTelemetry={liveTelemetry}

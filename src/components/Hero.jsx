@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import ScrollReveal from './ScrollReveal';
-import { 
+import {
   ArrowRight,
   Droplets,
   Activity,
@@ -42,7 +42,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
       if (window.innerWidth < 1024 || !scrollSectionRef.current) return;
       const rect = scrollSectionRef.current.getBoundingClientRect();
       const totalScrollable = rect.height - window.innerHeight;
-      
+
       if (totalScrollable <= 0) return;
 
       // Scrolled distance from when the top of the container hits top of viewport
@@ -118,12 +118,12 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
         Styled after the industrial robotics hero banner (Rockwell Automation | OTTO)
       */}
       <section className="relative min-h-[90vh] sm:min-h-[92vh] flex flex-col justify-center overflow-hidden bg-[#070b09] text-white pt-28 pb-20">
-        
+
         {/* Background Image: Frontal view of the autonomous AgriSarthi rover */}
         <div className="absolute inset-0 z-0">
-          <img 
-            src="/images/agrisarthi_hero_rover.jpg" 
-            alt="AgriSarthi Autonomous Smart Farm Rover in Crop Field" 
+          <img
+            src="/images/agrisarthi_hero_rover.jpg"
+            alt="AgriSarthi Autonomous Smart Farm Rover in Crop Field"
             className="w-full h-full object-cover object-[center_35%] lg:object-[68%_center]"
           />
           {/* Multi-stop gradient: strong left-hand contrast for white typography, transparent on right for sunny rover */}
@@ -134,7 +134,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
         {/* Hero Content Left Column */}
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 w-full">
           <div className="max-w-3xl">
-            
+
             {/* Upper Category Kicker */}
             <p className="kicker-label text-[11px] sm:text-xs tracking-[0.25em] text-emerald-400 mb-5 flex items-center gap-2">
               <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping"></span>
@@ -179,11 +179,11 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
       {/* 
         EARTH ROVER STYLE HIGH-IMPACT EDITORIAL SECTION
-        Features bold typography: PURE LIGHT. ZERO CHEMICALS & 3 Core Capabilities
+        Features bold typography: PATROL EVERY ROW. PROTECT EVERY ACRE. & 3 Core Capabilities
       */}
       <section className="bg-[#fbfdfb] py-20 sm:py-24 border-b border-green-200/80 relative overflow-hidden">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-          
+
           {/* Top Banner: Meet AgriSarthi */}
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center mb-20">
             <div className="lg:col-span-6 space-y-4">
@@ -192,9 +192,9 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
                 <span className="heading-earth text-3xl sm:text-5xl text-stone-950 font-extrabold">
                   MEET
                 </span>
-                <img 
-                  src="/images/agrisarthi_wordmark.png" 
-                  alt="AgriSarthi" 
+                <img
+                  src="/images/agrisarthi_wordmark.png"
+                  alt="AgriSarthi"
                   className="h-10 sm:h-14 w-auto object-contain inline-block"
                 />
               </div>
@@ -217,8 +217,8 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
             <div className="lg:col-span-6">
               <div className="relative rounded-3xl overflow-hidden border-2 border-stone-200/90 shadow-2xl group">
-                <img 
-                  src="/images/rover_prototype.jpeg" 
+                <img
+                  src="/images/rover_prototype.jpeg"
                   alt="AgriSarthi Field Rover in crop rows"
                   className="w-full h-72 sm:h-96 object-cover group-hover:scale-105 transition-transform duration-500"
                 />
@@ -235,53 +235,108 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
             </div>
           </div>
 
-          {/* Huge Editorial Statement: Tailored to AgriSarthi Smart Farm Monitoring Rover */}
-          <ScrollReveal animation="fade" className="text-center max-w-4xl mx-auto my-16">
-            <h2 className="heading-earth text-5xl sm:text-7xl md:text-8xl tracking-tight leading-[0.92] text-stone-950">
-              REAL-TIME INTELLIGENCE.<br />
-              <span className="text-[#16a34a]">ZERO BLIND SPOTS</span>
+          {/* Grounded Industrial Statement: Smart Farm Monitoring Rover */}
+          <ScrollReveal animation="fade" className="text-center max-w-4xl mx-auto mt-16 mb-12">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono uppercase tracking-wider mb-4 font-semibold">
+              <span>Autonomous Row-Level Scouting</span>
+            </div>
+            <h2 className="heading-earth text-3xl sm:text-5xl md:text-6xl text-stone-950 tracking-tight leading-[1.05]">
+              PATROL EVERY ROW.<br />
+              <span className="text-[#16a34a]">PROTECT EVERY ACRE.</span>
             </h2>
-            <p className="text-base sm:text-xl text-stone-600 max-w-2xl mx-auto mt-6 leading-relaxed font-normal">
-              Solar-powered and 24/7 autonomous, AgriSarthi patrols crop rows day and night — replacing exhausting manual field walks with edge AI computer vision, continuous soil intelligence, and instant farmer alerts.
+            <p className="text-base sm:text-lg text-stone-600 max-w-2xl mx-auto mt-5 leading-relaxed font-normal">
+              Farms lose up to 30% of their yield to localized pest clusters and moisture stress that go unnoticed between manual walks. AgriSarthi scouts between crop rows daily — catching issues at the plant level before they spread.
             </p>
           </ScrollReveal>
 
-          {/* 3 Core Monitoring Capability Columns (IOT SENSING, AI VISION, 24/7 PATROL) */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 sm:gap-12 pt-8 border-t border-stone-200">
-            <div className="space-y-3">
-              <h3 className="heading-earth text-2xl sm:text-3xl text-stone-950 tracking-tight">
-                IOT SENSING
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
-                Equipped with an onboard ESP32 multi-sensor suite measuring capacitive soil moisture, ambient humidity, temperature, and air quality to trigger precision irrigation and prevent crop stress before damage occurs.
-              </p>
-              <div className="text-[11px] font-mono text-emerald-800 font-bold uppercase tracking-wider">
-                Real-Time Soil & Climate Telemetry
+          {/* 3 Grounded Industrial Pillars */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8 pt-4">
+            
+            {/* Pillar 01 */}
+            <div className="bg-white rounded-2xl p-7 border border-stone-200/90 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-stone-400 font-mono text-xl font-bold tracking-wider">01</span>
+                  <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-100">
+                    Root-Zone Health
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-stone-900 mb-2.5">
+                  Moisture & Micro-Climate
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
+                  Identifies dry stress pockets and waterlogged furrows beneath the crop canopy. Pinpoint irrigation needs row-by-row to conserve water and prevent root rot before visible wilting.
+                </p>
+              </div>
+              <div className="pt-4 mt-5 border-t border-stone-100 flex items-center gap-2 text-xs text-stone-500 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Capacitive depth sensing • Micro-climate log</span>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h3 className="heading-earth text-2xl sm:text-3xl text-stone-950 tracking-tight">
-                AI VISION
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
-                Onboard Raspberry Pi 4 executes edge YOLOv8 deep learning at 24.2 FPS, detecting invasive weeds, foliar leaf blights, and pest infestations at individual plant-level for pinpoint spot treatment.
-              </p>
-              <div className="text-[11px] font-mono text-emerald-800 font-bold uppercase tracking-wider">
-                Edge YOLOv8 Pest & Disease AI
+            {/* Pillar 02 */}
+            <div className="bg-white rounded-2xl p-7 border border-stone-200/90 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-stone-400 font-mono text-xl font-bold tracking-wider">02</span>
+                  <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-100">
+                    Leaf-Level Vision
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-stone-900 mb-2.5">
+                  Early Blight & Weed Spotting
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
+                  Inspects foliage from both overhead and sub-canopy angles. Detects fungal spores, yellowing leaves, and newly sprouted weeds days before they become visible from farm roads.
+                </p>
+              </div>
+              <div className="pt-4 mt-5 border-t border-stone-100 flex items-center gap-2 text-xs text-stone-500 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Under-canopy cameras • Geo-tagged alerts</span>
               </div>
             </div>
 
-            <div className="space-y-3">
-              <h3 className="heading-earth text-2xl sm:text-3xl text-stone-950 tracking-tight">
-                24/7 PATROL
-              </h3>
-              <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
-                AgriSarthi navigates furrow beds autonomously with centimeter RTK accuracy, ultrasonic obstacle stop, and night-vision cameras to safeguard farms 24/7 from stray cattle, hazards, and theft.
-              </p>
-              <div className="text-[11px] font-mono text-emerald-800 font-bold uppercase tracking-wider">
-                Centimeter RTK Autonomous Mobility
+            {/* Pillar 03 */}
+            <div className="bg-white rounded-2xl p-7 border border-stone-200/90 shadow-sm hover:border-emerald-500/50 hover:shadow-md transition-all flex flex-col justify-between">
+              <div>
+                <div className="flex items-center justify-between mb-4">
+                  <span className="text-stone-400 font-mono text-xl font-bold tracking-wider">03</span>
+                  <span className="text-[11px] font-mono font-semibold uppercase tracking-wider text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded border border-emerald-100">
+                    Autonomous Mobility
+                  </span>
+                </div>
+                <h3 className="text-xl font-bold text-stone-900 mb-2.5">
+                  All-Terrain Furrow Patrol
+                </h3>
+                <p className="text-xs sm:text-sm text-stone-600 leading-relaxed font-normal">
+                  Articulated 4WD rocker-bogie chassis traverses irrigation furrows, mud, and uneven field beds without compacting root soil. Day and night patrol deters stray cattle and wildlife.
+                </p>
               </div>
+              <div className="pt-4 mt-5 border-t border-stone-100 flex items-center gap-2 text-xs text-stone-500 font-mono">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>
+                <span>Rocker-bogie chassis • 24/7 border watch</span>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Real Agricultural Hardware Spec Strip */}
+          <div className="mt-8 pt-6 border-t border-stone-200 grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+            <div className="p-3 bg-stone-50/80 rounded-xl border border-stone-200/60">
+              <span className="block text-[11px] font-mono text-stone-500 uppercase">Power System</span>
+              <strong className="text-xs sm:text-sm font-bold text-stone-900">Solar + Li-ion Patrol</strong>
+            </div>
+            <div className="p-3 bg-stone-50/80 rounded-xl border border-stone-200/60">
+              <span className="block text-[11px] font-mono text-stone-500 uppercase">Chassis Design</span>
+              <strong className="text-xs sm:text-sm font-bold text-stone-900">Zero Soil Compaction</strong>
+            </div>
+            <div className="p-3 bg-stone-50/80 rounded-xl border border-stone-200/60">
+              <span className="block text-[11px] font-mono text-stone-500 uppercase">Alert Delivery</span>
+              <strong className="text-xs sm:text-sm font-bold text-stone-900">Direct Farmer Mobile</strong>
+            </div>
+            <div className="p-3 bg-stone-50/80 rounded-xl border border-stone-200/60">
+              <span className="block text-[11px] font-mono text-stone-500 uppercase">Weather Ingress</span>
+              <strong className="text-xs sm:text-sm font-bold text-stone-900">IP65 Field Enclosure</strong>
             </div>
           </div>
 
@@ -295,14 +350,14 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
         updating the visual telemetry card in real time. Once all 4 are completed,
         normal page scrolling smoothly proceeds to the remaining sections.
       */}
-      <section 
-        ref={scrollSectionRef} 
-        className="relative bg-[#eef5ee] py-8 lg:py-0" 
+      <section
+        ref={scrollSectionRef}
+        className="relative bg-[#eef5ee] py-8 lg:py-0"
         style={{ height: isMobile ? 'auto' : '340vh' }}
       >
         <div className="lg:sticky lg:top-0 lg:min-h-screen pt-4 sm:pt-6 lg:pt-16 pb-6 flex flex-col justify-start border-b border-green-200/80 overflow-visible lg:overflow-hidden">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-            
+
             {/* Section Kicker Header with Dynamic Step Pill */}
             <div className="flex items-center justify-between gap-4 mb-1.5 sm:mb-2">
               <div className="flex items-center gap-3">
@@ -332,7 +387,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
             {/* Interactive Scroll Progress Bar */}
             <div className="w-full bg-green-200/80 h-2 rounded-full mb-4 sm:mb-5 relative overflow-hidden shadow-inner">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-emerald-500 to-green-600 transition-all duration-200 rounded-full"
                 style={{ width: `${Math.min(100, Math.max(10, scrollProgress * 100))}%` }}
               />
@@ -340,11 +395,11 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
             {/* DYNAMIC SCROLLING 2-COLUMN ACCORDION */}
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 lg:gap-7 items-stretch">
-              
+
               {/* Left Column: Dynamic Visual Showcase Card (Updates with active item) */}
               <div className="lg:col-span-6">
                 <div className="bg-[#0b140e] rounded-2xl border border-green-800/40 p-5 md:p-6 text-white h-full flex flex-col justify-between relative overflow-hidden shadow-xl shadow-emerald-950/20">
-                  
+
                   {/* Background Glow */}
                   <div className="absolute -top-24 -right-24 w-72 h-72 bg-emerald-500/15 blur-[80px] rounded-full pointer-events-none"></div>
 
@@ -449,28 +504,24 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
                     <div
                       key={item.id}
                       onClick={() => handleSelectFeature(index)}
-                      className={`p-3.5 sm:p-4 rounded-2xl transition-all duration-300 cursor-pointer border ${
-                        isActive
+                      className={`p-3.5 sm:p-4 rounded-2xl transition-all duration-300 cursor-pointer border ${isActive
                           ? 'bg-white shadow-xl border-emerald-500 ring-2 ring-emerald-500/25 translate-x-2'
                           : 'bg-white/80 hover:bg-white border-green-200/80 hover:border-green-300 hover:translate-x-1'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold font-mono transition-colors ${
-                            isActive ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 font-extrabold' : 'bg-green-100 text-green-800'
-                          }`}>
+                          <div className={`w-8 h-8 sm:w-9 sm:h-9 rounded-xl flex items-center justify-center text-xs sm:text-sm font-bold font-mono transition-colors ${isActive ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/30 font-extrabold' : 'bg-green-100 text-green-800'
+                            }`}>
                             0{index + 1}
                           </div>
-                          <h3 className={`text-sm sm:text-base font-bold transition-colors ${
-                            isActive ? 'text-green-950' : 'text-gray-800'
-                          }`}>
+                          <h3 className={`text-sm sm:text-base font-bold transition-colors ${isActive ? 'text-green-950' : 'text-gray-800'
+                            }`}>
                             {item.title}
                           </h3>
                         </div>
-                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${
-                          isActive ? 'rotate-90 text-emerald-600' : 'text-gray-400'
-                        }`} />
+                        <ChevronRight className={`w-4 h-4 transition-transform duration-300 ${isActive ? 'rotate-90 text-emerald-600' : 'text-gray-400'
+                          }`} />
                       </div>
 
                       {/* Expandable Content that smoothly appears */}
@@ -498,7 +549,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
       */}
       <section className="bg-[#eef5ee] pt-14 pb-20 border-b border-green-200/80">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          
+
           {/* Awards & Distinctions Banner */}
           <ScrollReveal animation="slide-up">
             <div className="flex flex-wrap items-center gap-3 mb-8">
@@ -517,7 +568,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
           <ScrollReveal animation="pop">
             <div className="relative rounded-3xl p-1 bg-gradient-to-b from-emerald-500/30 via-green-200/40 to-green-100/60 shadow-xl shadow-emerald-500/5 mb-8">
               <div className="bg-[#f5fbf5]/95 rounded-[22px] p-6 md:p-8 backdrop-blur-2xl border border-green-200">
-                
+
                 {/* Top Bar of Telemetry Card */}
                 <div className="flex flex-wrap items-center justify-between gap-4 pb-6 border-b border-green-200/80">
                   <div className="flex items-center gap-3">
@@ -551,7 +602,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
 
                 {/* Quick Live Preview Grid */}
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 pt-6">
-                  
+
                   <div className="glass-card p-3.5 rounded-xl border border-green-200/80 bg-white">
                     <div className="flex items-center justify-between text-gray-500 text-xs mb-1">
                       <span>Soil Moisture</span>

@@ -29,7 +29,7 @@ Color Gamut System (Defined 5-Zone Architecture — Eliminates White-Page Fatigu
   an intentional 5-zone agricultural & industrial color gamut that alternates dynamically:
   • Zone 1 — Earth Rover High-Impact Editorial (Canvas #fbfdfb):
     Stark, high-contrast pitch-black typography (#081a0e) with vibrant chlorophyll
-    agritech green (#16a34a) color blocking (e.g. "PURE LIGHT. ZERO CHEMICALS").
+    agritech green (#16a34a) color blocking (e.g. "PATROL EVERY ROW. PROTECT EVERY ACRE.").
   • Zone 2 — OTTO Industrial Concrete & Field Stone (Canvas #dbe5db to #e4ede4):
     Muted warm stone canvas with crisp white elevated product cards, ruled spec divider
     lines, and interactive METRIC / IMPERIAL unit toggle.
@@ -46,7 +46,7 @@ Bespoke Industrial AgriTech Typography System (Non-AI Generated Aesthetic):
   agtech (Earth Rover) & autonomous industrial robotics (OTTO Motors) typographic hierarchy:
   • Display / Headline Font  : Archivo (Weights: 700, 800, 900)
     Condensed, punchy, heavyweight industrial grotesque. Used with `heading-earth` and
-    `heading-otto` classes for bold uppercase titles (e.g. "MEET AGRISARTHI™", "PURE LIGHT.").
+    `heading-otto` classes for bold uppercase titles (e.g. "MEET AGRISARTHI™", "PATROL EVERY ROW.").
   • Display Accent Font      : Syne (Weights: 700, 800)
     Boutique geometric display serif/sans hybrid for distinctive agtech branding.
   • Editorial Body Font      : Plus Jakarta Sans (Weights: 400, 500, 600)
@@ -107,20 +107,25 @@ The primary landing hub introducing AgriSarthi's autonomous farming mission:
        jobs on your farm, no matter how big or small."
      • Side-by-Side Dual Action Buttons:
        - [WATCH DEMO →]         : Solid white button, black text, right arrow
-       - [GET STARTED NOW →]    : Ghost button, dark bg, white border, white text
 
-  2. SMART FARM MONITORING ROVER STATEMENT & 3 CORE CAPABILITIES
-     • Massive Editorial Headline: "REAL-TIME INTELLIGENCE. ZERO BLIND SPOTS"
-     • Subtitle: "Solar-powered and 24/7 autonomous, AgriSarthi patrols crop rows
-       day and night — replacing exhausting manual field walks with edge AI
-       computer vision, continuous soil intelligence, and instant farmer alerts."
-     • 3 Core Monitoring Capability Columns:
-       1. IOT SENSING: ESP32 multi-sensor suite (capacitive soil hydration, DHT22
-          ambient temperature & humidity, MQ-2 gas, and ambient sound).
-       2. AI VISION: Raspberry Pi 4 edge YOLOv8 deep learning at 24.2 FPS for early
-          foliar disease and weed detection.
-       3. 24/7 PATROL: Centimeter RTK furrow navigation, ultrasonic obstacle stop,
-          and night-vision cameras to protect crops from stray cattle and theft.
+  2. GROUNDED FIELD CAPABILITIES & SPECIFICATION STRIP
+     • Badge: "AUTONOMOUS ROW-LEVEL SCOUTING" (clean monospace border pill)
+     • Editorial Headline: "PATROL EVERY ROW. PROTECT EVERY ACRE." (heading-earth)
+     • Subtitle: "Farms lose up to 30% of their yield to localized pest clusters and
+       moisture stress that go unnoticed between manual walks. AgriSarthi scouts between
+       crop rows daily — catching issues at the plant level before they spread."
+     • 3 Grounded Industrial Pillars:
+       1. 01 | Root-Zone Health (Moisture & Micro-Climate): Identifies dry stress pockets
+          and waterlogging beneath the canopy. Capacitive depth sensing and micro-climate log.
+       2. 02 | Leaf-Level Vision (Early Blight & Weed Spotting): Overhead and sub-canopy
+          cameras detect fungal spores, yellowing leaves, and weed sprouts with geo-tagged alerts.
+       3. 03 | Autonomous Mobility (All-Terrain Furrow Patrol): Articulated 4WD rocker-bogie
+          chassis traverses furrows and mud without compacting root beds. 24/7 border watch.
+     • Real Hardware Spec Strip (4 metrics):
+       - Power System: Solar + Li-ion Patrol
+       - Chassis Design: Zero Soil Compaction
+       - Alert Delivery: Direct Farmer Mobile
+       - Weather Ingress: IP65 Field Enclosure
 
   3. DYNAMIC "WHY AGRISARTHI ROVERS" 2-COLUMN ACCORDION (Matches 00:01 in video)
      • Headline: "Your precision agriculture needs, built into every Rover"
