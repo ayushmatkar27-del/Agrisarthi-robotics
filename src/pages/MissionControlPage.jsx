@@ -7,22 +7,27 @@ import { Sparkles, Radio, Layers, Eye, ShieldCheck, Crosshair } from 'lucide-rea
 export default function MissionControlPage({ liveTelemetry, onOpenDemo }) {
   const [searchParams, setSearchParams] = useSearchParams();
   
-  // Default to simulation view or read from query param ?view=...
+  // Default to HUD view or read from query param ?view=...
   const viewParam = searchParams.get('view');
-  const [activeView, setActiveView] = useState(viewParam === 'hud' ? 'hud' : 'simulation');
+  const [activeView, setActiveView] = useState(viewParam === 'simulation' ? 'simulation' : 'hud');
 
   // Sync state if URL param changes
   useEffect(() => {
-    if (viewParam === 'hud') {
-      setActiveView('hud');
-    } else if (viewParam === 'simulation') {
+    if (viewParam === 'simulation') {
       setActiveView('simulation');
+    } else {
+      setActiveView('hud');
     }
   }, [viewParam]);
 
   const handleSelectView = (view) => {
     setActiveView(view);
-    setSearchParams({ view });
+    if (view === 'hud') {
+      setSearchParams({});
+    } else {
+      setSearchParams({ view });
+    }
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   return (
@@ -38,7 +43,7 @@ export default function MissionControlPage({ liveTelemetry, onOpenDemo }) {
               {activeView === 'simulation' ? (
                 <Sparkles className="w-5 h-5 animate-pulse text-emerald-400" />
               ) : (
-                <Radio className="w-5 h-5 text-emerald-400" />
+                <Crosshair className="w-5 h-5 text-emerald-400" />
               )}
             </div>
             <div>
@@ -51,14 +56,16 @@ export default function MissionControlPage({ liveTelemetry, onOpenDemo }) {
                   />
                 </div>
                 <h1 className="text-lg sm:text-xl font-bold font-mono tracking-wide text-white">
-                  MISSION CONTROL
+                  {activeView === 'simulation' ? '3D SIMULATION ENGINE' : 'MISSION CONTROL HUD'}
                 </h1>
                 <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase font-bold">
-                  Dual-Engine
+                  {activeView === 'simulation' ? 'WebGL Three.js' : 'Live Teleoperation'}
                 </span>
               </div>
               <p className="text-xs text-gray-400">
-                Switch between the Real-Time 3D Farm Field Simulation and Live 2D HUD Teleoperation
+                {activeView === 'simulation' 
+                  ? 'Real-Time 3D Farm Field Simulation with 4WD rover physics & waypoint targeting'
+                  : 'Interactive Live HUD Telemetry with YOLOv8 Vision, ESP32 sensor suite & steering control'}
               </p>
             </div>
           </div>
@@ -66,13 +73,26 @@ export default function MissionControlPage({ liveTelemetry, onOpenDemo }) {
           {/* Prominently Highlighted Option Selector Tabs */}
           <div className="flex items-center gap-2 bg-[#050e08] p-1.5 rounded-2xl border border-emerald-500/40 shadow-xl">
             
-            {/* HIGHLIGHTED SHOW SIMULATION OPTION */}
+            {/* PRIMARY MISSION CONTROL HUD OPTION */}
+            <button
+              onClick={() => handleSelectView('hud')}
+              className={`px-4 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center gap-2 transition-all duration-300 ${
+                activeView === 'hud'
+                  ? 'bg-gradient-to-r from-emerald-600 to-green-500 text-slate-950 font-extrabold shadow-[0_0_20px_rgba(16,185,129,0.4)] ring-2 ring-emerald-300 scale-102'
+                  : 'text-gray-400 hover:text-gray-200 hover:bg-emerald-950/40'
+              }`}
+            >
+              <Crosshair className="w-4 h-4" />
+              <span>🛰️ MISSION CONTROL HUD</span>
+            </button>
+
+            {/* SHOW 3D SIMULATION BUTTON */}
             <button
               onClick={() => handleSelectView('simulation')}
               className={`relative px-5 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center gap-2.5 transition-all duration-300 ${
                 activeView === 'simulation'
                   ? 'bg-gradient-to-r from-emerald-500 via-green-400 to-emerald-500 text-slate-950 shadow-[0_0_25px_rgba(34,197,94,0.6)] ring-2 ring-emerald-300 scale-105'
-                  : 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-300 border border-emerald-400/40 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.2)]'
+                  : 'bg-emerald-500/15 hover:bg-emerald-500/25 text-emerald-300 border border-emerald-400/50 hover:border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
               }`}
             >
               <span className="relative flex h-2.5 w-2.5">
@@ -91,21 +111,8 @@ export default function MissionControlPage({ liveTelemetry, onOpenDemo }) {
                   ? 'bg-black/20 text-slate-900' 
                   : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
               }`}>
-                Featured
+                3D Live
               </span>
-            </button>
-
-            {/* MISSION CONTROL HUD OPTION */}
-            <button
-              onClick={() => handleSelectView('hud')}
-              className={`px-4 py-2.5 rounded-xl font-mono text-xs sm:text-sm font-bold flex items-center gap-2 transition-all duration-300 ${
-                activeView === 'hud'
-                  ? 'bg-[#0f2818] text-white border border-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
-                  : 'text-gray-400 hover:text-gray-200 hover:bg-emerald-950/40'
-              }`}
-            >
-              <Crosshair className="w-3.5 h-3.5 text-emerald-400" />
-              <span>🛰️ MISSION CONTROL HUD</span>
             </button>
 
           </div>
