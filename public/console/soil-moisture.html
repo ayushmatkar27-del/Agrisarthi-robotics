@@ -1,0 +1,1236 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Subsurface Soil Moisture & Robotic Probe Console</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MQTT.js -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.85);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-teal: #2dd4bf;
+            --accent-cyan: #38bdf8;
+            --accent-amber: #fbbf24;
+            --accent-purple: #c084fc;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --input-bg: rgba(9, 19, 34, 0.85);
+            --terminal-bg: #060b13;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Animated Background Slideshow */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.84) 0%, rgba(7, 13, 24, 0.76) 45%, rgba(7, 13, 24, 0.92) 100%),
+                linear-gradient(to right, rgba(0, 229, 153, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 153, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 20% 25%, rgba(45, 212, 191, 0.10) 0%, transparent 60%),
+                radial-gradient(circle at 80% 75%, rgba(0, 229, 153, 0.08) 0%, transparent 50%);
+            background-size: 100% 100%, 36px 36px, 36px 36px, 100% 100%, 100% 100%;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* Top Navigation Header */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            background: rgba(45, 212, 191, 0.12);
+            border: 1px solid var(--accent-teal);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            box-shadow: 0 0 16px rgba(45, 212, 191, 0.35);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .badge-farm {
+            background: rgba(45, 212, 191, 0.15);
+            color: var(--accent-teal);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(45, 212, 191, 0.3);
+        }
+
+        .badge-unit {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .nav-right-pills {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .nav-pill {
+            background: rgba(13, 22, 38, 0.9);
+            border: 1px solid var(--border-card);
+            padding: 7px 14px;
+            border-radius: 20px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot-green {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-dashboard-back {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-dashboard-back:hover {
+            background: var(--accent-teal);
+            color: #051410;
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 15px rgba(45, 212, 191, 0.4);
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .main-container {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 28px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* 4 Top Soil Chemistry & VWC Tiles */
+        .metrics-quad-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .metric-tile {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .metric-tile:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-accent);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .metric-tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-tile-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-adequate { background: rgba(45, 212, 191, 0.12); color: var(--accent-teal); border: 1px solid rgba(45, 212, 191, 0.3); }
+        .badge-optimal { background: rgba(0, 229, 153, 0.12); color: var(--primary); border: 1px solid rgba(0, 229, 153, 0.3); }
+        .badge-balanced { background: rgba(56, 189, 248, 0.12); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-neutral { background: rgba(192, 132, 252, 0.12); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.3); }
+
+        .metric-tile-val {
+            font-size: 46px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+            color: #ffffff;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .metric-tile-val .unit {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--accent-teal);
+        }
+
+        .metric-tile-sub-grid {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 10px;
+        }
+
+        .metric-tile-sub-grid strong {
+            color: var(--text-main);
+        }
+
+        .metric-tile-footer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent-teal);
+            font-weight: 600;
+        }
+
+        /* Middle Grid (Soil Chart + Robotic Arm Matrix) */
+        .middle-two-col {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 18px;
+        }
+
+        .card-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .panel-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .panel-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .panel-main-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .panel-sub-title {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .chart-canvas-wrap {
+            width: 100%;
+            height: 260px;
+            position: relative;
+        }
+
+        /* Robotic Arm Servo Panel */
+        .arm-connection-bar {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .arm-ip-input {
+            flex: 1;
+            background: var(--input-bg);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            color: #ffffff;
+            outline: none;
+        }
+
+        .arm-ip-input:focus {
+            border-color: var(--accent-teal);
+            box-shadow: 0 0 0 3px rgba(45, 212, 191, 0.15);
+        }
+
+        .btn-arm-action {
+            padding: 10px 14px;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-arm-connect {
+            background: linear-gradient(135deg, #00e599 0%, #00bfa5 100%);
+            color: #051410;
+        }
+
+        .btn-arm-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 229, 153, 0.4);
+        }
+
+        .btn-arm-scan {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-arm-scan:hover {
+            background: rgba(56, 189, 248, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Dual Servos Grid */
+        .servos-dual-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px;
+        }
+
+        .servo-module-card {
+            background: rgba(9, 17, 30, 0.7);
+            border: 1px solid var(--border-card);
+            border-radius: 14px;
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .servo-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .servo-header .name {
+            color: var(--text-dim);
+            font-weight: 700;
+        }
+
+        .servo-header .angle-val {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--accent-teal);
+        }
+
+        .servo-range-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            outline: none;
+            -webkit-appearance: none;
+            cursor: pointer;
+        }
+
+        .servo-range-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--accent-teal);
+            box-shadow: 0 0 10px rgba(45, 212, 191, 0.6);
+            cursor: pointer;
+        }
+
+        .servo-presets-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 4px;
+        }
+
+        .btn-preset {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            border-radius: 6px;
+            padding: 4px 2px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-preset:hover, .btn-preset.active {
+            background: rgba(45, 212, 191, 0.2);
+            color: var(--accent-teal);
+            border-color: var(--accent-teal);
+        }
+
+        /* Macro Action Buttons */
+        .macro-actions-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .btn-macro {
+            padding: 12px;
+            border-radius: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            border: 1px solid var(--border-card);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-macro-deploy {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .btn-macro-deploy:hover {
+            background: rgba(0, 229, 153, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-macro-retract {
+            background: rgba(239, 68, 68, 0.12);
+            color: #f87171;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-macro-retract:hover {
+            background: rgba(239, 68, 68, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Bottom Section: MQTT & Telemetry Broker Console */
+        .broker-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .broker-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .broker-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .broker-icon-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(45, 212, 191, 0.12);
+            border: 1px solid var(--accent-teal);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+        }
+
+        .broker-h2 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.2px;
+        }
+
+        .broker-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .broker-stream-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--accent-teal);
+            background: rgba(45, 212, 191, 0.1);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .broker-param-strip {
+            background: rgba(9, 17, 30, 0.85);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .param-item { color: var(--text-dim); }
+        .param-item span.teal { color: var(--accent-teal); }
+        .param-item span.cyan { color: var(--accent-cyan); }
+        .param-item span.amber { color: var(--accent-amber); }
+
+        /* Terminal Console Box */
+        .terminal-console {
+            background: var(--terminal-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-top-bar {
+            background: rgba(13, 22, 38, 0.95);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .terminal-dots { display: flex; gap: 6px; }
+        .t-dot { width: 10px; height: 10px; border-radius: 50%; }
+        .t-red { background: #ef4444; }
+        .t-yellow { background: #eab308; }
+        .t-green { background: #22c55e; }
+
+        .terminal-title {
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .terminal-body {
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            height: 130px;
+            overflow-y: auto;
+            color: #e2e8f0;
+        }
+
+        .t-log-line {
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .t-time { color: var(--text-dim); }
+        .t-tag-probe { color: var(--accent-teal); font-weight: 700; }
+        .t-tag-arm { color: var(--primary); font-weight: 700; }
+        .t-tag-diag { color: var(--accent-cyan); font-weight: 700; }
+
+        /* Bottom Status Footer */
+        .status-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-card);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 20;
+        }
+
+        .footer-highlight { color: var(--accent-teal); font-weight: 600; }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .metrics-quad-grid { grid-template-columns: repeat(2, 1fr); }
+            .middle-two-col { grid-template-columns: 1fr; }
+        }
+
+        @media (max-width: 768px) {
+            .top-navbar {
+                padding: 12px 18px;
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .nav-right-pills { width: 100%; justify-content: space-between; flex-wrap: wrap; }
+            .metrics-quad-grid { grid-template-columns: 1fr; }
+            .main-container { padding: 18px 14px; }
+            .broker-param-strip { flex-direction: column; align-items: flex-start; }
+            .status-footer { padding: 12px 18px; flex-direction: column; gap: 8px; text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Slideshow Layer -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="top-navbar">
+        <a class="brand-section" href="/" onclick="event.preventDefault(); window.top.location.href='/'" title="Return to AgriSarthi Website" style="text-decoration:none;cursor:pointer;">
+            <div class="brand-icon-box">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                </svg>
+            </div>
+            <div class="brand-text-col">
+                <div class="brand-title-line">
+                    <span class="brand-h1">AgriSarthi</span>
+                    <span class="badge-farm">Soil Monitoring</span>
+                    <span class="badge-unit">ROVER-04</span>
+                </div>
+                <span class="brand-sub">Subsurface Soil Moisture Matrix &amp; Robotic Arm Probe Deployment Console</span>
+            </div>
+        </a>
+
+        <div class="nav-right-pills">
+            <div class="nav-pill">
+                <span class="status-dot-green"></span>
+                <span>RTK: <strong style="color: var(--primary);">Locked (1.2cm)</strong></span>
+            </div>
+            <div class="nav-pill">
+                <span>Mesh: <strong>14ms latency</strong></span>
+            </div>
+            <div class="nav-pill">
+                <span>🌱 Probe: <strong style="color: var(--accent-teal);">TDR Calibrated</strong></span>
+            </div>
+            <a href="dashboard.html" class="btn-dashboard-back">
+                <span>&larr; Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- 4 Soil Chemistry & Moisture Tiles -->
+        <section class="metrics-quad-grid">
+            <!-- Tile 1: VWC Moisture -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-teal);">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                        <span>SOIL MOISTURE (VWC)</span>
+                    </div>
+                    <span class="status-badge-pill badge-adequate">ADEQUATE</span>
+                </div>
+
+                <div class="metric-tile-val" style="color: var(--accent-teal);">
+                    <span id="disp-soil-vwc">34.8</span>
+                    <span class="unit">%</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>Target: <strong>30 - 40%</strong></span>
+                    <span>Wilting Pt: <strong>14.2%</strong></span>
+                </div>
+
+                <div class="metric-tile-footer">
+                    <span class="status-dot-green" style="background-color: var(--accent-teal); box-shadow: 0 0 8px var(--accent-teal);"></span>
+                    <span>High-precision TDR probe sync</span>
+                </div>
+            </div>
+
+            <!-- Tile 2: Soil Temperature -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                        </svg>
+                        <span>SOIL TEMPERATURE</span>
+                    </div>
+                    <span class="status-badge-pill badge-optimal">OPTIMAL</span>
+                </div>
+
+                <div class="metric-tile-val">
+                    <span id="disp-soil-temp">22.4</span>
+                    <span class="unit" style="color: var(--primary);">°C</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>Depth: <strong>15 cm</strong></span>
+                    <span>Delta: <strong>+1.2°C</strong></span>
+                </div>
+
+                <div class="metric-tile-footer" style="color: var(--primary);">
+                    <span class="status-dot-green"></span>
+                    <span>Microbial activity active</span>
+                </div>
+            </div>
+
+            <!-- Tile 3: Electrical Conductivity -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-cyan);">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                        <span>ELECTRICAL COND (EC)</span>
+                    </div>
+                    <span class="status-badge-pill badge-balanced">BALANCED</span>
+                </div>
+
+                <div class="metric-tile-val" style="color: var(--accent-cyan);">
+                    <span id="disp-soil-ec">1.42</span>
+                    <span class="unit" style="color: var(--accent-cyan);">mS/cm</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>Salinity: <strong>Low</strong></span>
+                    <span>Fertility: <strong>High</strong></span>
+                </div>
+
+                <div class="metric-tile-footer" style="color: var(--accent-cyan);">
+                    <span class="status-dot-green" style="background-color: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan);"></span>
+                    <span>Nutrient absorption nominal</span>
+                </div>
+            </div>
+
+            <!-- Tile 4: Soil pH -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-purple);">
+                            <circle cx="12" cy="12" r="10"></circle>
+                            <path d="m4.93 4.93 4.24 4.24"></path>
+                            <path d="m14.83 9.17 4.24-4.24"></path>
+                        </svg>
+                        <span>SOIL pH LEVEL</span>
+                    </div>
+                    <span class="status-badge-pill badge-neutral">NEUTRAL</span>
+                </div>
+
+                <div class="metric-tile-val" style="color: var(--accent-purple);">
+                    <span id="disp-soil-ph">6.8</span>
+                    <span class="unit" style="color: var(--accent-purple);">pH</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>Buffer: <strong>Good</strong></span>
+                    <span>CEC: <strong>18 meq</strong></span>
+                </div>
+
+                <div class="metric-tile-footer" style="color: var(--accent-purple);">
+                    <span class="status-dot-green" style="background-color: var(--accent-purple); box-shadow: 0 0 8px var(--accent-purple);"></span>
+                    <span>Optimal mineral bioavailability</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle 2-Column: Soil Depth Trend Chart + Robotic Arm Servo Controller -->
+        <section class="middle-two-col">
+            <!-- Soil Moisture Trend Chart -->
+            <div class="card-panel">
+                <div class="panel-header-row">
+                    <div class="panel-titles">
+                        <span class="panel-main-title">SOIL MOISTURE VARIANCE BY DEPTH (LAST 10 READINGS)</span>
+                        <span class="panel-sub-title">Stratified TDR probe readings across root profiles</span>
+                    </div>
+                    <div class="status-badge-pill badge-adequate" style="font-size:11px;">
+                        Surface / Root / Subsoil
+                    </div>
+                </div>
+
+                <div class="chart-canvas-wrap">
+                    <canvas id="soilDepthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Robotic Arm & Subsurface Probe Actuation Matrix -->
+            <div class="card-panel">
+                <div class="panel-header-row">
+                    <div class="panel-titles">
+                        <span class="panel-main-title">ROBOTIC ARM &amp; PROBE ACTUATION</span>
+                        <span class="panel-sub-title">ESP32 Dual-Servo Subsurface Inserter</span>
+                    </div>
+                    <span class="status-badge-pill badge-optimal" id="armStatusBadge">ARM ONLINE</span>
+                </div>
+
+                <!-- IP Controller Connection -->
+                <div class="arm-connection-bar">
+                    <input type="text" class="arm-ip-input" id="armIpAddress" value="192.168.4.1" placeholder="Enter Robot IP / Hostname">
+                    <button class="btn-arm-action btn-arm-connect" onclick="connectArm()">Connect</button>
+                    <button class="btn-arm-action btn-arm-scan" onclick="scanNetwork()">Scan</button>
+                </div>
+
+                <!-- Dual Servo Range Sliders -->
+                <div class="servos-dual-grid">
+                    <!-- Servo 1: Depth Insertion -->
+                    <div class="servo-module-card">
+                        <div class="servo-header">
+                            <span class="name">SERVO 1: PROBE DEPTH</span>
+                            <span class="angle-val" id="valServo1">90°</span>
+                        </div>
+                        <input type="range" class="servo-range-slider" id="sliderServo1" min="0" max="180" value="90" oninput="updateServo(1, this.value)">
+                        <div class="servo-presets-row">
+                            <button class="btn-preset" onclick="setServoAngle(1, 0)">0°</button>
+                            <button class="btn-preset" onclick="setServoAngle(1, 45)">45°</button>
+                            <button class="btn-preset active" onclick="setServoAngle(1, 90)">90°</button>
+                            <button class="btn-preset" onclick="setServoAngle(1, 135)">135°</button>
+                            <button class="btn-preset" onclick="setServoAngle(1, 180)">180°</button>
+                        </div>
+                    </div>
+
+                    <!-- Servo 2: Yaw Rotation -->
+                    <div class="servo-module-card">
+                        <div class="servo-header">
+                            <span class="name">SERVO 2: YAW ROTATION</span>
+                            <span class="angle-val" id="valServo2">90°</span>
+                        </div>
+                        <input type="range" class="servo-range-slider" id="sliderServo2" min="0" max="180" value="90" oninput="updateServo(2, this.value)">
+                        <div class="servo-presets-row">
+                            <button class="btn-preset" onclick="setServoAngle(2, 0)">0°</button>
+                            <button class="btn-preset" onclick="setServoAngle(2, 45)">45°</button>
+                            <button class="btn-preset active" onclick="setServoAngle(2, 90)">90°</button>
+                            <button class="btn-preset" onclick="setServoAngle(2, 135)">135°</button>
+                            <button class="btn-preset" onclick="setServoAngle(2, 180)">180°</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Action Macros -->
+                <div class="macro-actions-row">
+                    <button class="btn-macro btn-macro-deploy" onclick="deployAndSample()">
+                        <span>🚀 Deploy &amp; Sample Probe</span>
+                    </button>
+                    <button class="btn-macro btn-macro-retract" onclick="retractArm()">
+                        <span>🔄 Retract to Stow</span>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Section: MQTT & Telemetry Broker Console -->
+        <section class="broker-panel">
+            <div class="broker-header-row">
+                <div class="broker-left">
+                    <div class="broker-icon-btn">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <circle cx="12" cy="20" r="1"></circle>
+                        </svg>
+                    </div>
+                    <div>
+                        <h2 class="broker-h2">SOIL TELEMETRY &amp; ACTUATOR BUS STREAM</h2>
+                        <span class="broker-desc">Real-time sampling handshake and servo PWM telemetry</span>
+                    </div>
+                </div>
+                <div class="broker-stream-pill">
+                    <span class="status-dot-green"></span>
+                    <span>Status: Stream Synced (Active)</span>
+                </div>
+            </div>
+
+            <!-- Parameters strip -->
+            <div class="broker-param-strip">
+                <div class="param-item">Broker: <span class="teal">broker.hivemq.com:1883</span></div>
+                <div class="param-item">Telemetry Topic: <span class="cyan">rpi/agrisarthi/sensors/soil</span></div>
+                <div class="param-item">Arm Actuator Topic: <span class="amber">rpi/agrisarthi/rover/arm</span></div>
+                <div class="param-item">Bus: <strong>RS-485 Modbus + I2C</strong></div>
+            </div>
+
+            <!-- Console debugger -->
+            <div class="terminal-console">
+                <div class="terminal-top-bar">
+                    <div class="terminal-dots">
+                        <span class="t-dot t-red"></span>
+                        <span class="t-dot t-yellow"></span>
+                        <span class="t-dot t-green"></span>
+                    </div>
+                    <span class="terminal-title">ROVER-04 SOIL PROBE &amp; ACTUATOR LOG</span>
+                    <span style="color:var(--text-dim);">QoS 1 Confirmed</span>
+                </div>
+
+                <div class="terminal-body" id="soilTerminalLog">
+                    <div class="t-log-line"><span class="t-time">[10:35:10 AM]</span> <span class="t-tag-arm">[ARM_BUS]</span> Servo Controller online at 192.168.4.1 (Firmware v2.4-pwm)</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:12 AM]</span> <span class="t-tag-probe">[PROBE_CAL]</span> TDR Soil Dielectric constant calibrated (K_air=1.0, K_water=80.1)</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:18 AM]</span> <span class="t-tag-probe">[VWC_SAMPLE]</span> Depth: 15cm | VWC: 34.8% | Temp: 22.4°C | EC: 1.42 mS/cm | pH: 6.8</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:22 AM]</span> <span class="t-tag-diag">[DIAGNOSTIC]</span> Moisture deficit 0.0mm. Irrigation trigger standby.</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Status Footer -->
+    <footer class="status-footer">
+        <div>
+            <span>AgriSarthi Technologies</span> • <span>Autonomous Precision Rover Unit-04</span>
+        </div>
+        <div>
+            <span>Mesh Node: <strong>AP-SOUTH-01</strong></span> • 
+            <span>RTK Lock: <span class="footer-highlight">Centimetric Active</span></span> • 
+            <span>Firmware: <strong>v4.8.2-rt</strong></span>
+        </div>
+    </footer>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+        setInterval(cycleSlide, 6000);
+    </script>
+
+    <!-- Chart & Actuator Logic -->
+    <script>
+        const timestamps = ["10:26 AM", "10:28 AM", "10:30 AM", "10:33 AM", "10:35 AM (NOW)"];
+        const surfaceData = [31.2, 32.5, 33.1, 32.8, 33.0];
+        const rootData = [34.0, 34.2, 34.9, 34.6, 34.8];
+        const subsoilData = [38.2, 38.5, 38.4, 38.8, 38.9];
+
+        // Chart Setup
+        const ctx = document.getElementById('soilDepthChart').getContext('2d');
+        const gradRoot = ctx.createLinearGradient(0, 0, 0, 260);
+        gradRoot.addColorStop(0, 'rgba(45, 212, 191, 0.35)');
+        gradRoot.addColorStop(1, 'rgba(45, 212, 191, 0.0)');
+
+        const soilChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: timestamps,
+                datasets: [
+                    {
+                        label: 'Root Zone 15cm (%)',
+                        data: rootData,
+                        borderColor: '#2dd4bf',
+                        borderWidth: 2.5,
+                        backgroundColor: gradRoot,
+                        fill: true,
+                        tension: 0.4,
+                        pointBackgroundColor: '#070d18',
+                        pointBorderColor: '#2dd4bf',
+                        pointBorderWidth: 2,
+                        pointRadius: 4
+                    },
+                    {
+                        label: 'Surface 5cm (%)',
+                        data: surfaceData,
+                        borderColor: '#00e599',
+                        borderWidth: 2,
+                        borderDash: [4, 4],
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3
+                    },
+                    {
+                        label: 'Subsoil 30cm (%)',
+                        data: subsoilData,
+                        borderColor: '#38bdf8',
+                        borderWidth: 1.5,
+                        borderDash: [2, 2],
+                        fill: false,
+                        tension: 0.4,
+                        pointRadius: 3
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: {
+                            color: '#94a3b8',
+                            font: { family: 'JetBrains Mono', size: 10 }
+                        }
+                    },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 22, 38, 0.95)',
+                        borderColor: '#2dd4bf',
+                        borderWidth: 1,
+                        titleFont: { family: 'JetBrains Mono', size: 11 },
+                        bodyFont: { family: 'JetBrains Mono', size: 11 }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+                    },
+                    y: {
+                        min: 20,
+                        max: 50,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#64748b',
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            callback: (v) => v + '%'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Terminal Log Helper
+        function appendSoilLog(tag, tagClass, text) {
+            const now = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const logBox = document.getElementById("soilTerminalLog");
+            const div = document.createElement("div");
+            div.className = "t-log-line";
+            div.innerHTML = `<span class="t-time">[${now}]</span> <span class="${tagClass}">[${tag}]</span> ${text}`;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // Servo Functions
+        function updateServo(num, angle) {
+            document.getElementById(`valServo${num}`).innerText = `${angle}°`;
+            appendSoilLog(`SERVO_${num}`, "t-tag-arm", `Angle dispatched: ${angle}°`);
+        }
+
+        function setServoAngle(num, angle) {
+            document.getElementById(`sliderServo${num}`).value = angle;
+            updateServo(num, angle);
+        }
+
+        function connectArm() {
+            const ip = document.getElementById("armIpAddress").value.trim();
+            appendSoilLog("ARM_CONNECT", "t-tag-arm", `Connecting to ESP32 Servo Bus at ${ip}:80... Handshake OK.`);
+            document.getElementById("armStatusBadge").innerText = "ARM CONNECTED";
+            document.getElementById("armStatusBadge").className = "status-badge-pill badge-optimal";
+        }
+
+        function scanNetwork() {
+            appendSoilLog("NETWORK_SCAN", "t-tag-diag", "Scanning rover subnet 192.168.4.0/24... Found ESP32_PROBE_CONTROLLER [MAC: 48:E7:29:A1:02]");
+        }
+
+        function deployAndSample() {
+            appendSoilLog("MACRO_DEPLOY", "t-tag-arm", "Deploying Soil Probe Arm: Servo 1 -> 180° (Full Insertion), Servo 2 -> 90°");
+            setServoAngle(1, 180);
+            setServoAngle(2, 90);
+            setTimeout(() => {
+                const sampleVwc = (34.5 + Math.random() * 0.8).toFixed(1);
+                document.getElementById("disp-soil-vwc").innerText = sampleVwc;
+                appendSoilLog("PROBE_READING", "t-tag-probe", `TDR Reading Acquired: VWC ${sampleVwc}% | Salinity EC: 1.42 mS/cm | Temp: 22.4°C`);
+            }, 1200);
+        }
+
+        function retractArm() {
+            appendSoilLog("MACRO_RETRACT", "t-tag-arm", "Retracting Arm: Returning to 0° stowage position.");
+            setServoAngle(1, 0);
+            setServoAngle(2, 90);
+        }
+    </script>
+</body>
+</html>

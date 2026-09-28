@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Live Alerts & Notifications</title>
+    
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    
+    <style>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: #f4f7f6;
+            margin: 0;
+            padding: 20px;
+        }
+
+        .nav-header {
+            background: #16a34a;
+            color: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .back-btn {
+            color: white;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 8px 15px;
+            background: rgba(0,0,0,0.2);
+            border-radius: 6px;
+            transition: 0.3s;
+        }
+        
+        .back-btn:hover {
+            background: rgba(0,0,0,0.3);
+        }
+
+        .container {
+            max-width: 700px;
+            margin: auto;
+        }
+
+        .section-title {
+            margin: 25px 0 10px;
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        .normal-title { color: #16a34a; }
+        .danger-title { color: #dc2626; }
+
+        .notification-card {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 12px;
+            border-left: 6px solid #16a34a;
+            animation: slideIn 0.3s ease;
+        }
+
+        .notification-card.warning { border-left-color: #eab308; }
+        .notification-card.danger { border-left-color: #dc2626; }
+        .notification-card.success { border-left-color: #16a34a; }
+
+        .notification-card h3 {
+            margin: 0 0 5px;
+            font-size: 18px;
+        }
+
+        .notification-card p {
+            margin: 0;
+            color: #374151;
+        }
+
+        .time {
+            font-size: 12px;
+            color: #6b7280;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #9ca3af;
+            padding: 15px;
+            background: white;
+            border-radius: 12px;
+            border: 1px dashed #d1d5db;
+        }
+
+        /* MQTT Connection Status */
+        .mqtt-status-bar {
+            background: #f3f4f6;
+            padding: 10px 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 4px solid #6b7280;
+        }
+        
+        .mqtt-status-bar.connected {
+            border-left-color: #16a34a;
+            background: #f0fdf4;
+        }
+        
+        .mqtt-status-bar.connecting {
+            border-left-color: #eab308;
+            background: #fefce8;
+        }
+        
+        .mqtt-status-bar.disconnected {
+            border-left-color: #dc2626;
+            background: #fef2f2;
+        }
+        
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        
+        .status-connected { background-color: #16a34a; }
+        .status-disconnected { background-color: #dc2626; }
+        .status-connecting { background-color: #eab308; }
+        
+        .connect-btn {
+            padding: 8px 16px;
+            background: #16a34a;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: 0.3s;
+        }
+        
+        .connect-btn:hover {
+            background: #15803d;
+        }
+        
+        .connect-btn:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+        
+        .sensor-data-preview {
+            background: white;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e5e7eb;
+            font-size: 14px;
+        }
+        
+        .sensor-data-preview h3 {
+            margin-top: 0;
+            color: #374151;
+        }
+        
+        .data-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+        
+        .data-item {
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 6px;
+            display: flex;
+            justify-content: space-between;
+        }
+        
+        .data-label {
+            color: #6b7280;
+        }
+        
+        .data-value {
+            font-weight: 600;
+            color: #111827;
+        }
+        
+        .data-value.good { color: #16a34a; }
+        .data-value.warning { color: #eab308; }
+        .data-value.danger { color: #dc2626; }
+
+        @keyframes slideIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <div class="nav-header">
+        <a href="Dashboard.html" class="back-btn">← Dashboard</a>
+        <span>🌱 AgriSarthi Live Alerts</span>
+        <span id="user-email" style="font-size:12px;">Real-time Monitoring</span>
+    </div>
+    
+    <!-- MQTT Connection Status -->
+    <div class="mqtt-status-bar" id="mqtt-status-bar">
+        <div>
+            <span class="status-indicator status-disconnected" id="status-indicator"></span>
+            <span id="status-text">MQTT Disconnected</span>
+        </div>
+        <button class="connect-btn" id="connect-btn" onclick="connectToMQTT()">Connect to MQTT</button>
+    </div>
+    
+    <!-- Sensor Data Preview -->
+    <div class="sensor-data-preview" id="sensor-preview">
+        <h3>📊 Live Sensor Data</h3>
+        <div class="data-grid" id="sensor-data-grid">
+            <div class="data-item">
+                <span class="data-label">Temperature:</span>
+                <span class="data-value" id="temp-value">-- °C</span>
+            </div>
+            <div class="data-item">
+                <span class="data-label">Humidity:</span>
+                <span class="data-value" id="humid-value">-- %</span>
+            </div>
+            <div class="data-item">
+                <span class="data-label">Gas Level:</span>
+                <span class="data-value" id="gas-value">-- PPM</span>
+            </div>
+            <div class="data-item">
+                <span class="data-label">Soil Moisture:</span>
+                <span class="data-value" id="soil-value">-- %</span>
+            </div>
+        </div>
+        <p id="last-update" style="font-size:12px; color:#6b7280; margin-top:10px; margin-bottom:0;">
+            Last update: Never
+        </p>
+    </div>
+
+    <!-- NORMAL ALERTS -->
+    <h2 class="section-title normal-title">🟢 Normal Alerts</h2>
+    <div id="normal-alerts">
+        <div class="empty-state">Waiting for MQTT connection...</div>
+    </div>
+
+    <!-- HARMFUL ALERTS -->
+    <h2 class="section-title danger-title">🔴 Harmful/Critical Alerts</h2>
+    <div id="harmful-alerts">
+        <div class="empty-state">No harmful alerts detected</div>
+    </div>
+
+</div>
+
+<!-- ================= SCRIPT ================= -->
+<script>
+// MQTT Configuration
+let mqttClient = null;
+let isConnected = false;
+let latestSensorData = {
+    temperature: null,
+    humidity: null,
+    gas: null,
+    soil: null,
+    battery: null,
+    charging: null,
+    distance: null,
+    tank: null,
+    timestamp: null
+};
+
+// MQTT Configuration - Same as your monitoring dashboard
+const mqttConfig = {
+    broker: 'wss://broker.hivemq.com:8884/mqtt',
+    topics: [
+        'rpi4/sensors'
+        
+    ]
+};
+
+// DOM Elements
+const normalList = document.getElementById("normal-alerts");
+const harmfulList = document.getElementById("harmful-alerts");
+const statusBar = document.getElementById("mqtt-status-bar");
+const statusIndicator = document.getElementById("status-indicator");
+const statusText = document.getElementById("status-text");
+const connectBtn = document.getElementById("connect-btn");
+const sensorPreview = document.getElementById("sensor-preview");
+
+// Update MQTT status display
+function updateMQTTStatus(connected, message = '') {
+    isConnected = connected;
+    
+    if (connected) {
+        statusBar.className = 'mqtt-status-bar connected';
+        statusIndicator.className = 'status-indicator status-connected pulse';
+        statusText.textContent = 'Connected to MQTT Broker';
+        connectBtn.textContent = 'Disconnect';
+        connectBtn.onclick = disconnectFromMQTT;
+        sensorPreview.style.display = 'block';
+    } else if (message === 'connecting') {
+        statusBar.className = 'mqtt-status-bar connecting';
+        statusIndicator.className = 'status-indicator status-connecting pulse';
+        statusText.textContent = 'Connecting to MQTT...';
+        connectBtn.disabled = true;
+        connectBtn.textContent = 'Connecting...';
+    } else {
+        statusBar.className = 'mqtt-status-bar disconnected';
+        statusIndicator.className = 'status-indicator status-disconnected';
+        statusText.textContent = message || 'MQTT Disconnected';
+        connectBtn.disabled = false;
+        connectBtn.textContent = 'Connect to MQTT';
+        connectBtn.onclick = connectToMQTT;
+        sensorPreview.style.display = 'block';
+    }
+}
+
+// Connect to MQTT Broker
+function connectToMQTT() {
+    updateMQTTStatus(false, 'connecting');
+    
+    // Clear previous connection
+    if (mqttClient) {
+        mqttClient.end();
+        mqttClient = null;
+    }
+    
+    // Generate unique client ID
+    const clientId = 'agrisarthi_alerts_' + Date.now();
+    
+    try {
+        console.log(`Connecting to MQTT: ${mqttConfig.broker}`);
+        
+        mqttClient = mqtt.connect(mqttConfig.broker, {
+            clientId: clientId,
+            clean: true,
+            connectTimeout: 5000,
+            reconnectPeriod: 2000
+        });
+        
+        mqttClient.on('connect', () => {
+            console.log('✅ MQTT Connected!');
+            updateMQTTStatus(true);
+            
+            // Subscribe to all sensor topics
+            mqttConfig.topics.forEach(topic => {
+                mqttClient.subscribe(topic, {qos: 0}, (err) => {
+                    if (!err) {
+                        console.log(`✅ Subscribed to: ${topic}`);
+                    }
+                });
+            });
+            
+            // Also subscribe to wildcard for any sensor data
+            mqttClient.subscribe('#', {qos: 0}, (err) => {
+                if (!err) {
+                    console.log('✅ Subscribed to wildcard');
+                }
+            });
+            
+            // Add initial notification
+            addAlert('MQTT Connected', 'Successfully connected to broker. Waiting for sensor data...', 'success', 'normal');
+        });
+        
+        mqttClient.on('message', (topic, message) => {
+            const msg = message.toString();
+            console.log(`📩 MQTT: ${topic} -> ${msg}`);
+            
+            try {
+                // Try to parse JSON data
+                const data = JSON.parse(msg);
+                processSensorData(data, topic);
+            } catch (error) {
+                // Not JSON, try to extract values
+                processRawSensorData(msg, topic);
+            }
+        });
+        
+        mqttClient.on('error', (error) => {
+            console.error('❌ MQTT Error:', error);
+            updateMQTTStatus(false, 'Connection error');
+            addAlert('MQTT Connection Error', error.message, 'danger', 'harmful');
+        });
+        
+        mqttClient.on('close', () => {
+            console.log('🔌 MQTT Connection closed');
+            updateMQTTStatus(false, 'Connection closed');
+        });
+        
+        mqttClient.on('offline', () => {
+            console.log('🔌 MQTT Offline');
+            updateMQTTStatus(false, 'Connection offline');
+        });
+        
+    } catch (error) {
+        console.error('❌ MQTT Connection failed:', error);
+        updateMQTTStatus(false, 'Connection failed');
+        addAlert('MQTT Setup Error', error.message, 'danger', 'harmful');
+    }
+}
+
+// Disconnect from MQTT
+function disconnectFromMQTT() {
+    if (mqttClient) {
+        mqttClient.end();
+        mqttClient = null;
+    }
+    updateMQTTStatus(false, 'Disconnected manually');
+    addAlert('MQTT Disconnected', 'Manual disconnect from broker', 'warning', 'normal');
+}
+
+// Process JSON sensor data
+function processSensorData(data, topic) {
+    // Update latest sensor data
+    if (data.temperature !== undefined) latestSensorData.temperature = parseFloat(data.temperature);
+    if (data.humidity !== undefined) latestSensorData.humidity = parseFloat(data.humidity);
+    if (data.gas !== undefined) latestSensorData.gas = parseFloat(data.gas);
+    if (data.soil !== undefined) latestSensorData.soil = parseFloat(data.soil);
+    if (data.battery !== undefined) latestSensorData.battery = parseFloat(data.battery);
+    if (data.charging !== undefined) latestSensorData.charging = data.charging;
+    if (data.distance !== undefined) latestSensorData.distance = parseFloat(data.distance);
+    if (data.tank !== undefined) latestSensorData.tank = parseFloat(data.tank);
+    
+    latestSensorData.timestamp = new Date();
+    
+    // Update UI with sensor values
+    updateSensorDisplay();
+    
+    // Generate notifications based on data
+    generateNotifications(latestSensorData);
+}
+
+// Process raw/non-JSON sensor data
+function processRawSensorData(msg, topic) {
+    // Try to extract values using regex patterns
+    const tempMatch = msg.match(/(\d+\.?\d*)\s*°?C/gi) || msg.match(/temp[:\s]*(\d+\.?\d*)/i);
+    const humidMatch = msg.match(/(\d+\.?\d*)\s*%/g) || msg.match(/humid[:\s]*(\d+\.?\d*)/i);
+    const gasMatch = msg.match(/(\d+)\s*(PPM|ppm)/gi) || msg.match(/gas[:\s]*(\d+)/i);
+    const soilMatch = msg.match(/soil[:\s]*(\d+\.?\d*)/i);
+    
+    if (tempMatch) {
+        const temp = parseFloat(tempMatch[1] || tempMatch[0].replace(/[^\d.]/g, ''));
+        if (!isNaN(temp)) latestSensorData.temperature = temp;
+    }
+    
+    if (humidMatch) {
+        const humid = parseFloat(humidMatch[1] || humidMatch[0].replace(/[^\d.]/g, ''));
+        if (!isNaN(humid)) latestSensorData.humidity = humid;
+    }
+    
+    if (gasMatch) {
+        const gas = parseInt(gasMatch[1] || gasMatch[0].replace(/[^\d]/g, ''));
+        if (!isNaN(gas)) latestSensorData.gas = gas;
+    }
+    
+    if (soilMatch) {
+        const soil = parseFloat(soilMatch[1]);
+        if (!isNaN(soil)) latestSensorData.soil = soil;
+    }
+    
+    latestSensorData.timestamp = new Date();
+    
+    // Update UI with sensor values
+    updateSensorDisplay();
+    
+    // Generate notifications based on data
+    generateNotifications(latestSensorData);
+}
+
+// Update sensor data display
+function updateSensorDisplay() {
+    const tempEl = document.getElementById('temp-value');
+    const humidEl = document.getElementById('humid-value');
+    const gasEl = document.getElementById('gas-value');
+    const soilEl = document.getElementById('soil-value');
+    const lastUpdateEl = document.getElementById('last-update');
+    
+    if (latestSensorData.temperature !== null) {
+        tempEl.textContent = `${latestSensorData.temperature.toFixed(1)} °C`;
+        tempEl.className = latestSensorData.temperature > 40 ? 'data-value danger' : 
+                          latestSensorData.temperature > 35 ? 'data-value warning' : 'data-value good';
+    }
+    
+    if (latestSensorData.humidity !== null) {
+        humidEl.textContent = `${latestSensorData.humidity.toFixed(1)} %`;
+        humidEl.className = latestSensorData.humidity > 85 ? 'data-value warning' : 'data-value good';
+    }
+    
+    if (latestSensorData.gas !== null) {
+        gasEl.textContent = `${latestSensorData.gas} PPM`;
+        gasEl.className = latestSensorData.gas > 400 ? 'data-value danger' : 
+                         latestSensorData.gas > 200 ? 'data-value warning' : 'data-value good';
+    }
+    
+    if (latestSensorData.soil !== null) {
+        soilEl.textContent = `${latestSensorData.soil} %`;
+        soilEl.className = latestSensorData.soil < 30 ? 'data-value danger' : 
+                          latestSensorData.soil < 50 ? 'data-value warning' : 'data-value good';
+    }
+    
+    if (latestSensorData.timestamp) {
+        lastUpdateEl.textContent = `Last update: ${latestSensorData.timestamp.toLocaleTimeString()}`;
+    }
+}
+
+// Clear alerts
+function clearAlerts() {
+    normalList.innerHTML = '<div class="empty-state">No normal alerts</div>';
+    harmfulList.innerHTML = '<div class="empty-state">No harmful alerts detected</div>';
+}
+
+// Add alert notification
+function addAlert(title, message, type, severity) {
+    const card = document.createElement("div");
+    card.className = `notification-card ${type}`;
+    
+    const timeString = new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit', second:'2-digit'});
+    
+    card.innerHTML = `
+        <h3>${title}</h3>
+        <p>${message}</p>
+        <span class="time">${timeString}</span>
+    `;
+
+    if (severity === "harmful") {
+        // Remove empty state if present
+        if (harmfulList.querySelector('.empty-state')) {
+            harmfulList.innerHTML = '';
+        }
+        harmfulList.prepend(card);
+        
+        // Keep only last 5 harmful alerts
+        const harmfulCards = harmfulList.querySelectorAll('.notification-card');
+        if (harmfulCards.length > 5) {
+            harmfulCards[harmfulCards.length - 1].remove();
+        }
+        
+        // Play sound for harmful alerts
+        playAlertSound();
+    } else {
+        // Remove empty state if present
+        if (normalList.querySelector('.empty-state')) {
+            normalList.innerHTML = '';
+        }
+        normalList.prepend(card);
+        
+        // Keep only last 5 normal alerts
+        const normalCards = normalList.querySelectorAll('.notification-card');
+        if (normalCards.length > 5) {
+            normalCards[normalCards.length - 1].remove();
+        }
+    }
+}
+
+// Play alert sound for critical notifications
+function playAlertSound() {
+    try {
+        // Create a simple beep sound
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const oscillator = audioContext.createOscillator();
+        const gainNode = audioContext.createGain();
+        
+        oscillator.connect(gainNode);
+        gainNode.connect(audioContext.destination);
+        
+        oscillator.frequency.value = 800;
+        oscillator.type = 'sine';
+        
+        gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+        gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+        
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+        console.log('Audio context not supported');
+    }
+}
+
+/* 🔥 MAIN ALERT LOGIC - Based on sensor thresholds */
+function generateNotifications(data) {
+    clearAlerts();
+    
+    let hasNormalAlerts = false;
+    let hasHarmfulAlerts = false;
+    
+    // 🔋 Battery Alerts
+    if (data.battery !== null) {
+        if (data.battery < 10) {
+            addAlert("⚠️ Critical Battery", `Battery at ${data.battery}% - Immediate charging required!`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        } else if (data.battery < 20) {
+            addAlert("Low Battery", `Battery at ${data.battery}% - Consider charging soon`, "warning", "normal");
+            hasNormalAlerts = true;
+        } else if (data.charging === true) {
+            addAlert("Charging Active", `Battery charging (${data.battery}%)`, "success", "normal");
+            hasNormalAlerts = true;
+        }
+    }
+    
+    // 🌡️ Temperature Alerts
+    if (data.temperature !== null) {
+        if (data.temperature > 45) {
+            addAlert("🔥 Extreme Temperature", `${data.temperature}°C - Risk of crop damage!`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        } else if (data.temperature > 40) {
+            addAlert("High Temperature", `${data.temperature}°C - Monitor closely`, "warning", "normal");
+            hasNormalAlerts = true;
+        } else if (data.temperature < 15) {
+            addAlert("Low Temperature", `${data.temperature}°C - May affect plant growth`, "warning", "normal");
+            hasNormalAlerts = true;
+        }
+    }
+    
+    // 💧 Humidity Alerts
+    if (data.humidity !== null) {
+        if (data.humidity > 90) {
+            addAlert("High Humidity", `${data.humidity}% - Risk of fungal diseases`, "warning", "normal");
+            hasNormalAlerts = true;
+        } else if (data.humidity < 30) {
+            addAlert("Low Humidity", `${data.humidity}% - Plants may need watering`, "warning", "normal");
+            hasNormalAlerts = true;
+        }
+    }
+    
+    // ☠️ Gas/Alr Quality Alerts
+    if (data.gas !== null) {
+        if (data.gas > 600) {
+            addAlert("🚨 Hazardous Air Quality", `${data.gas} PPM - Toxic gas detected!`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        } else if (data.gas > 400) {
+            addAlert("Poor Air Quality", `${data.gas} PPM - Monitor air quality`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        } else if (data.gas > 200) {
+            addAlert("Moderate Air Quality", `${data.gas} PPM - Within acceptable limits`, "warning", "normal");
+            hasNormalAlerts = true;
+        }
+    }
+    
+    // 🌱 Soil Moisture Alerts
+    if (data.soil !== null) {
+        if (data.soil < 20) {
+            addAlert("🏜️ Critical Soil Dryness", `${data.soil}% - Immediate watering required!`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        } else if (data.soil < 30) {
+            addAlert("Dry Soil", `${data.soil}% - Plants need watering`, "warning", "normal");
+            hasNormalAlerts = true;
+        } else if (data.soil > 80) {
+            addAlert("Waterlogged Soil", `${data.soil}% - Risk of root rot`, "warning", "normal");
+            hasNormalAlerts = true;
+        }
+    }
+    
+    // 💧 Water Tank Alerts
+    if (data.tank !== null) {
+        if (data.tank < 10) {
+            addAlert("💧 Critical Water Level", `Tank at ${data.tank}% - Refill immediately!`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        } else if (data.tank < 20) {
+            addAlert("Low Water Tank", `Tank at ${data.tank}% - Consider refilling`, "warning", "normal");
+            hasNormalAlerts = true;
+        }
+    }
+    
+    // 🛑 Obstacle Detection
+    if (data.distance !== null) {
+        if (data.distance < 20) {
+            addAlert("Obstacle Detected", `Object at ${data.distance} cm - Rover may be blocked`, "danger", "harmful");
+            hasHarmfulAlerts = true;
+        }
+    }
+    
+    // If no alerts, show appropriate empty states
+    if (!hasNormalAlerts && normalList.innerHTML.includes('empty-state')) {
+        normalList.innerHTML = '<div class="empty-state">No alerts - All parameters normal</div>';
+    }
+    
+    if (!hasHarmfulAlerts && harmfulList.innerHTML.includes('empty-state')) {
+        harmfulList.innerHTML = '<div class="empty-state">No harmful alerts detected</div>';
+    }
+}
+
+// Initialize on page load
+window.addEventListener('load', () => {
+    updateMQTTStatus(false, 'Ready to connect');
+    
+    // Add demo data button for testing
+    const demoBtn = document.createElement('button');
+    demoBtn.textContent = 'Load Demo Data';
+    demoBtn.style.cssText = 'padding:8px 16px; background:#eab308; color:white; border:none; border-radius:6px; cursor:pointer; margin-left:10px;';
+    demoBtn.onclick = loadDemoData;
+    document.querySelector('.mqtt-status-bar').appendChild(demoBtn);
+    
+    console.log('🌱 AgriSarthi Alerts System Ready');
+});
+
+// Load demo data for testing
+function loadDemoData() {
+    if (!isConnected) {
+        addAlert('Demo Mode', 'Showing simulated sensor data', 'success', 'normal');
+    }
+    
+    const demoData = {
+        battery: 18,
+        charging: false,
+        temperature: 45,
+        humidity: 78,
+        soil: 22,
+        gas: 520,
+        distance: 18,
+        tank: 15,
+        timestamp: new Date()
+    };
+    
+    latestSensorData = demoData;
+    updateSensorDisplay();
+    generateNotifications(demoData);
+}
+
+// Auto-connect after 2 seconds (optional)
+// setTimeout(() => {
+//     connectToMQTT();
+// }, 2000);
+
+</script>
+
+</body>
+</html>

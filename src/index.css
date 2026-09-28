@@ -251,3 +251,78 @@ input[type="range"] {
 .scrollbar-thin::-webkit-scrollbar {
   width: 5px;
 }
+
+/* ==========================================================================
+   Tactical High-Performance Animation Keyframes & Dynamic Transitions
+   ========================================================================== */
+
+@keyframes scanline {
+  0% {
+    top: 0%;
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+.animate-scanline {
+  animation: scanline 2.8s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes radar-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+.animate-radar-ring {
+  animation: radar-ring 2.2s cubic-bezier(0.25, 0.46, 0.45, 0.94) infinite;
+}
+
+@keyframes float-slow {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+.animate-float-slow {
+  animation: float-slow 4.5s ease-in-out infinite;
+}
+
+@keyframes laser-sweep {
+  0% {
+    left: -100%;
+  }
+  100% {
+    left: 200%;
+  }
+}
+
+.animate-laser-sweep {
+  animation: laser-sweep 3.5s ease-in-out infinite;
+}
+
+/* Butter-Smooth Hardware Accelerated Transition Utility */
+.transition-tactical {
+  transition-property: all;
+  transition-duration: 350ms;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: transform, opacity;
+}
+

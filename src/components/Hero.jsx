@@ -72,7 +72,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
   };
 
   const handleLaunchHUD = () => {
-    navigate('/mission-control');
+    navigate('/mission-control?view=simulation');
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
@@ -157,7 +157,7 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
             <div className="flex flex-wrap items-center gap-4">
               <button
                 onClick={handleLaunchHUD}
-                className="btn-earth-pill px-8 py-4 text-xs sm:text-sm tracking-wider flex items-center gap-2.5 cursor-pointer"
+                className="btn-earth-pill px-8 py-4 text-xs sm:text-sm tracking-wider flex items-center gap-2.5 cursor-pointer shadow-lg shadow-emerald-600/30"
               >
                 <span>WATCH DEMO</span>
                 <ArrowRight className="w-4 h-4" />
@@ -236,8 +236,9 @@ export default function Hero({ onOpenDemo, liveTelemetry }) {
           </div>
 
           {/* Grounded Industrial Statement: Smart Farm Monitoring Rover */}
-          <ScrollReveal animation="fade" className="text-center max-w-4xl mx-auto mt-16 mb-12">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono uppercase tracking-wider mb-4 font-semibold">
+          <ScrollReveal animation="fade" className="text-center max-w-4xl mx-auto mt-20 mb-12 pt-8 scroll-mt-28">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-mono uppercase tracking-wider mb-4 font-bold shadow-sm">
+              <span className="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
               <span>Autonomous Row-Level Scouting</span>
             </div>
             <h2 className="heading-earth text-3xl sm:text-5xl md:text-6xl text-stone-950 tracking-tight leading-[1.05]">

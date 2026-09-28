@@ -1,0 +1,1304 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Rover Control Login</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.82);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-hover: #05f0a2;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-cyan: #00e1d9;
+            --accent-amber: #f59e0b;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --input-bg: rgba(9, 19, 34, 0.85);
+            --input-border: #1e2e48;
+            --input-focus: #00e599;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Animated Background Slideshow */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.80) 0%, rgba(7, 13, 24, 0.70) 45%, rgba(7, 13, 24, 0.90) 100%),
+                linear-gradient(to right, rgba(0, 229, 153, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 153, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 20% 35%, rgba(0, 229, 153, 0.12) 0%, transparent 60%),
+                radial-gradient(circle at 80% 65%, rgba(0, 180, 216, 0.08) 0%, transparent 50%);
+            background-size: 100% 100%, 36px 36px, 36px 36px, 100% 100%, 100% 100%;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        /* Top Telemetry Header Bar */
+        .telemetry-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .brand-icon {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .brand-icon svg {
+            width: 22px;
+            height: 22px;
+        }
+
+        .brand-titles {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            color: #ffffff;
+        }
+
+        .brand-name span {
+            color: var(--primary);
+        }
+
+        .version-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.12);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        .telemetry-status-pills {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .pill-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(13, 22, 38, 0.85);
+            border: 1px solid var(--border-card);
+            padding: 6px 14px;
+            border-radius: 20px;
+            color: var(--text-muted);
+        }
+
+        .status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        .pill-val {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .pill-sec {
+            color: #38bdf8;
+        }
+
+        /* Main Center Layout */
+        .main-wrapper {
+            flex: 1;
+            max-width: 1360px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 40px 30px;
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 50px;
+            align-items: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Left Hero Showcase */
+        .hero-showcase {
+            display: flex;
+            flex-direction: column;
+            gap: 28px;
+        }
+
+        .workstation-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            padding: 6px 14px;
+            border-radius: 24px;
+            width: fit-content;
+            letter-spacing: 0.5px;
+            backdrop-filter: blur(8px);
+        }
+
+        .hero-title {
+            font-size: 52px;
+            font-weight: 800;
+            line-height: 1.08;
+            letter-spacing: -1.5px;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .hero-title .gradient-text {
+            background: linear-gradient(135deg, #00e599 0%, #38bdf8 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: inline-block;
+        }
+
+        .hero-description {
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-width: 540px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Rover Metrics Grid */
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+
+        .metric-card {
+            background: rgba(13, 22, 38, 0.75);
+            border: 1px solid var(--border-card);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            padding: 16px 18px;
+            border-radius: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            position: relative;
+            transition: border-color 0.3s, transform 0.3s, box-shadow 0.3s;
+        }
+
+        .metric-card:hover {
+            border-color: var(--border-accent);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+
+        .metric-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+        }
+
+        .metric-header .icon {
+            color: var(--primary);
+            font-size: 13px;
+        }
+
+        .metric-value-row {
+            display: flex;
+            align-items: baseline;
+            gap: 6px;
+        }
+
+        .metric-value {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .metric-sub {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .metric-status {
+            font-size: 11px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--primary);
+        }
+
+        .metric-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-top: 2px;
+        }
+
+        .metric-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #00e599, #38bdf8);
+            border-radius: 4px;
+        }
+
+        /* Terminal Bar */
+        .terminal-banner {
+            background: rgba(9, 17, 30, 0.85);
+            border: 1px solid var(--border-card);
+            backdrop-filter: blur(10px);
+            border-radius: 12px;
+            padding: 12px 18px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .terminal-left {
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .terminal-prompt {
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .terminal-highlight {
+            color: #ffffff;
+        }
+
+        .terminal-badge {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 10px;
+            font-weight: 700;
+        }
+
+        /* Right Auth Card */
+        .auth-card-container {
+            display: flex;
+            justify-content: center;
+        }
+
+        .auth-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(0, 229, 153, 0.08);
+            border-radius: 28px;
+            padding: 40px 36px;
+            width: 100%;
+            max-width: 480px;
+            position: relative;
+            animation: cardAppear 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .auth-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .auth-icon-wrap {
+            width: 68px;
+            height: 68px;
+            margin: 0 auto 20px;
+            background: rgba(0, 229, 153, 0.1);
+            border: 1.5px solid var(--primary);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 25px var(--primary-glow);
+            color: var(--primary);
+        }
+
+        .auth-icon-wrap svg {
+            width: 34px;
+            height: 34px;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 28px;
+        }
+
+        .auth-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+            margin-bottom: 6px;
+        }
+
+        .auth-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            line-height: 1.4;
+        }
+
+        /* Form styling */
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .form-label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+
+        .form-label-aux {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .form-label-aux:hover {
+            text-decoration: underline;
+        }
+
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-icon {
+            position: absolute;
+            left: 16px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+            transition: color 0.3s;
+        }
+
+        .input-wrapper input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 12px;
+            padding: 13px 44px 13px 44px;
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .input-wrapper input::placeholder {
+            color: #475569;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13px;
+        }
+
+        .input-wrapper input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 229, 153, 0.15);
+            background: rgba(13, 26, 45, 0.95);
+        }
+
+        .input-wrapper input:focus + .input-icon,
+        .input-wrapper:focus-within .input-icon {
+            color: var(--primary);
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 14px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+            transition: color 0.2s;
+        }
+
+        .toggle-password:hover {
+            color: #ffffff;
+        }
+
+        .input-helper-text {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .input-helper-text .verified {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Checkbox */
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0 24px;
+            cursor: pointer;
+            font-size: 12px;
+            color: var(--text-muted);
+            user-select: none;
+        }
+
+        .checkbox-container input {
+            appearance: none;
+            -webkit-appearance: none;
+            width: 18px;
+            height: 18px;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 5px;
+            cursor: pointer;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+        }
+
+        .checkbox-container input:checked {
+            background: var(--primary);
+            border-color: var(--primary);
+        }
+
+        .checkbox-container input:checked::after {
+            content: '✓';
+            font-size: 12px;
+            font-weight: 800;
+            color: #070d18;
+        }
+
+        /* Buttons */
+        .btn-launch {
+            width: 100%;
+            background: linear-gradient(135deg, #00e599 0%, #00bfa5 100%);
+            color: #051410;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 15px;
+            font-weight: 700;
+            letter-spacing: 0.2px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 229, 153, 0.4);
+            transition: all 0.25s ease;
+        }
+
+        .btn-launch:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(0, 229, 153, 0.55);
+            background: linear-gradient(135deg, #10f0a4 0%, #00d4b8 100%);
+        }
+
+        .btn-launch:active {
+            transform: translateY(0);
+        }
+
+        .btn-launch svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+
+        .divider-or {
+            display: flex;
+            align-items: center;
+            text-align: center;
+            margin: 22px 0;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            letter-spacing: 1px;
+        }
+
+        .divider-or::before,
+        .divider-or::after {
+            content: '';
+            flex: 1;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .divider-or span {
+            padding: 0 12px;
+        }
+
+        .btn-sso {
+            width: 100%;
+            background: rgba(13, 22, 38, 0.9);
+            color: #ffffff;
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 12px 20px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-sso:hover {
+            background: rgba(20, 32, 54, 0.95);
+            border-color: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .btn-sso svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .signup-footer-link {
+            text-align: center;
+            margin-top: 24px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .signup-footer-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            margin-left: 4px;
+            transition: color 0.2s;
+        }
+
+        .signup-footer-link a:hover {
+            text-decoration: underline;
+            color: var(--primary-hover);
+        }
+
+        /* Banner Messages */
+        .feedback-banner {
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            display: none;
+            font-family: 'JetBrains Mono', monospace;
+            line-height: 1.4;
+        }
+
+        .error-banner {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            color: #fca5a5;
+        }
+
+        .success-banner {
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: #86efac;
+        }
+
+        /* Loading spinner for button */
+        .loading-active {
+            opacity: 0.75;
+            pointer-events: none;
+            position: relative;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(5, 20, 16, 0.3);
+            border-top: 2px solid #051410;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Bottom Footer */
+        .status-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-card);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 20;
+        }
+
+        .footer-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .footer-left .node-val {
+            color: var(--text-main);
+            font-weight: 600;
+        }
+
+        .footer-right {
+            display: flex;
+            gap: 20px;
+        }
+
+        .footer-right a {
+            color: var(--text-dim);
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .footer-right a:hover {
+            color: var(--primary);
+        }
+
+        .kill-switch {
+            color: #ef4444 !important;
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 30px 20px;
+            }
+            .hero-showcase {
+                text-align: center;
+                align-items: center;
+            }
+            .hero-title {
+                font-size: 40px;
+            }
+            .metrics-grid {
+                width: 100%;
+                max-width: 540px;
+            }
+            .terminal-banner {
+                width: 100%;
+                max-width: 540px;
+            }
+            .auth-card-container {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .telemetry-nav {
+                padding: 12px 16px;
+            }
+            .telemetry-status-pills {
+                display: none;
+            }
+            .hero-title {
+                font-size: 30px;
+            }
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+            .auth-card {
+                padding: 30px 20px;
+            }
+            .status-footer {
+                padding: 12px 16px;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            .footer-right {
+                flex-wrap: wrap;
+                justify-content: center;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Slideshow Layer -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Telemetry Header -->
+    <header class="telemetry-nav">
+        <a class="brand-cluster" href="/" onclick="event.preventDefault(); window.top.location.href='/'" title="Return to AgriSarthi Website" style="text-decoration:none;cursor:pointer;">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="2" y="7" width="20" height="13" rx="3"></rect>
+                    <path d="M7 10h10"></path>
+                    <path d="M7 14h6"></path>
+                    <circle cx="6" cy="4" r="2"></circle>
+                    <circle cx="18" cy="4" r="2"></circle>
+                </svg>
+            </div>
+            <div class="brand-titles">
+                <div class="brand-title-row">
+                    <span class="brand-name">Agri<span>Sarthi</span></span>
+                    <span class="version-badge">ROVER PRO V2.4</span>
+                </div>
+                <span class="brand-sub">Autonomous Field Guidance &amp; Soil Telemetry Platform</span>
+            </div>
+        </a>
+
+        <div class="telemetry-status-pills">
+            <div class="pill-item">
+                <span class="status-dot"></span>
+                <span>Cloud Telemetry: <span class="pill-val">Synced (14ms)</span></span>
+            </div>
+            <div class="pill-item">
+                <span>RTK Fix: <span class="pill-val">Sub-cm Active</span></span>
+            </div>
+            <div class="pill-item">
+                <span>🔒 AgroNet <span class="pill-sec">AES-256</span></span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Center Main Content -->
+    <main class="main-wrapper">
+        <!-- Left Hero Section -->
+        <section class="hero-showcase">
+            <div class="workstation-tag">
+                <span class="status-dot"></span>
+                <span>FIELD WORKSTATION #04 • ACTIVE SOWING MISSION</span>
+            </div>
+
+            <h1 class="hero-title">
+                Precision Field Robotics.<br>
+                <span class="gradient-text">Zero Drift. Real-time Yield.</span>
+            </h1>
+
+            <p class="hero-description">
+                Centralized autonomous rover dispatch, multispectral furrow monitoring, and RTK centimeter-precision trajectory planning for modern agricultural operators.
+            </p>
+
+            <!-- Metrics Cluster -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span>UNIT DESIG</span>
+                        <span class="icon">✓</span>
+                    </div>
+                    <div class="metric-value-row">
+                        <span class="metric-value">Rover-04</span>
+                    </div>
+                    <div class="metric-status">
+                        <span class="status-dot"></span>
+                        <span>Online & Autonomous</span>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span>BATTERY / RANGE</span>
+                        <span class="icon">⚡</span>
+                    </div>
+                    <div class="metric-value-row">
+                        <span class="metric-value" id="disp-battery">86%</span>
+                        <span class="metric-sub">(4.8h)</span>
+                    </div>
+                    <div class="metric-progress-bar">
+                        <div class="metric-progress-fill" style="width: 86%;"></div>
+                    </div>
+                </div>
+
+                <div class="metric-card">
+                    <div class="metric-header">
+                        <span>FIELD 3B SENSOR</span>
+                        <span class="icon">📶</span>
+                    </div>
+                    <div class="metric-value-row">
+                        <span class="metric-value">98.2%</span>
+                        <span class="metric-sub" style="color: var(--primary);">Sync</span>
+                    </div>
+                    <div class="metric-status" style="color: var(--text-muted); font-size: 10px;">
+                        <span>Moisture: Optimal 34%</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Terminal Geofence Alert -->
+            <div class="terminal-banner">
+                <div class="terminal-left">
+                    <span class="terminal-prompt">&gt;_ GEO_FENCE:</span>
+                    <span class="terminal-highlight">Sector 12 Secured</span>
+                    <span>• LIDAR Obstacle Detection: CLEAR</span>
+                </div>
+                <div class="terminal-badge">
+                    RTK: 1.2CM FIX
+                </div>
+            </div>
+        </section>
+
+        <!-- Right Glass Auth Card -->
+        <section class="auth-card-container">
+            <div class="auth-card">
+                <div class="auth-icon-wrap">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="2" y="6" width="20" height="12" rx="3"></rect>
+                        <circle cx="6" cy="18" r="2"></circle>
+                        <circle cx="18" cy="18" r="2"></circle>
+                        <path d="M12 6V3"></path>
+                        <circle cx="12" cy="3" r="1"></circle>
+                        <path d="M6 10h12"></path>
+                    </svg>
+                </div>
+
+                <div class="auth-header">
+                    <h2 class="auth-title">Welcome to AgriSarthi</h2>
+                    <p class="auth-subtitle">Access your agricultural rover control panel &amp; live telemetry</p>
+                </div>
+
+                <!-- Error & Success Banners -->
+                <div class="feedback-banner error-banner" id="error-message"></div>
+                <div class="feedback-banner success-banner" id="success-message"></div>
+
+                <form id="login-form">
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label class="form-label" for="email">OPERATOR EMAIL ADDRESS</label>
+                        </div>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                    <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                                </svg>
+                            </span>
+                            <input type="email" id="email" placeholder="farmer@example.com" required autocomplete="email">
+                        </div>
+                        <div class="input-helper-text">
+                            <span>Authorized Field Station Key</span>
+                            <span class="verified">Verified ID</span>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="label-row">
+                            <label class="form-label" for="password">SECURITY PASSWORD</label>
+                            <a href="#" class="form-label-aux" id="forgot-pass-btn">Forgot password?</a>
+                        </div>
+                        <div class="input-wrapper">
+                            <span class="input-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                                </svg>
+                            </span>
+                            <input type="password" id="password" placeholder="Enter security key or passphrase" required autocomplete="current-password">
+                            <button type="button" class="toggle-password" id="togglePassword" aria-label="Toggle password visibility">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                    <circle cx="12" cy="12" r="3"></circle>
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <label class="checkbox-container">
+                        <input type="checkbox" id="persist-session" checked>
+                        <span>Maintain persistent telemetry session on this device</span>
+                    </label>
+
+                    <button type="submit" class="btn-launch" id="login-btn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                        </svg>
+                        <span id="login-btn-text">Launch Rover Control</span>
+                    </button>
+                </form>
+
+                <div class="divider-or">
+                    <span>OR SSO ACCESS</span>
+                </div>
+
+                <button type="button" class="btn-sso" id="google-signin">
+                    <svg viewBox="0 0 24 24">
+                        <path fill="#4285F4" d="M23.745 12.27c0-.7-.06-1.4-.19-2.07H12v4.51h6.6c-.29 1.52-1.14 2.8-2.4 3.65v3.03h3.88c2.27-2.09 3.665-5.17 3.665-9.12z"/>
+                        <path fill="#34A853" d="M12 24c3.24 0 5.95-1.08 7.93-2.91l-3.88-3.03c-1.08.72-2.45 1.16-4.05 1.16-3.12 0-5.77-2.1-6.72-4.93H1.26v3.13C3.26 21.36 7.33 24 12 24z"/>
+                        <path fill="#FBBC05" d="M5.28 14.29c-.25-.72-.38-1.49-.38-2.29s.13-1.57.38-2.29V6.58H1.26C.46 8.18 0 9.99 0 12s.46 3.82 1.26 5.42l4.02-3.13z"/>
+                        <path fill="#EA4335" d="M12 4.75c1.77 0 3.35.61 4.6 1.8l3.42-3.42C17.95 1.19 15.24 0 12 0 7.33 0 3.26 2.64 1.26 6.58l4.02 3.13c.95-2.83 3.6-4.96 6.72-4.96z"/>
+                    </svg>
+                    <span>Sign in with Field Workstation Google Auth</span>
+                </button>
+
+                <div class="signup-footer-link">
+                    <span>Register new rover or operator?</span>
+                    <a href="signup.html" id="signup-link">Sign up &amp; Pair Device &rarr;</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Bottom Telemetry Footer -->
+    <footer class="status-footer">
+        <div class="footer-left">
+            <span class="status-dot"></span>
+            <span>AgroNet Telemetry Node ID: <span class="node-val">AGR-IN-PUN-088</span></span>
+            <span>|</span>
+            <span>AES-256 GCM Rover Link Verified</span>
+        </div>
+        <div class="footer-right">
+            <a href="#" onclick="alert('Displaying standard operating procedure (SOP) & telemetry protocols.')">Safety Manual</a>
+            <a href="#" onclick="alert('RTK Centimeter Beacon calibration active.')">RTK Calibration</a>
+            <a href="#" class="kill-switch" onclick="confirm('Emergency rover kill-switch standby ready.')">Emergency Rover Kill-Switch</a>
+        </div>
+    </footer>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        // Array of images from the assets/images folder
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        // Build slide elements
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+
+        // Rotate slideshow every 6 seconds smoothly
+        setInterval(cycleSlide, 6000);
+    </script>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getAuth,
+            signInWithEmailAndPassword,
+            sendPasswordResetEmail,
+            GoogleAuthProvider,
+            signInWithPopup,
+            onAuthStateChanged
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // Firebase Configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_5VxvfKg8NWGq_Zy_0khCjHkuk-wcm7U",
+            authDomain: "agri-sarthi-9849c.firebaseapp.com",
+            projectId: "agri-sarthi-9849c",
+            storageBucket: "agri-sarthi-9849c.firebasestorage.app",
+            messagingSenderId: "960208736864",
+            appId: "1:960208736864:web:8848c3c56d6b50cd716905",
+            measurementId: "G-BXXKFC0E8C"
+        };
+
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const provider = new GoogleAuthProvider();
+
+        // UI Elements
+        const loginForm = document.getElementById('login-form');
+        const loginBtn = document.getElementById('login-btn');
+        const loginBtnText = document.getElementById('login-btn-text');
+        const googleSigninBtn = document.getElementById('google-signin');
+        const errorMessage = document.getElementById('error-message');
+        const successMessage = document.getElementById('success-message');
+        const togglePassword = document.getElementById('togglePassword');
+        const passwordInput = document.getElementById('password');
+        const forgotPassBtn = document.getElementById('forgot-pass-btn');
+
+        // Toggle Password Visibility
+        togglePassword.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            togglePassword.innerHTML = isPassword 
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>`
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        });
+
+        // Helper Functions
+        function showError(message) {
+            errorMessage.innerHTML = `⚠️ <strong>ACCESS DENIED:</strong> ${message}`;
+            errorMessage.style.display = 'block';
+            successMessage.style.display = 'none';
+            setTimeout(() => {
+                errorMessage.style.display = 'none';
+            }, 6000);
+        }
+
+        function showSuccess(message) {
+            successMessage.innerHTML = `✅ <strong>AUTHENTICATED:</strong> ${message}`;
+            successMessage.style.display = 'block';
+            errorMessage.style.display = 'none';
+        }
+
+        function setLoading(isLoading, text = 'Launch Rover Control') {
+            if (isLoading) {
+                loginBtn.classList.add('loading-active');
+                loginBtn.disabled = true;
+                loginBtnText.innerHTML = `<span class="spinner"></span> Connecting Telemetry...`;
+            } else {
+                loginBtn.classList.remove('loading-active');
+                loginBtn.disabled = false;
+                loginBtnText.textContent = text;
+            }
+        }
+
+        // Email/Password Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const email = document.getElementById('email').value.trim();
+            const password = document.getElementById('password').value;
+
+            if (!email || !password) {
+                showError('Please enter operator email and security password');
+                return;
+            }
+
+            setLoading(true);
+
+            try {
+                await signInWithEmailAndPassword(auth, email, password);
+                showSuccess('Credentials verified. Handshaking rover telemetry stream...');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1200);
+            } catch (error) {
+                setLoading(false);
+                let errorMsg = error.message;
+                
+                if (error.code === 'auth/user-not-found' || error.code === 'auth/invalid-credential') {
+                    errorMsg = 'Invalid operator credentials or unregistered field unit.';
+                } else if (error.code === 'auth/wrong-password') {
+                    errorMsg = 'Incorrect security key. Access denied.';
+                } else if (error.code === 'auth/invalid-email') {
+                    errorMsg = 'Invalid email syntax. Check operator ID.';
+                } else if (error.code === 'auth/too-many-requests') {
+                    errorMsg = 'Telemetry rate-limit exceeded. Please standby before retrying.';
+                }
+                
+                showError(errorMsg);
+            }
+        });
+
+        // Forgot Password
+        forgotPassBtn.addEventListener('click', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value.trim();
+            if (!email) {
+                showError('Enter your email address in the field above to reset password.');
+                return;
+            }
+            try {
+                await sendPasswordResetEmail(auth, email);
+                showSuccess(`Password reset dispatch sent to ${email}. Check inbox.`);
+            } catch (err) {
+                showError(err.message);
+            }
+        });
+
+        // Google Sign In
+        googleSigninBtn.addEventListener('click', async () => {
+            try {
+                await signInWithPopup(auth, provider);
+                showSuccess('SSO Authentication successful. Redirecting to console...');
+                setTimeout(() => {
+                    window.location.href = 'dashboard.html';
+                }, 1200);
+            } catch (error) {
+                let errorMsg = 'Google authentication aborted.';
+                if (error.code === 'auth/popup-blocked') {
+                    errorMsg = 'Pop-up blocked by browser security. Please allow pop-ups for this station.';
+                }
+                showError(errorMsg);
+            }
+        });
+
+        // Auth state listener
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("Active Operator Session:", user.email);
+            }
+        });
+    </script>
+</body>
+</html>

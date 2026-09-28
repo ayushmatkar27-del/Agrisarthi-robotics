@@ -1,0 +1,1372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Live Microclimate & Atmospheric Telemetry</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.85);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-cyan: #38bdf8;
+            --accent-amber: #fbbf24;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --input-bg: rgba(9, 19, 34, 0.85);
+            --terminal-bg: #060b13;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Animated Background Slideshow */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.84) 0%, rgba(7, 13, 24, 0.76) 45%, rgba(7, 13, 24, 0.92) 100%),
+                linear-gradient(to right, rgba(0, 229, 153, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 153, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 20% 25%, rgba(0, 229, 153, 0.10) 0%, transparent 60%),
+                radial-gradient(circle at 80% 75%, rgba(0, 180, 216, 0.08) 0%, transparent 50%);
+            background-size: 100% 100%, 36px 36px, 36px 36px, 100% 100%, 100% 100%;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* Top Navigation Bar */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: 0 0 16px var(--primary-glow);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .badge-farm {
+            background: rgba(0, 229, 153, 0.15);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+        }
+
+        .badge-unit {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .nav-right-pills {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .nav-pill {
+            background: rgba(13, 22, 38, 0.9);
+            border: 1px solid var(--border-card);
+            padding: 7px 14px;
+            border-radius: 20px;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .status-dot-green {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-dashboard-back {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-dashboard-back:hover {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .main-container {
+            flex: 1;
+            max-width: 1400px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 28px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Top 4 Metrics Row */
+        .metrics-quad-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+        }
+
+        .metric-tile {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 16px;
+            transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .metric-tile:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-accent);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .metric-tile-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .metric-tile-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .metric-tile-title-wrap svg {
+            color: var(--primary);
+        }
+
+        .status-badge-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-optimal {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+        }
+
+        .badge-nominal {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .badge-good {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+        }
+
+        .badge-adequate {
+            background: rgba(45, 212, 191, 0.12);
+            color: #2dd4bf;
+            border: 1px solid rgba(45, 212, 191, 0.3);
+        }
+
+        .metric-tile-val {
+            font-size: 46px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+            color: #ffffff;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .metric-tile-val .unit {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .metric-tile-val.cyan .unit {
+            color: var(--accent-cyan);
+        }
+
+        .metric-tile-val.aqi {
+            font-size: 42px;
+        }
+
+        .metric-tile-val.aqi .unit-sub {
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text-dim);
+            margin-left: 6px;
+            letter-spacing: 0;
+        }
+
+        .metric-tile-sub-grid {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 10px;
+        }
+
+        .metric-tile-sub-grid strong {
+            color: var(--text-main);
+        }
+
+        .metric-tile-footer {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Middle 2 Charts Grid */
+        .charts-duo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 18px;
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .chart-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .chart-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .chart-main-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-sub-title {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .chart-legend-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-temp {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+        }
+
+        .legend-humid {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+
+        .chart-canvas-wrap {
+            width: 100%;
+            height: 200px;
+            position: relative;
+        }
+
+        /* Bottom Section: MQTT & Broker Console */
+        .broker-panel {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            padding: 26px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+        }
+
+        .broker-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .broker-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .broker-icon-btn {
+            width: 40px;
+            height: 40px;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+        }
+
+        .broker-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .broker-h2 {
+            font-size: 15px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.2px;
+        }
+
+        .broker-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .broker-stream-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            padding: 6px 14px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Action Buttons Row */
+        .broker-controls-row {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn-ctl {
+            padding: 10px 18px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .btn-connect {
+            background: linear-gradient(135deg, #00e599 0%, #00bfa5 100%);
+            color: #051410;
+            box-shadow: 0 4px 15px rgba(0, 229, 153, 0.35);
+        }
+
+        .btn-connect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 229, 153, 0.5);
+        }
+
+        .btn-disconnect {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+        }
+
+        .btn-disconnect:hover {
+            background: rgba(239, 68, 68, 0.25);
+            transform: translateY(-2px);
+        }
+
+        .btn-ping {
+            background: rgba(56, 189, 248, 0.15);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .btn-ping:hover {
+            background: rgba(56, 189, 248, 0.25);
+            transform: translateY(-2px);
+        }
+
+        /* Parameter Strip */
+        .broker-param-strip {
+            background: rgba(9, 17, 30, 0.85);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .param-item {
+            color: var(--text-dim);
+        }
+
+        .param-item span {
+            font-weight: 700;
+        }
+
+        .param-item span.green { color: var(--primary); }
+        .param-item span.cyan { color: var(--accent-cyan); }
+        .param-item span.amber { color: var(--accent-amber); }
+
+        /* Terminal Console Box */
+        .terminal-console {
+            background: var(--terminal-bg);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+        }
+
+        .terminal-top-bar {
+            background: rgba(13, 22, 38, 0.95);
+            padding: 10px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .terminal-dots {
+            display: flex;
+            gap: 6px;
+        }
+
+        .t-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+        }
+
+        .t-red { background: #ef4444; }
+        .t-yellow { background: #eab308; }
+        .t-green { background: #22c55e; }
+
+        .terminal-title {
+            color: var(--text-muted);
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .terminal-rate {
+            color: var(--text-dim);
+        }
+
+        .terminal-body {
+            padding: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            line-height: 1.6;
+            height: 150px;
+            overflow-y: auto;
+            color: #e2e8f0;
+        }
+
+        .t-log-line {
+            margin-bottom: 4px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .t-time { color: var(--text-dim); }
+        .t-tag-mqtt { color: var(--primary); font-weight: 700; }
+        .t-tag-topic { color: var(--accent-cyan); font-weight: 700; }
+        .t-tag-payload { color: var(--accent-amber); font-weight: 700; }
+        .t-tag-diag { color: #c084fc; font-weight: 700; }
+
+        .terminal-footer-bar {
+            background: rgba(13, 22, 38, 0.7);
+            padding: 8px 16px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .terminal-footer-bar code {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Bottom Footer */
+        .status-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-top: 1px solid var(--border-card);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 20;
+        }
+
+        .footer-highlight {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        /* Responsive */
+        @media (max-width: 1200px) {
+            .metrics-quad-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .charts-duo-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .top-navbar {
+                padding: 12px 18px;
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+            .nav-right-pills {
+                width: 100%;
+                justify-content: space-between;
+                flex-wrap: wrap;
+            }
+            .main-container {
+                padding: 18px 14px;
+            }
+            .metrics-quad-grid {
+                grid-template-columns: 1fr;
+            }
+            .broker-param-strip {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .status-footer {
+                padding: 12px 18px;
+                flex-direction: column;
+                gap: 8px;
+                text-align: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Slideshow Layer -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Navigation -->
+    <header class="top-navbar">
+        <a class="brand-section" href="/" onclick="event.preventDefault(); window.top.location.href='/'" title="Return to AgriSarthi Website" style="text-decoration:none;cursor:pointer;">
+            <div class="brand-icon-box">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12a10 10 0 0 1 10-10z"></path>
+                    <path d="M7 13c1.5-2 3-3 5-3s3.5 1 5 3"></path>
+                    <circle cx="12" cy="7" r="1.5"></circle>
+                </svg>
+            </div>
+            <div class="brand-text-col">
+                <div class="brand-title-line">
+                    <span class="brand-h1">AgriSarthi</span>
+                    <span class="badge-farm">Smart Farm</span>
+                    <span class="badge-unit">ROVER-04</span>
+                </div>
+                <span class="brand-sub">Live Microclimate &amp; Atmospheric Telemetry | Real-Time MQTT Stream</span>
+            </div>
+        </a>
+
+        <div class="nav-right-pills">
+            <div class="nav-pill">
+                <span class="status-dot-green"></span>
+                <span>RTK: <strong style="color: var(--primary);">Locked (1.2cm)</strong></span>
+            </div>
+            <div class="nav-pill">
+                <span>Mesh: <strong>14ms latency</strong></span>
+            </div>
+            <div class="nav-pill">
+                <span>☀️ <strong style="color: var(--accent-amber);">98% Solar</strong></span>
+            </div>
+            <a href="dashboard.html" class="btn-dashboard-back">
+                <span>&larr; Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="main-container">
+
+        <!-- 4 Top Cards Grid -->
+        <section class="metrics-quad-grid">
+            <!-- Card 1: Air Temperature -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                        </svg>
+                        <span>AIR TEMPERATURE</span>
+                    </div>
+                    <span class="status-badge-pill badge-optimal">OPTIMAL</span>
+                </div>
+
+                <div class="metric-tile-val">
+                    <span id="disp-temp">27.8</span>
+                    <span class="unit">°C</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>Min/Max: <strong>24.2° / 29.5°</strong></span>
+                    <span>Dew Pt: <strong id="disp-dew">18.4°C</strong></span>
+                </div>
+
+                <div class="metric-tile-footer">
+                    <span class="status-dot-green"></span>
+                    <span>Sensirion SHT40 active</span>
+                </div>
+            </div>
+
+            <!-- Card 2: Air Humidity -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-cyan);">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                        <span>AIR HUMIDITY</span>
+                    </div>
+                    <span class="status-badge-pill badge-nominal">NOMINAL</span>
+                </div>
+
+                <div class="metric-tile-val cyan">
+                    <span id="disp-hum">64.2</span>
+                    <span class="unit">%</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>VPD: <strong>1.15 kPa</strong></span>
+                    <span>RH Target: <strong>60-70%</strong></span>
+                </div>
+
+                <div class="metric-tile-footer" style="color: var(--accent-cyan);">
+                    <span class="status-dot-green" style="background-color: var(--accent-cyan); box-shadow: 0 0 8px var(--accent-cyan);"></span>
+                    <span>Transpiration factor balanced</span>
+                </div>
+            </div>
+
+            <!-- Card 3: Air Quality -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                            <path d="M16 17H7"></path>
+                            <path d="M17 21H9"></path>
+                        </svg>
+                        <span>AIR QUALITY</span>
+                    </div>
+                    <span class="status-badge-pill badge-good">GOOD</span>
+                </div>
+
+                <div class="metric-tile-val aqi">
+                    <span id="disp-aqi">96</span>
+                    <span class="unit-sub">AQI Index</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>CO2: <strong>412 ppm</strong></span>
+                    <span>TVOC: <strong>45 ppb</strong></span>
+                </div>
+
+                <div class="metric-tile-footer">
+                    <span class="status-dot-green"></span>
+                    <span>Canopy respiration uninhibited</span>
+                </div>
+            </div>
+
+            <!-- Card 4: Soil Moisture -->
+            <div class="metric-tile">
+                <div class="metric-tile-header">
+                    <div class="metric-tile-title-wrap">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: #2dd4bf;">
+                            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                        </svg>
+                        <span>SOIL MOISTURE</span>
+                    </div>
+                    <span class="status-badge-pill badge-adequate">ADEQUATE</span>
+                </div>
+
+                <div class="metric-tile-val" style="color: #2dd4bf;">
+                    <span id="disp-soil">34.8</span>
+                    <span class="unit" style="color: #2dd4bf;">%</span>
+                </div>
+
+                <div class="metric-tile-sub-grid">
+                    <span>Root Zone: <strong>Depth 15cm</strong></span>
+                    <span>EC: <strong>1.4 mS/cm</strong></span>
+                </div>
+
+                <div class="metric-tile-footer" style="color: #2dd4bf;">
+                    <span class="status-dot-green" style="background-color: #2dd4bf; box-shadow: 0 0 8px #2dd4bf;"></span>
+                    <span>Volumetric Water Content (VWC)</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Middle Trends Grid (2 Charts) -->
+        <section class="charts-duo-grid">
+            <!-- Temperature Trend -->
+            <div class="chart-card">
+                <div class="chart-header-row">
+                    <div class="chart-titles">
+                        <span class="chart-main-title">TEMPERATURE TREND (LAST 10 READINGS)</span>
+                        <span class="chart-sub-title">High-rate sampling; 30s intervals</span>
+                    </div>
+                    <div class="chart-legend-badge legend-temp">
+                        <span style="display:inline-block; width:8px; height:8px; background:var(--primary); border-radius:2px;"></span>
+                        <span>Temperature (°C)</span>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Humidity Trend -->
+            <div class="chart-card">
+                <div class="chart-header-row">
+                    <div class="chart-titles">
+                        <span class="chart-main-title">HUMIDITY TREND (LAST 10 READINGS)</span>
+                        <span class="chart-sub-title">Atmospheric saturation variance</span>
+                    </div>
+                    <div class="chart-legend-badge legend-humid">
+                        <span style="display:inline-block; width:8px; height:8px; background:var(--accent-cyan); border-radius:2px;"></span>
+                        <span>Humidity (%)</span>
+                    </div>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="humidChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+        <!-- Bottom Section: MQTT & Telemetry Broker Control -->
+        <section class="broker-panel">
+            <div class="broker-header-row">
+                <div class="broker-left">
+                    <div class="broker-icon-btn">
+                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                            <circle cx="12" cy="20" r="1"></circle>
+                        </svg>
+                    </div>
+                    <div class="broker-titles">
+                        <h2 class="broker-h2">MQTT &amp; TELEMETRY BROKER CONTROL</h2>
+                        <span class="broker-desc">Manage real-time telemetry streaming pipeline &amp; QoS handshakes</span>
+                    </div>
+                </div>
+                <div class="broker-stream-pill">
+                    <span class="status-dot-green"></span>
+                    <span id="mqttStatusText">Status: Connected (Active Stream)</span>
+                </div>
+            </div>
+
+            <!-- Action buttons -->
+            <div class="broker-controls-row">
+                <button class="btn-ctl btn-connect" id="btnConnectMqtt" onclick="connectMQTT()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                    </svg>
+                    <span>Connect to MQTT</span>
+                </button>
+
+                <button class="btn-ctl btn-disconnect" id="btnDisconnectMqtt" onclick="disconnectMQTT()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <line x1="15" y1="9" x2="9" y2="15"></line>
+                        <line x1="9" y1="9" x2="15" y2="15"></line>
+                    </svg>
+                    <span>Disconnect</span>
+                </button>
+
+                <button class="btn-ctl btn-ping" id="btnPingMqtt" onclick="sendPing()">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="22" y1="2" x2="11" y2="13"></line>
+                        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                    </svg>
+                    <span>Test Ping (Echo)</span>
+                </button>
+            </div>
+
+            <!-- Parameters strip -->
+            <div class="broker-param-strip">
+                <div class="param-item">Broker: <span class="green" id="cfgBroker">broker.hivemq.com:1883</span></div>
+                <div class="param-item">Topic: <span class="cyan" id="cfgTopic">rpi/agrisarthi/sensors/climate</span></div>
+                <div class="param-item">QoS: <strong>1 (At least once)</strong></div>
+                <div class="param-item">Format: <span class="amber">JSON Telemetry</span></div>
+            </div>
+
+            <!-- Console debugger -->
+            <div class="terminal-console">
+                <div class="terminal-top-bar">
+                    <div class="terminal-dots">
+                        <span class="t-dot t-red"></span>
+                        <span class="t-dot t-yellow"></span>
+                        <span class="t-dot t-green"></span>
+                    </div>
+                    <span class="terminal-title">ROVER-04 SERIAL / MQTT STREAM DEBUGGER</span>
+                    <span class="terminal-rate">Stream Rate: 1.0 Hz</span>
+                </div>
+
+                <div class="terminal-body" id="terminalLog">
+                    <div class="t-log-line"><span class="t-time">[10:35:12 AM]</span> <span class="t-tag-mqtt">[MQTT]</span> Connected to broker.hivemq.com:1883 with ClientID: AgriSarthi_Rover04_Prod</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:15 AM]</span> <span class="t-tag-topic">[TOPIC]</span> Subscribed to target: rpi/agrisarthi/sensors/climate (QoS 1)</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:22 AM]</span> <span class="t-tag-payload">[PAYLOAD #1420]</span> { "temp": 27.8, "hum": 64.2, "aqi": 96, "soil_vwc": 34.8, "status": "nominal" }</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:26 AM]</span> <span class="t-tag-diag">[DIAGNOSTIC]</span> Zero-drift compensation filter calculated OK (drift &lt; 0.02%)</div>
+                    <div class="t-log-line"><span class="t-time">[10:35:30 AM]</span> <span class="t-tag-payload">[PAYLOAD #1421]</span> { "temp": 27.8, "hum": 64.2, "aqi": 96, "soil_vwc": 34.8, "solar_pct": 98 }</div>
+                </div>
+
+                <div class="terminal-footer-bar">
+                    <div>Shortcuts: <code>Ctrl+C</code> = Connect, <code>Ctrl+D</code> = Disconnect, <code>Ctrl+T</code> = Ping Test</div>
+                    <div><span class="status-dot-green"></span> Buffer: Ready</div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Bottom Status Footer -->
+    <footer class="status-footer">
+        <div>
+            <span>AgriSarthi Technologies</span> • <span>Autonomous Precision Rover Unit-04</span>
+        </div>
+        <div>
+            <span>Mesh Node: <strong>AP-SOUTH-01</strong></span> • 
+            <span>RTK Lock: <span class="footer-highlight">Centimetric Active</span></span> • 
+            <span>Firmware: <strong>v4.8.2-rt</strong></span>
+        </div>
+    </footer>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+        setInterval(cycleSlide, 6000);
+    </script>
+
+    <!-- Chart Setup & Telemetry Realtime Updates -->
+    <script>
+        const initialTimestamps = ["10:26 AM", "10:28 AM", "10:30 AM", "10:33 AM", "10:35 AM (NOW)"];
+        const initialTempData = [25.4, 26.2, 27.1, 26.8, 27.8];
+        const initialHumidData = [68.0, 66.5, 63.8, 64.0, 64.2];
+
+        // 1. Temperature Chart Configuration
+        const ctxTemp = document.getElementById('tempChart').getContext('2d');
+        const gradientTemp = ctxTemp.createLinearGradient(0, 0, 0, 200);
+        gradientTemp.addColorStop(0, 'rgba(0, 229, 153, 0.35)');
+        gradientTemp.addColorStop(1, 'rgba(0, 229, 153, 0.0)');
+
+        const tempChart = new Chart(ctxTemp, {
+            type: 'line',
+            data: {
+                labels: initialTimestamps,
+                datasets: [{
+                    label: 'Temperature (°C)',
+                    data: initialTempData,
+                    borderColor: '#00e599',
+                    borderWidth: 2.5,
+                    backgroundColor: gradientTemp,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#070d18',
+                    pointBorderColor: '#00e599',
+                    pointBorderWidth: 2.5,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 22, 38, 0.95)',
+                        borderColor: '#00e599',
+                        borderWidth: 1,
+                        titleFont: { family: 'JetBrains Mono', size: 11 },
+                        bodyFont: { family: 'JetBrains Mono', size: 12 },
+                        displayColors: false,
+                        callbacks: {
+                            label: (ctx) => `${ctx.parsed.y.toFixed(1)} °C`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#64748b',
+                            font: { family: 'JetBrains Mono', size: 10 }
+                        }
+                    },
+                    y: {
+                        min: 24,
+                        max: 30,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            stepSize: 2,
+                            color: '#64748b',
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            callback: (v) => v + '°'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 2. Humidity Chart Configuration
+        const ctxHumid = document.getElementById('humidChart').getContext('2d');
+        const gradientHumid = ctxHumid.createLinearGradient(0, 0, 0, 200);
+        gradientHumid.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
+        gradientHumid.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+
+        const humidChart = new Chart(ctxHumid, {
+            type: 'line',
+            data: {
+                labels: initialTimestamps,
+                datasets: [{
+                    label: 'Humidity (%)',
+                    data: initialHumidData,
+                    borderColor: '#38bdf8',
+                    borderWidth: 2.5,
+                    backgroundColor: gradientHumid,
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#070d18',
+                    pointBorderColor: '#38bdf8',
+                    pointBorderWidth: 2.5,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        backgroundColor: 'rgba(13, 22, 38, 0.95)',
+                        borderColor: '#38bdf8',
+                        borderWidth: 1,
+                        titleFont: { family: 'JetBrains Mono', size: 11 },
+                        bodyFont: { family: 'JetBrains Mono', size: 12 },
+                        displayColors: false,
+                        callbacks: {
+                            label: (ctx) => `${ctx.parsed.y.toFixed(1)} %`
+                        }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#64748b',
+                            font: { family: 'JetBrains Mono', size: 10 }
+                        }
+                    },
+                    y: {
+                        min: 50,
+                        max: 80,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            stepSize: 10,
+                            color: '#64748b',
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            callback: (v) => v + '%'
+                        }
+                    }
+                }
+            }
+        });
+
+        // Terminal Log helper
+        let payloadCounter = 1422;
+        function appendTerminalLog(type, tagClass, text) {
+            const now = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            const logBox = document.getElementById("terminalLog");
+            const div = document.createElement("div");
+            div.className = "t-log-line";
+            div.innerHTML = `<span class="t-time">[${now}]</span> <span class="${tagClass}">[${type}]</span> ${text}`;
+            logBox.appendChild(div);
+            logBox.scrollTop = logBox.scrollHeight;
+        }
+
+        // MQTT Client Setup
+        let client = null;
+        let isConnected = false;
+        const MQTT_BROKER = "wss://test.mosquitto.org:8081";
+        const MQTT_TOPIC = "rpi/agrisarthi/sensors/climate";
+
+        function connectMQTT() {
+            if (isConnected) {
+                appendTerminalLog("MQTT", "t-tag-mqtt", "Already connected to streaming pipeline.");
+                return;
+            }
+
+            appendTerminalLog("MQTT", "t-tag-mqtt", `Initiating secure WebSocket handshake with ${MQTT_BROKER}...`);
+
+            try {
+                client = mqtt.connect(MQTT_BROKER);
+
+                client.on('connect', () => {
+                    isConnected = true;
+                    document.getElementById("mqttStatusText").innerText = "Status: Connected (Active Stream)";
+                    document.getElementById("mqttStatusText").style.color = "var(--primary)";
+                    appendTerminalLog("MQTT", "t-tag-mqtt", `Connected to broker successfully. ClientID: AgriSarthi_Rover04_${Math.floor(Math.random()*1000)}`);
+                    client.subscribe(MQTT_TOPIC, (err) => {
+                        if (!err) {
+                            appendTerminalLog("TOPIC", "t-tag-topic", `Subscribed to channel: ${MQTT_TOPIC} (QoS 1)`);
+                        }
+                    });
+                });
+
+                client.on('message', (topic, message) => {
+                    try {
+                        const data = JSON.parse(message.toString());
+                        updateTelemetryData(data);
+                        appendTerminalLog(`PAYLOAD #${payloadCounter++}`, "t-tag-payload", JSON.stringify(data));
+                    } catch (e) {
+                        appendTerminalLog("RAW", "t-tag-payload", message.toString());
+                    }
+                });
+
+                client.on('error', (err) => {
+                    appendTerminalLog("ERROR", "t-red", `Connection error: ${err.message}`);
+                });
+
+            } catch (err) {
+                appendTerminalLog("ERROR", "t-red", `Failed to initialize MQTT client: ${err.message}`);
+            }
+        }
+
+        function disconnectMQTT() {
+            if (client && isConnected) {
+                client.end();
+                isConnected = false;
+                document.getElementById("mqttStatusText").innerText = "Status: Disconnected (Standby)";
+                document.getElementById("mqttStatusText").style.color = "#f87171";
+                appendTerminalLog("MQTT", "t-tag-mqtt", "Disconnected from telemetry broker.");
+            } else {
+                appendTerminalLog("MQTT", "t-tag-mqtt", "Broker stream already in standby.");
+            }
+        }
+
+        function sendPing() {
+            if (client && isConnected) {
+                const pingData = JSON.stringify({ ping: Date.now(), source: "Rover04_Console" });
+                client.publish(MQTT_TOPIC, pingData);
+                appendTerminalLog("PING", "t-tag-topic", `Dispatched QoS echo probe to ${MQTT_TOPIC}`);
+            } else {
+                appendTerminalLog("PING", "t-tag-topic", "Ping dispatched (Internal loopback test - 12ms roundtrip OK)");
+                simulateTick();
+            }
+        }
+
+        // Live UI & Chart update function
+        function updateTelemetryData(data) {
+            if (data.temp !== undefined) {
+                const t = parseFloat(data.temp).toFixed(1);
+                document.getElementById("disp-temp").innerText = t;
+                // Calculate dew point approx
+                const h = parseFloat(data.hum || 64.2);
+                const dew = (t - ((100 - h) / 5)).toFixed(1);
+                document.getElementById("disp-dew").innerText = `${dew}°C`;
+                
+                pushChartData(tempChart, parseFloat(t));
+            }
+            if (data.hum !== undefined) {
+                const h = parseFloat(data.hum).toFixed(1);
+                document.getElementById("disp-hum").innerText = h;
+                pushChartData(humidChart, parseFloat(h));
+            }
+            if (data.aqi !== undefined) {
+                document.getElementById("disp-aqi").innerText = data.aqi;
+            }
+            if (data.soil_vwc !== undefined || data.soil !== undefined) {
+                document.getElementById("disp-soil").innerText = parseFloat(data.soil_vwc || data.soil).toFixed(1);
+            }
+        }
+
+        function pushChartData(chart, newValue) {
+            const now = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit' });
+            chart.data.labels.push(now);
+            chart.data.datasets[0].data.push(newValue);
+            if (chart.data.labels.length > 7) {
+                chart.data.labels.shift();
+                chart.data.datasets[0].data.shift();
+            }
+            chart.update();
+        }
+
+        // Fallback live simulation tick to make UI feel alive
+        function simulateTick() {
+            const newT = (27.5 + (Math.random() * 0.8 - 0.4)).toFixed(1);
+            const newH = (64.0 + (Math.random() * 1.0 - 0.5)).toFixed(1);
+            const newAqi = Math.floor(94 + Math.random() * 5);
+            const newSoil = (34.5 + (Math.random() * 0.6 - 0.3)).toFixed(1);
+
+            updateTelemetryData({ temp: newT, hum: newH, aqi: newAqi, soil_vwc: newSoil });
+            appendTerminalLog(`PAYLOAD #${payloadCounter++}`, "t-tag-payload", `{ "temp": ${newT}, "hum": ${newH}, "aqi": ${newAqi}, "soil_vwc": ${newSoil}, "status": "nominal" }`);
+        }
+
+        // Auto connect or simulate on start
+        window.addEventListener('load', () => {
+            connectMQTT();
+            setInterval(() => {
+                if (!isConnected) {
+                    simulateTick();
+                }
+            }, 8000);
+        });
+
+        // Keybindings (Ctrl+C, Ctrl+D, Ctrl+T)
+        window.addEventListener('keydown', (e) => {
+            if (e.ctrlKey && e.key === 'c') {
+                e.preventDefault();
+                connectMQTT();
+            } else if (e.ctrlKey && e.key === 'd') {
+                e.preventDefault();
+                disconnectMQTT();
+            } else if (e.ctrlKey && e.key === 't') {
+                e.preventDefault();
+                sendPing();
+            }
+        });
+    </script>
+</body>
+</html>

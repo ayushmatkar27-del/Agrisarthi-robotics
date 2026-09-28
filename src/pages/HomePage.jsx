@@ -7,14 +7,14 @@ import ScrollReveal from '../components/ScrollReveal';
 import { 
   Radio, 
   Eye, 
-  ArrowRight,
-  TrendingUp,
-  Sparkles,
-  Cpu,
-  Calculator
+  ArrowRight, 
+  TrendingUp, 
+  Sparkles, 
+  Cpu, 
+  Calculator 
 } from 'lucide-react';
 
-export default function HomePage({ onOpenDemo, liveTelemetry, fleetStats }) {
+export default function HomePage({ onOpenDemo, onOpenRoverDeepDive, liveTelemetry, fleetStats }) {
   const navigate = useNavigate();
 
   return (
@@ -35,8 +35,12 @@ export default function HomePage({ onOpenDemo, liveTelemetry, fleetStats }) {
       <FleetSection 
         onOpenDemo={onOpenDemo}
         onSelectRover={(id) => {
-          navigate('/rovers');
-          window.scrollTo({ top: 0, behavior: 'smooth' });
+          if (onOpenRoverDeepDive) {
+            onOpenRoverDeepDive(id);
+          } else {
+            navigate('/rovers');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+          }
         }}
       />
 

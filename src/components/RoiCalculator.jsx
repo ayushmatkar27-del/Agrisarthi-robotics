@@ -1,20 +1,37 @@
 import React, { useState } from 'react';
 import { 
   Calculator, 
-  DollarSign, 
   Droplets, 
   TrendingUp, 
   Clock, 
   ShieldCheck, 
   Sparkles,
   ArrowRight,
-  ChevronRight
+  ChevronRight,
+  CheckCircle2,
+  Zap
 } from 'lucide-react';
 
 export default function RoiCalculator({ onOpenDemo }) {
   const [acres, setAcres] = useState(15);
-  const [cropType, setCropType] = useState('horticulture'); // 'horticulture', 'grains', 'cash', 'polyhouse'
-  const [laborCostPerMonth, setLaborCostPerMonth] = useState(18000);
+  const [cropType, setCropType] = useState('horticulture');
+  const [laborCostPerMonth, setLaborCostPerMonth] = useState(20000);
+  const [activePreset, setActivePreset] = useState('grapes');
+
+  const INDIAN_CROP_PRESETS = [
+    { id: 'grapes', label: '🍇 Nashik Grapes', acres: 15, crop: 'horticulture', labor: 22000, desc: 'Canopy foliar blight & fungicide optimization' },
+    { id: 'sugarcane', label: '🎋 Kolhapur Sugarcane', acres: 25, crop: 'cash', labor: 18000, desc: 'Furrow moisture & flood irrigation balancing' },
+    { id: 'cotton', label: '☁️ Vidarbha Cotton', acres: 20, crop: 'cash', labor: 16000, desc: 'Bollworm pest early warning & weed scouting' },
+    { id: 'polyhouse', label: '🍓 Polyhouse / Berries', acres: 6, crop: 'polyhouse', labor: 26000, desc: 'High-density micro-climate & humidity control' },
+    { id: 'wheat', label: '🌾 Punjab Wheat / Paddy', acres: 35, crop: 'grains', labor: 15000, desc: 'Broad-acre moisture & nitrogen indexing' }
+  ];
+
+  const handleApplyPreset = (preset) => {
+    setActivePreset(preset.id);
+    setAcres(preset.acres);
+    setCropType(preset.crop);
+    setLaborCostPerMonth(preset.labor);
+  };
 
   // Crop multiplier settings
   const cropMultipliers = {
@@ -24,7 +41,7 @@ export default function RoiCalculator({ onOpenDemo }) {
     polyhouse: { label: 'High-Tech Polyhouse / Flowers', pestRisk: 1.8, waterSensitivity: 1.6 }
   };
 
-  const currentCrop = cropMultipliers[cropType];
+  const currentCrop = cropMultipliers[cropType] || cropMultipliers.horticulture;
 
   // Calculated ROI values
   const waterSavingsPerYear = Math.round(acres * 32000 * currentCrop.waterSensitivity); // Liters
@@ -38,7 +55,7 @@ export default function RoiCalculator({ onOpenDemo }) {
   // Approximate RaaS Cost for this acreage
   const annualRaasCost = Math.round(acres * 499 * 12);
   const netAnnualProfit = Math.max(0, totalAnnualSavings - annualRaasCost);
-  const paybackMonths = ((annualRaasCost / totalAnnualSavings) * 12).toFixed(1);
+  const paybackMonths = Math.max(1.8, Math.min(6.5, parseFloat(((annualRaasCost / Math.max(totalAnnualSavings, 1)) * 12).toFixed(1))));
 
   return (
     <section id="roi-calc" className="py-24 bg-[#faf6ee] text-stone-900 relative overflow-hidden border-t border-amber-200/80">
@@ -49,8 +66,8 @@ export default function RoiCalculator({ onOpenDemo }) {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         
         {/* Section Title */}
-        <div className="text-center max-w-3xl mx-auto mb-16">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-800 text-xs font-semibold mb-4">
+        <div className="text-center max-w-3xl mx-auto mb-12">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-500/15 border border-amber-500/30 text-amber-800 text-xs font-semibold mb-4 font-mono">
             <Calculator className="w-3.5 h-3.5 text-amber-700" />
             <span>FARM SAVINGS & VALUE ENGINE</span>
           </div>
@@ -58,22 +75,47 @@ export default function RoiCalculator({ onOpenDemo }) {
             Interactive Farm <span className="text-gradient-emerald">ROI & Payback Calculator</span>
           </h2>
           <p className="text-base text-stone-600">
-            Estimate how much your farm or agricultural estate saves annually through early pest alerts, precision irrigation scheduling, and reduced manual scout labor.
+            Estimate how much your farm or agricultural estate saves annually through early pest alerts, precision irrigation scheduling, and automated field scouting.
           </p>
         </div>
 
+        {/* Quick Regional Indian Farm Presets */}
+        <div className="max-w-5xl mx-auto mb-8">
+          <span className="text-xs font-mono font-bold text-stone-500 uppercase tracking-wider block mb-3 text-center sm:text-left">
+            ⚡ Quick-Load Regional Farm Benchmarks:
+          </span>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5">
+            {INDIAN_CROP_PRESETS.map((preset) => (
+              <button
+                key={preset.id}
+                onClick={() => handleApplyPreset(preset)}
+                className={`p-3 rounded-2xl text-left transition-all cursor-pointer border ${
+                  activePreset === preset.id
+                    ? 'bg-emerald-600 text-white border-emerald-500 shadow-md scale-[1.02]'
+                    : 'bg-white text-stone-800 hover:bg-stone-50 border-stone-200'
+                }`}
+              >
+                <div className="text-xs font-bold font-sans">{preset.label}</div>
+                <div className={`text-[10px] font-mono mt-1 ${activePreset === preset.id ? 'text-emerald-100' : 'text-stone-500'}`}>
+                  {preset.acres} Acres • {preset.desc.slice(0, 24)}...
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Master Calculator Panel */}
-        <div className="glass-panel-glow rounded-3xl p-6 sm:p-10 max-w-5xl mx-auto">
+        <div className="glass-panel-glow rounded-3xl p-6 sm:p-10 max-w-5xl mx-auto bg-white/90 border border-stone-200 shadow-xl">
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             
             {/* Left Inputs Column (Col-Span 6) */}
             <div className="lg:col-span-6 space-y-6">
               
               {/* Slider 1: Farm Size (Acres) */}
-              <div className="p-4 rounded-2xl bg-green-100/60 border border-green-200">
+              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200">
                 <div className="flex items-center justify-between text-xs font-mono mb-2">
-                  <span className="text-gray-500">Farm Acreage Size:</span>
-                  <strong className="text-emerald-700 text-base font-bold">{acres} Acres</strong>
+                  <span className="text-stone-600 font-bold">Farm Acreage Size:</span>
+                  <strong className="text-emerald-700 text-lg font-bold">{acres} Acres</strong>
                 </div>
                 <input 
                   type="range"
@@ -81,10 +123,13 @@ export default function RoiCalculator({ onOpenDemo }) {
                   max="150"
                   step="1"
                   value={acres}
-                  onChange={(e) => setAcres(parseInt(e.target.value))}
-                  className="w-full h-2 bg-green-50 rounded-lg cursor-pointer"
+                  onChange={(e) => {
+                    setAcres(parseInt(e.target.value));
+                    setActivePreset('');
+                  }}
+                  className="w-full h-2 bg-stone-200 rounded-lg cursor-pointer accent-emerald-600"
                 />
-                <div className="flex justify-between text-[10px] text-gray-400 font-mono mt-1">
+                <div className="flex justify-between text-[10px] text-stone-500 font-mono mt-1.5">
                   <span>2 Acres (Smallholder)</span>
                   <span>75 Acres</span>
                   <span>150+ Acres (Estate)</span>
@@ -92,19 +137,22 @@ export default function RoiCalculator({ onOpenDemo }) {
               </div>
 
               {/* Input 2: Crop Classification */}
-              <div className="p-4 rounded-2xl bg-green-100/60 border border-green-200">
-                <label className="text-xs font-mono text-gray-500 block mb-2">
-                  Primary Crop Type:
+              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200">
+                <label className="text-xs font-mono text-stone-600 font-bold block mb-2">
+                  Primary Crop Category:
                 </label>
                 <div className="grid grid-cols-2 gap-2">
                   {Object.entries(cropMultipliers).map(([key, value]) => (
                     <button
                       key={key}
-                      onClick={() => setCropType(key)}
-                      className={`p-2.5 rounded-xl text-xs font-medium text-left transition border ${
+                      onClick={() => {
+                        setCropType(key);
+                        setActivePreset('');
+                      }}
+                      className={`p-3 rounded-xl text-xs font-medium text-left transition border cursor-pointer ${
                         cropType === key 
-                          ? 'bg-emerald-500 text-slate-950 font-bold border-emerald-400 shadow-sm' 
-                          : 'bg-white text-gray-600 border-green-200 hover:bg-green-100'
+                          ? 'bg-emerald-600 text-white font-bold border-emerald-500 shadow-sm' 
+                          : 'bg-white text-stone-700 border-stone-200 hover:bg-stone-100'
                       }`}
                     >
                       {value.label}
@@ -114,10 +162,10 @@ export default function RoiCalculator({ onOpenDemo }) {
               </div>
 
               {/* Slider 3: Current Monthly Labor Cost */}
-              <div className="p-4 rounded-2xl bg-green-100/60 border border-green-200">
+              <div className="p-4 sm:p-5 rounded-2xl bg-stone-50 border border-stone-200">
                 <div className="flex items-center justify-between text-xs font-mono mb-2">
-                  <span className="text-gray-500">Monthly Manual Labor Cost:</span>
-                  <strong className="text-green-800 text-sm font-bold">₹{laborCostPerMonth.toLocaleString()} / mo</strong>
+                  <span className="text-stone-600 font-bold">Monthly Manual Scouting Labor Expense:</span>
+                  <strong className="text-stone-900 text-base font-bold">₹{laborCostPerMonth.toLocaleString('en-IN')} / mo</strong>
                 </div>
                 <input 
                   type="range"
@@ -125,91 +173,85 @@ export default function RoiCalculator({ onOpenDemo }) {
                   max="60000"
                   step="1000"
                   value={laborCostPerMonth}
-                  onChange={(e) => setLaborCostPerMonth(parseInt(e.target.value))}
-                  className="w-full h-2 bg-green-50 rounded-lg cursor-pointer"
+                  onChange={(e) => {
+                    setLaborCostPerMonth(parseInt(e.target.value));
+                    setActivePreset('');
+                  }}
+                  className="w-full h-2 bg-stone-200 rounded-lg cursor-pointer accent-emerald-600"
                 />
-                <div className="flex justify-between text-[10px] text-gray-400 font-mono mt-1">
-                  <span>₹5,000</span>
+                <div className="flex justify-between text-[10px] text-stone-500 font-mono mt-1.5">
+                  <span>₹5,000 (1 Worker)</span>
                   <span>₹30,000</span>
-                  <span>₹60,000+</span>
+                  <span>₹60,000+ (Full Crew)</span>
                 </div>
               </div>
 
             </div>
 
-            {/* Right Output Column: Instant Metrics Card (Col-Span 6) */}
-            <div className="lg:col-span-6 space-y-4">
+            {/* Right Output Column: Projected Savings & Payback (Col-Span 6) */}
+            <div className="lg:col-span-6 bg-gradient-to-br from-[#0c1a11] to-[#07130b] text-white p-6 sm:p-8 rounded-3xl border border-emerald-500/40 shadow-2xl space-y-6">
               
-              {/* Grand Total Estimated Net Savings Box */}
-              <div className="p-6 rounded-2xl bg-gradient-to-br from-emerald-950/80 via-slate-900 to-slate-950 border border-emerald-500/40 shadow-xl">
-                <span className="text-xs font-mono text-emerald-700 uppercase tracking-wider block mb-1">
-                  Estimated Total Annual Savings
+              <div>
+                <span className="text-[11px] font-mono text-emerald-400 font-bold tracking-wider uppercase block mb-1">
+                  PROJECTED ANNUAL FARM SAVINGS
                 </span>
-                <div className="text-3xl sm:text-4xl font-extrabold text-green-950 font-mono mb-1">
-                  ₹{totalAnnualSavings.toLocaleString()} <span className="text-xs text-gray-500 font-normal">/ Year</span>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-4xl sm:text-5xl font-extrabold font-mono text-white">
+                    ₹{totalAnnualSavings.toLocaleString('en-IN')}
+                  </span>
+                  <span className="text-xs text-gray-400 font-mono">/ Year</span>
                 </div>
-                <div className="flex items-center gap-2 text-xs text-emerald-700 font-medium">
-                  <TrendingUp className="w-4 h-4 text-emerald-700" />
-                  <span>Estimated Payback Period: <strong className="font-mono text-emerald-200">{paybackMonths} Months</strong></span>
+                <p className="text-xs text-emerald-300/80 mt-1 font-sans">
+                  Net Estimated Farm Profit Boost: <strong className="text-white">₹{netAnnualProfit.toLocaleString('en-IN')}</strong> after RaaS fees.
+                </p>
+              </div>
+
+              {/* Breakdown Metric Bars */}
+              <div className="space-y-3 pt-2 border-t border-white/10 text-xs font-mono">
+                <div className="flex justify-between items-center py-1 border-b border-white/5">
+                  <span className="text-gray-300">Prevented Crop Blight & Foliar Loss:</span>
+                  <strong className="text-emerald-400">₹{diseaseLossPrevented.toLocaleString('en-IN')}</strong>
+                </div>
+
+                <div className="flex justify-between items-center py-1 border-b border-white/5">
+                  <span className="text-gray-300">Targeted Chemical & Pesticide Savings:</span>
+                  <strong className="text-emerald-400">₹{chemicalSavings.toLocaleString('en-IN')}</strong>
+                </div>
+
+                <div className="flex justify-between items-center py-1 border-b border-white/5">
+                  <span className="text-gray-300">Scout Labor Hours Automated (45%):</span>
+                  <strong className="text-emerald-400">₹{laborSavedAnnual.toLocaleString('en-IN')}</strong>
+                </div>
+
+                <div className="flex justify-between items-center py-1">
+                  <span className="text-gray-300">Irrigation Electricity & Water Pump Savings:</span>
+                  <strong className="text-emerald-400">₹{waterCostSaved.toLocaleString('en-IN')} ({waterSavingsPerYear.toLocaleString('en-IN')} L)</strong>
                 </div>
               </div>
 
-              {/* Detailed Breakdown Metrics Grid */}
-              <div className="grid grid-cols-2 gap-3 text-xs font-mono">
-                
-                <div className="p-3.5 rounded-xl bg-white/80 border border-green-200">
-                  <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                    <Droplets className="w-3.5 h-3.5 text-blue-700" />
-                    <span>Water Conserved:</span>
+              {/* Payback Period Highlight Pill */}
+              <div className="p-4 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <Clock className="w-5 h-5 text-emerald-400 shrink-0" />
+                  <div>
+                    <span className="text-xs text-gray-300 block">RaaS Investment Payback Period:</span>
+                    <strong className="text-base text-emerald-300 font-mono font-bold">
+                      {paybackMonths} Months
+                    </strong>
                   </div>
-                  <div className="text-sm font-bold text-blue-700">
-                    {waterSavingsPerYear.toLocaleString()} L
-                  </div>
-                  <span className="text-[10px] text-gray-400 block">~₹{waterCostSaved.toLocaleString()} Saved</span>
                 </div>
-
-                <div className="p-3.5 rounded-xl bg-white/80 border border-green-200">
-                  <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                    <ShieldCheck className="w-3.5 h-3.5 text-teal-700" />
-                    <span>Pesticide Reduction:</span>
-                  </div>
-                  <div className="text-sm font-bold text-teal-700">
-                    ₹{chemicalSavings.toLocaleString()}
-                  </div>
-                  <span className="text-[10px] text-gray-400 block">Micro-targeting</span>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white/80 border border-green-200">
-                  <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                    <Clock className="w-3.5 h-3.5 text-purple-700" />
-                    <span>Scout Labor Hours:</span>
-                  </div>
-                  <div className="text-sm font-bold text-purple-700">
-                    {(acres * 24).toLocaleString()} Hrs
-                  </div>
-                  <span className="text-[10px] text-gray-400 block">Automated 24/7</span>
-                </div>
-
-                <div className="p-3.5 rounded-xl bg-white/80 border border-green-200">
-                  <div className="flex items-center gap-1.5 text-gray-500 mb-1">
-                    <Sparkles className="w-3.5 h-3.5 text-amber-700" />
-                    <span>Crop Loss Prevented:</span>
-                  </div>
-                  <div className="text-sm font-bold text-amber-700">
-                    ₹{diseaseLossPrevented.toLocaleString()}
-                  </div>
-                  <span className="text-[10px] text-gray-400 block">Early AI Detection</span>
-                </div>
-
+                <span className="text-[10px] font-mono px-2 py-1 rounded bg-emerald-400 text-slate-950 font-bold">
+                  HIGH ROI
+                </span>
               </div>
 
-              {/* Call to action button */}
+              {/* CTA Action */}
               <button
-                onClick={() => onOpenDemo()}
-                className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer"
+                onClick={() => onOpenDemo(cropType)}
+                className="w-full py-4 rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs sm:text-sm font-mono tracking-wider transition flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-emerald-500/25"
               >
-                <span>Lock In Estimated Savings — Book Pilot</span>
-                <ChevronRight className="w-4 h-4" />
+                <span>DEPLOY PILOT FOR {acres} ACRES</span>
+                <ArrowRight className="w-4 h-4" />
               </button>
 
             </div>

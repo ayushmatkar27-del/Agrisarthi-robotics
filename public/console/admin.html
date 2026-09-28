@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', sans-serif; }
+
+        body {
+            background: linear-gradient(135deg, #1e293b, #0f172a);
+            min-height: 100vh;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* --- Login Section --- */
+        .login-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            width: 100%;
+            position: absolute;
+            z-index: 100;
+            background: #0f172a;
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            padding: 40px;
+            border-radius: 20px;
+            width: 350px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .login-card h2 { margin-bottom: 20px; color: #4ade80; }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 8px;
+            border: 1px solid #334155;
+            background: #1e293b;
+            color: white;
+            outline: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #22c55e;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin-top: 10px;
+            transition: 0.3s;
+        }
+
+        button:hover { background: #16a34a; }
+
+        /* --- Dashboard Section (Hidden Initially) --- */
+        .dashboard-container {
+            display: none; /* Hidden until logged in */
+            width: 100%;
+            max-width: 800px;
+            padding: 20px;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid #334155;
+        }
+
+        .device-list {
+            display: grid;
+            gap: 15px;
+        }
+
+        .device-card {
+            background: #334155;
+            padding: 20px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 5px solid #22c55e;
+        }
+
+        /* --- Floating Add Button --- */
+        .fab {
+            position: fixed;
+            bottom: 30px;
+            right: 30px;
+            width: 60px;
+            height: 60px;
+            background: #22c55e;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            color: white;
+            box-shadow: 0 10px 25px rgba(34, 197, 94, 0.4);
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+        .fab:hover { transform: scale(1.1) rotate(90deg); }
+
+        /* --- Modal Popup --- */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.7);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 200;
+        }
+
+        .modal {
+            background: #1e293b;
+            padding: 30px;
+            border-radius: 20px;
+            width: 400px;
+            border: 1px solid #475569;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(50px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        .modal h3 { margin-bottom: 20px; color: #4ade80; text-align: center; }
+
+        .generated-pass {
+            background: #0f172a;
+            padding: 15px;
+            text-align: center;
+            font-family: monospace;
+            font-size: 20px;
+            letter-spacing: 2px;
+            color: #fbbf24;
+            border: 1px dashed #475569;
+            margin: 15px 0;
+            border-radius: 8px;
+        }
+
+        .label { font-size: 12px; color: #94a3b8; margin-top: 10px; display: block; }
+        
+        .close-btn {
+            background: transparent;
+            border: 1px solid #ef4444;
+            color: #ef4444;
+            margin-top: 10px;
+        }
+        .close-btn:hover { background: #ef4444; color: white; }
+
+    </style>
+</head>
+<body>
+
+    <div class="login-wrapper" id="loginScreen">
+        <div class="login-card">
+            <h2>🛡️ Admin Login</h2>
+            <input type="email" id="adminEmail" placeholder="admin@agrisarthi.com">
+            <input type="password" id="adminPass" placeholder="Password">
+            <button id="loginBtn">Access Panel</button>
+            <p id="loginMsg" style="margin-top:10px; font-size:12px; color:#ef4444;"></p>
+        </div>
+    </div>
+
+    <div class="dashboard-container" id="dashboardScreen">
+        <div class="header">
+            <h1>🚜 Rover Management</h1>
+            <button onclick="logout()" style="width: auto; padding: 8px 20px; background: #ef4444;">Logout</button>
+        </div>
+
+        <div class="device-list" id="deviceList">
+            <p style="text-align: center; color: #64748b;">Loading devices...</p>
+        </div>
+    </div>
+
+    <div class="fab" id="addBtn" style="display: none;">+</div>
+
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="modal">
+            <h3>Add New Rover</h3>
+            
+            <label class="label">ThingSpeak Channel ID</label>
+            <input type="number" id="newChannelId" placeholder="e.g. 123456">
+
+            <label class="label">Generated Secure Password</label>
+            <div class="generated-pass" id="randomPassDisplay">XXXX-XXXX</div>
+
+            <label class="label">ThingSpeak Read API Key</label>
+            <input type="text" id="readKey" placeholder="Enter Read Key">
+
+            <label class="label">ThingSpeak Write API Key</label>
+            <input type="text" id="writeKey" placeholder="Enter Write Key">
+
+            <button id="saveRoverBtn">🚀 Register Rover</button>
+            <button class="close-btn" onclick="closeModal()">Cancel</button>
+        </div>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, collection, getDocs } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    // 🔥 Firebase Config
+    const firebaseConfig = {
+      apiKey: "AIzaSyA_5VxvfKg8NWGq_Zy_0khCjHkuk-wcm7U",
+      authDomain: "agri-sarthi-9849c.firebaseapp.com",
+      projectId: "agri-sarthi-9849c",
+      storageBucket: "agri-sarthi-9849c.firebasestorage.app",
+      messagingSenderId: "960208736864",
+      appId: "1:960208736864:web:8848c3c56d6b50cd716905",
+      measurementId: "G-BXXKFC0E8C"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // --- DOM Elements ---
+    const loginScreen = document.getElementById('loginScreen');
+    const dashboardScreen = document.getElementById('dashboardScreen');
+    const addBtn = document.getElementById('addBtn');
+    const modalOverlay = document.getElementById('modalOverlay');
+    const randomPassDisplay = document.getElementById('randomPassDisplay');
+    const deviceList = document.getElementById('deviceList');
+
+    // --- 1. Login Logic ---
+    document.getElementById('loginBtn').addEventListener('click', async () => {
+        const email = document.getElementById('adminEmail').value;
+        const pass = document.getElementById('adminPass').value;
+
+        try {
+            await signInWithEmailAndPassword(auth, email, pass);
+            // Auth listener will handle the UI switch
+        } catch (error) {
+            document.getElementById('loginMsg').innerText = "❌ " + error.message;
+        }
+    });
+
+    // --- 2. Auth Listener ---
+    onAuthStateChanged(auth, (user) => {
+        if (user) {
+            loginScreen.style.display = 'none';
+            dashboardScreen.style.display = 'block';
+            addBtn.style.display = 'flex';
+            loadDevices();
+        } else {
+            loginScreen.style.display = 'flex';
+            dashboardScreen.style.display = 'none';
+            addBtn.style.display = 'none';
+        }
+    });
+
+    // --- 3. Modal Logic ---
+    addBtn.addEventListener('click', () => {
+        // Generate Random Password
+        const password = Math.random().toString(36).slice(-8).toUpperCase();
+        randomPassDisplay.innerText = password;
+        modalOverlay.style.display = 'flex';
+    });
+
+    window.closeModal = () => {
+        modalOverlay.style.display = 'none';
+        // Clear inputs
+        document.getElementById('newChannelId').value = '';
+        document.getElementById('readKey').value = '';
+        document.getElementById('writeKey').value = '';
+    }
+
+    // --- 4. Save Rover Logic ---
+    document.getElementById('saveRoverBtn').addEventListener('click', async () => {
+        const channelId = document.getElementById('newChannelId').value;
+        const password = randomPassDisplay.innerText;
+        const readKey = document.getElementById('readKey').value;
+        const writeKey = document.getElementById('writeKey').value;
+
+        if(!channelId || !readKey || !writeKey) {
+            alert("Please fill all fields!");
+            return;
+        }
+
+        try {
+            // Save to Firestore 'channels' collection
+            await setDoc(doc(db, "channels", channelId), {
+                channelId: channelId,
+                devicePassword: password, // The random password for user to claim
+                readKey: readKey,
+                writeKey: writeKey,
+                registeredAt: new Date(),
+                assignedTo: null // Initially not owned by anyone
+            });
+
+            alert("✅ Rover Registered Successfully!");
+            closeModal();
+            loadDevices(); // Refresh list
+
+        } catch (error) {
+            alert("Error: " + error.message);
+        }
+    });
+
+    // --- 5. Load Devices Logic ---
+    async function loadDevices() {
+        deviceList.innerHTML = '';
+        const querySnapshot = await getDocs(collection(db, "channels"));
+        
+        if (querySnapshot.empty) {
+            deviceList.innerHTML = '<p style="text-align:center; color:#64748b;">No rovers registered yet.</p>';
+            return;
+        }
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            const div = document.createElement('div');
+            div.className = 'device-card';
+            div.innerHTML = `
+                <div>
+                    <h3 style="color:#f8fafc">ID: ${data.channelId}</h3>
+                    <small style="color:#94a3b8">Pass: ${data.devicePassword}</small>
+                </div>
+                <div style="text-align:right">
+                    <span style="color:${data.assignedTo ? '#ef4444' : '#22c55e'}">
+                        ${data.assignedTo ? 'Taken' : 'Available'}
+                    </span>
+                </div>
+            `;
+            deviceList.appendChild(div);
+        });
+    }
+
+    // --- Global Logout ---
+    window.logout = () => {
+        signOut(auth);
+    }
+</script>
+
+</body>
+</html>

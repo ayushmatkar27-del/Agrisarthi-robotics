@@ -112,10 +112,10 @@ export default function RaaSPricing({ onOpenDemo }) {
               <div>
                 <button
                   onClick={() => onOpenDemo(plan.id)}
-                  className={`w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm transition flex items-center justify-center gap-2 cursor-pointer ${
+                  className={`w-full py-3.5 rounded-xl font-bold text-xs sm:text-sm font-mono tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer ${
                     plan.highlight
                       ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-lg shadow-emerald-500/20'
-                      : 'bg-green-50 hover:bg-slate-700 text-green-950 border border-green-300'
+                      : 'bg-white hover:bg-emerald-600 hover:text-white text-stone-900 border border-stone-300 shadow-sm'
                   }`}
                 >
                   <span>{plan.cta}</span>

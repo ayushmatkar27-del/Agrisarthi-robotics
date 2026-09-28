@@ -1,0 +1,1265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Provision Rover & Operator Registration</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.82);
+            --border-card: rgba(255, 255, 255, 0.1);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-hover: #05f0a2;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-cyan: #00e1d9;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --input-bg: rgba(9, 19, 34, 0.85);
+            --input-border: #1e2e48;
+            --input-focus: #00e599;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Animated Background Slideshow */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.80) 0%, rgba(7, 13, 24, 0.70) 45%, rgba(7, 13, 24, 0.90) 100%),
+                linear-gradient(to right, rgba(0, 229, 153, 0.04) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 153, 0.04) 1px, transparent 1px),
+                radial-gradient(circle at 15% 40%, rgba(0, 229, 153, 0.12) 0%, transparent 55%),
+                radial-gradient(circle at 85% 60%, rgba(0, 180, 216, 0.08) 0%, transparent 45%);
+            background-size: 100% 100%, 36px 36px, 36px 36px, 100% 100%, 100% 100%;
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+        }
+
+        /* Top Nav Header */
+        .telemetry-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.75);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+        }
+
+        .brand-icon {
+            width: 38px;
+            height: 38px;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid var(--primary);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+        }
+
+        .brand-name {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .brand-name span {
+            color: var(--primary);
+        }
+
+        .badge-telemetry {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.12);
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            letter-spacing: 0.5px;
+        }
+
+        .telemetry-status-pills {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+        }
+
+        .telemetry-pill-active {
+            color: var(--primary);
+            font-weight: 600;
+        }
+
+        .status-dot {
+            display: inline-block;
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: pulseDot 2s infinite ease-in-out;
+            margin-right: 4px;
+        }
+
+        @keyframes pulseDot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.5; transform: scale(0.85); }
+        }
+
+        /* Main 2-Column Layout */
+        .main-wrapper {
+            flex: 1;
+            max-width: 1360px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 36px 30px;
+            display: grid;
+            grid-template-columns: 1.05fr 0.95fr;
+            gap: 50px;
+            align-items: flex-start;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Left Column */
+        .schematic-showcase {
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+        }
+
+        .tag-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            padding: 6px 14px;
+            border-radius: 24px;
+            width: fit-content;
+            backdrop-filter: blur(8px);
+        }
+
+        .main-title {
+            font-size: 44px;
+            font-weight: 800;
+            line-height: 1.12;
+            letter-spacing: -1.2px;
+            color: #ffffff;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+        }
+
+        .main-description {
+            font-size: 15px;
+            line-height: 1.6;
+            color: var(--text-muted);
+            max-width: 520px;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+        }
+
+        /* Schematic Card */
+        .schematic-box {
+            background: rgba(13, 22, 38, 0.75);
+            border: 1px solid var(--border-card);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .schematic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .schematic-title {
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+        }
+
+        .schematic-status {
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .schematic-diagram {
+            width: 100%;
+            height: 170px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .schematic-diagram svg {
+            width: 100%;
+            height: 100%;
+            max-width: 380px;
+        }
+
+        .schematic-metrics {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 14px;
+        }
+
+        .metric-cell {
+            background: rgba(9, 17, 30, 0.7);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 10px 12px;
+            text-align: center;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .metric-cell .label {
+            font-size: 9px;
+            font-weight: 700;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+            margin-bottom: 4px;
+        }
+
+        .metric-cell .val {
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .metric-cell .val.green {
+            color: var(--primary);
+        }
+
+        /* Workflow Steps */
+        .pairing-steps {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .step-row {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid var(--primary);
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .step-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .step-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .step-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .guide-link-wrap {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-top: 6px;
+        }
+
+        .guide-link-wrap a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .guide-link-wrap a:hover {
+            text-decoration: underline;
+        }
+
+        /* Right Form Card */
+        .form-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 40px rgba(0, 229, 153, 0.08);
+            border-radius: 28px;
+            padding: 36px;
+            width: 100%;
+            position: relative;
+        }
+
+        .form-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 15%;
+            right: 15%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--primary), transparent);
+        }
+
+        .card-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .card-title {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .provisioning-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .card-subtitle {
+            font-size: 13px;
+            color: var(--text-dim);
+            margin-bottom: 24px;
+        }
+
+        /* Section Headings */
+        .section-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 20px 0 14px;
+            text-transform: uppercase;
+        }
+
+        .section-tag.first {
+            margin-top: 0;
+        }
+
+        .section-tag .aux {
+            color: var(--text-dim);
+            font-weight: 500;
+            font-size: 10px;
+            text-transform: none;
+        }
+
+        /* Form Inputs */
+        .input-group {
+            margin-bottom: 14px;
+        }
+
+        .input-label-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+
+        .input-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--text-muted);
+        }
+
+        .input-label-tag {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: var(--text-dim);
+        }
+
+        .input-box-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .input-box-icon {
+            position: absolute;
+            left: 14px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            pointer-events: none;
+        }
+
+        .input-box-wrap input {
+            width: 100%;
+            background: var(--input-bg);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            padding: 11px 40px 11px 40px;
+            font-size: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            color: #ffffff;
+            transition: all 0.2s ease;
+            outline: none;
+        }
+
+        .input-box-wrap input::placeholder {
+            color: #475569;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            font-size: 13px;
+        }
+
+        .input-box-wrap input:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 229, 153, 0.15);
+            background: rgba(13, 26, 45, 0.95);
+        }
+
+        .input-box-wrap input:focus + .input-box-icon,
+        .input-box-wrap:focus-within .input-box-icon {
+            color: var(--primary);
+        }
+
+        .input-toggle-btn {
+            position: absolute;
+            right: 12px;
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            padding: 4px;
+        }
+
+        .input-toggle-btn:hover {
+            color: #ffffff;
+        }
+
+        /* Password strength bar */
+        .password-strength-wrap {
+            display: flex;
+            gap: 6px;
+            margin-top: 6px;
+        }
+
+        .strength-segment {
+            flex: 1;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            transition: background-color 0.3s;
+        }
+
+        .strength-segment.active {
+            background-color: var(--primary);
+        }
+
+        /* Radio Bands Selector */
+        .radio-band-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin-bottom: 16px;
+        }
+
+        .radio-band-pill {
+            background: rgba(9, 17, 30, 0.7);
+            border: 1px solid var(--input-border);
+            border-radius: 10px;
+            padding: 10px 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .radio-band-pill:hover {
+            border-color: rgba(0, 229, 153, 0.3);
+        }
+
+        .radio-band-pill.selected {
+            background: rgba(0, 229, 153, 0.1);
+            border-color: var(--primary);
+            box-shadow: 0 0 12px rgba(0, 229, 153, 0.15);
+        }
+
+        .radio-band-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: #ffffff;
+            margin-bottom: 2px;
+        }
+
+        .radio-band-pill.selected .radio-band-name {
+            color: var(--primary);
+        }
+
+        .radio-band-desc {
+            font-size: 9px;
+            color: var(--text-dim);
+        }
+
+        /* Hardware Pair Row */
+        .hardware-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .qr-badge-btn {
+            color: var(--primary);
+            font-size: 10px;
+            font-family: 'JetBrains Mono', monospace;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        /* Action Button */
+        .btn-verify {
+            width: 100%;
+            background: linear-gradient(135deg, #00e599 0%, #00bfa5 100%);
+            color: #051410;
+            border: none;
+            border-radius: 12px;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 800;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 4px 20px rgba(0, 229, 153, 0.4);
+            transition: all 0.25s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-verify:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 28px rgba(0, 229, 153, 0.55);
+            background: linear-gradient(135deg, #10f0a4 0%, #00d4b8 100%);
+        }
+
+        .btn-verify:active {
+            transform: translateY(0);
+        }
+
+        .btn-verify svg {
+            width: 18px;
+            height: 18px;
+            stroke-width: 2.5;
+        }
+
+        .feedback-message {
+            margin-top: 14px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            display: none;
+            text-align: center;
+            line-height: 1.4;
+        }
+
+        .login-back-link {
+            text-align: center;
+            margin-top: 20px;
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .login-back-link a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 700;
+            margin-left: 4px;
+        }
+
+        .login-back-link a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-spin {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(5, 20, 16, 0.3);
+            border-top: 2px solid #051410;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-wrapper {
+                grid-template-columns: 1fr;
+                gap: 40px;
+                padding: 24px 20px;
+            }
+            .schematic-showcase {
+                text-align: center;
+                align-items: center;
+            }
+            .main-title {
+                font-size: 34px;
+            }
+            .schematic-box {
+                width: 100%;
+                max-width: 500px;
+            }
+            .pairing-steps {
+                width: 100%;
+                max-width: 500px;
+                text-align: left;
+            }
+        }
+
+        @media (max-width: 640px) {
+            .telemetry-nav {
+                padding: 12px 16px;
+            }
+            .telemetry-status-pills {
+                display: none;
+            }
+            .hardware-grid {
+                grid-template-columns: 1fr;
+            }
+            .radio-band-grid {
+                grid-template-columns: 1fr;
+            }
+            .form-card {
+                padding: 26px 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Fullscreen Slideshow Layer -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Telemetry Header -->
+    <header class="telemetry-nav">
+        <a href="/" onclick="event.preventDefault(); window.top.location.href='/'" class="brand-cluster" title="Return to AgriSarthi Website">
+            <div class="brand-icon">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <path d="m4.93 4.93 4.24 4.24"></path>
+                    <path d="m14.83 9.17 4.24-4.24"></path>
+                    <path d="m14.83 14.83 4.24 4.24"></path>
+                    <path d="m9.17 14.83-4.24 4.24"></path>
+                    <circle cx="12" cy="12" r="4"></circle>
+                </svg>
+            </div>
+            <span class="brand-name">Agri<span>Sarthi</span></span>
+            <span class="badge-telemetry">V4.2 TELEMETRY</span>
+        </a>
+
+        <div class="telemetry-status-pills">
+            <div>
+                <span class="status-dot"></span>
+                <span>MESH GATEWAY: <span class="telemetry-pill-active">ONLINE (433.92 MHz)</span></span>
+            </div>
+            <div>|</div>
+            <div>NODE PING: <span class="telemetry-pill-active">12ms</span></div>
+            <div>|</div>
+            <div>ENCRYPTION: <span style="color: #38bdf8;">AES-256-GCM</span></div>
+        </div>
+    </header>
+
+    <!-- Main Provisioning Center -->
+    <main class="main-wrapper">
+        <!-- Left Column: Schematic & Specs -->
+        <section class="schematic-showcase">
+            <div class="tag-pill">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                    <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
+                </svg>
+                <span>Autonomous Rover Pairing</span>
+            </div>
+
+            <h1 class="main-title">
+                Provision Rover &amp;<br>
+                Deploy Operator
+            </h1>
+
+            <p class="main-description">
+                Register your operator credentials and bind your field unit via secure encrypted telemetry channel. Compatible with Mark-IV Agri-Bot, RTK Field Drones, and Soil Probe Mesh.
+            </p>
+
+            <!-- Schematic Box -->
+            <div class="schematic-box">
+                <div class="schematic-header">
+                    <span class="schematic-title">DEVICE SCHEMATIC [AG-MK4]</span>
+                    <span class="schematic-status">
+                        <span class="status-dot"></span>
+                        READY FOR HANDSHAKE
+                    </span>
+                </div>
+
+                <!-- Animated SVG Rover Schematic -->
+                <div class="schematic-diagram">
+                    <svg viewBox="0 0 360 140" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <!-- Top Antenna Beacon -->
+                        <path d="M180 15V35" stroke="#00e599" stroke-width="2" stroke-linecap="round"/>
+                        <circle cx="180" cy="12" r="3.5" fill="#00e599"/>
+                        <path d="M172 18A12 12 0 0 1 188 18" stroke="#00e599" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+                        <path d="M166 14A20 20 0 0 1 194 14" stroke="#00e599" stroke-width="1.5" stroke-linecap="round" opacity="0.3"/>
+
+                        <!-- Upper Control Box -->
+                        <rect x="160" y="35" width="40" height="24" rx="4" fill="#0d1b2a" stroke="#00e599" stroke-width="1.5"/>
+                        <circle cx="170" cy="47" r="2" fill="#00e599"/>
+                        <circle cx="180" cy="47" r="2" fill="#38bdf8"/>
+                        <circle cx="190" cy="47" r="2" fill="#00e599"/>
+
+                        <!-- Data Bus Lines (Dashed) -->
+                        <path d="M180 59V72" stroke="#00e599" stroke-width="2" stroke-dasharray="3 3"/>
+                        <path d="M120 72H240" stroke="#00e599" stroke-width="2" stroke-dasharray="3 3"/>
+                        <path d="M120 72V90" stroke="#00e599" stroke-width="2" stroke-dasharray="3 3"/>
+                        <path d="M180 72V90" stroke="#00e599" stroke-width="2" stroke-dasharray="3 3"/>
+                        <path d="M240 72V90" stroke="#00e599" stroke-width="2" stroke-dasharray="3 3"/>
+
+                        <!-- Chassis Wheels / Nodes -->
+                        <circle cx="120" cy="98" r="18" stroke="#00e599" stroke-width="2" fill="#091322"/>
+                        <circle cx="120" cy="98" r="8" stroke="#00e599" stroke-width="1.5" stroke-dasharray="2 2" fill="#0d2338"/>
+                        <circle cx="120" cy="98" r="3" fill="#00e599"/>
+
+                        <!-- Center Wheel / Sensor Probe -->
+                        <circle cx="180" cy="98" r="18" stroke="#00e599" stroke-width="2" fill="#091322"/>
+                        <circle cx="180" cy="98" r="8" stroke="#38bdf8" stroke-width="1.5" fill="#0d2338"/>
+                        <path d="M174 105L168 116" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M180 108L180 120" stroke="#fbbf24" stroke-width="2" stroke-linecap="round"/>
+
+                        <!-- Right Wheel -->
+                        <circle cx="240" cy="98" r="18" stroke="#00e599" stroke-width="2" fill="#091322"/>
+                        <circle cx="240" cy="98" r="8" stroke="#00e599" stroke-width="1.5" stroke-dasharray="2 2" fill="#0d2338"/>
+                        <circle cx="240" cy="98" r="3" fill="#00e599"/>
+                    </svg>
+                </div>
+
+                <div class="schematic-metrics">
+                    <div class="metric-cell">
+                        <div class="label">PROTOCOL</div>
+                        <div class="val">LoRa / RTK</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="label">GPS LOCK</div>
+                        <div class="val green">±1.5cm FIX</div>
+                    </div>
+                    <div class="metric-cell">
+                        <div class="label">BATTERY</div>
+                        <div class="val">98.4% (LiFePO4)</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Steps -->
+            <div class="pairing-steps">
+                <div class="step-row">
+                    <div class="step-num">1</div>
+                    <div class="step-info">
+                        <div class="step-title">Operator Identity Clearance</div>
+                        <div class="step-desc">Authorized farmer/agronomist profile creation</div>
+                    </div>
+                </div>
+                <div class="step-row">
+                    <div class="step-num">2</div>
+                    <div class="step-info">
+                        <div class="step-title">Telemetry Channel Matching</div>
+                        <div class="step-desc">Syncing with unique chassis Channel ID</div>
+                    </div>
+                </div>
+                <div class="step-row">
+                    <div class="step-num">3</div>
+                    <div class="step-info">
+                        <div class="step-title">Hardware Handshake PIN</div>
+                        <div class="step-desc">AES mutual encryption key confirmation</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="guide-link-wrap">
+                Need field assistance? <a href="#" onclick="alert('Step 1: Check your physical rover chassis label for Channel ID & PIN.\nStep 2: Enter your name and operator email.\nStep 3: Click Verify & Pair Rover Assistant!')">Read Deployment Guide &rarr;</a>
+            </div>
+        </section>
+
+        <!-- Right Column: Registration Card -->
+        <section class="form-card-container">
+            <div class="form-card">
+                <div class="card-header-row">
+                    <h2 class="card-title">Create Account</h2>
+                    <span class="provisioning-badge">PROVISIONING</span>
+                </div>
+                <p class="card-subtitle">Bind this operator console to an AgriSarthi hardware unit</p>
+
+                <!-- Status alert banner -->
+                <div class="feedback-message" id="msg"></div>
+
+                <!-- 01. OPERATOR CREDENTIALS -->
+                <div class="section-tag first">
+                    <span>01. OPERATOR CREDENTIALS</span>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-row">
+                        <label class="input-label" for="name">Full Name</label>
+                        <span class="input-label-tag">Operator ID</span>
+                    </div>
+                    <div class="input-box-wrap">
+                        <span class="input-box-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                            </svg>
+                        </span>
+                        <input type="text" id="name" placeholder="John Doe" required autocomplete="name">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-row">
+                        <label class="input-label" for="email">Email Address</label>
+                        <span class="input-label-tag">Cloud Telemetry Login</span>
+                    </div>
+                    <div class="input-box-wrap">
+                        <span class="input-box-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="2" y="4" width="20" height="16" rx="2"></rect>
+                                <path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"></path>
+                            </svg>
+                        </span>
+                        <input type="email" id="email" placeholder="farmer@example.com" required autocomplete="email">
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="input-label-row">
+                        <label class="input-label" for="password">Master Password</label>
+                        <span class="input-label-tag" id="strength-label" style="color: var(--primary);">Strength: Strong</span>
+                    </div>
+                    <div class="input-box-wrap">
+                        <span class="input-box-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                            </svg>
+                        </span>
+                        <input type="password" id="password" placeholder="••••••••••••••••" required autocomplete="new-password">
+                        <button type="button" class="input-toggle-btn" id="toggleSignupPassword" aria-label="Toggle password">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path>
+                                <circle cx="12" cy="12" r="3"></circle>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="password-strength-wrap">
+                        <div class="strength-segment active"></div>
+                        <div class="strength-segment active"></div>
+                        <div class="strength-segment active"></div>
+                    </div>
+                </div>
+
+                <!-- 02. HARDWARE PAIRING DETAILS -->
+                <div class="section-tag">
+                    <span>02. HARDWARE PAIRING DETAILS</span>
+                    <span class="aux"><span class="status-dot"></span>Signal: -62 dBm</span>
+                </div>
+
+                <div class="input-label-row" style="margin-bottom: 6px;">
+                    <span class="input-label">Telemetry Radio Band</span>
+                </div>
+                <div class="radio-band-grid">
+                    <div class="radio-band-pill selected" onclick="selectBand(this)">
+                        <div class="radio-band-name">LoRa 433 MHz</div>
+                        <div class="radio-band-desc">Long Range (15km)</div>
+                    </div>
+                    <div class="radio-band-pill" onclick="selectBand(this)">
+                        <div class="radio-band-name">5G Ag-Mesh</div>
+                        <div class="radio-band-desc">High Bandwidth</div>
+                    </div>
+                    <div class="radio-band-pill" onclick="selectBand(this)">
+                        <div class="radio-band-name">RTK Satellite</div>
+                        <div class="radio-band-desc">Global Fallback</div>
+                    </div>
+                </div>
+
+                <!-- Channel & PIN inputs -->
+                <div class="hardware-grid">
+                    <div class="input-group" style="margin-bottom:0;">
+                        <div class="input-label-row">
+                            <label class="input-label" for="channelId">Channel ID</label>
+                            <span class="qr-badge-btn" onclick="openQrScanner()">⚏ Scan QR</span>
+                        </div>
+                        <div class="input-box-wrap">
+                            <input type="text" id="channelId" placeholder="e.g. 123456" style="padding-left: 14px; padding-right: 14px;">
+                        </div>
+                    </div>
+
+                    <div class="input-group" style="margin-bottom:0;">
+                        <div class="input-label-row">
+                            <label class="input-label" for="devicePass">Device PIN</label>
+                            <span class="input-label-tag">On Chassis</span>
+                        </div>
+                        <div class="input-box-wrap">
+                            <input type="text" id="devicePass" placeholder="e.g. OIXP5NMB" style="padding-left: 14px; padding-right: 36px; text-transform: uppercase;">
+                            <span class="input-box-icon" style="left: auto; right: 12px; color: var(--primary);">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                                </svg>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" class="btn-verify" id="signupBtn">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+                        <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
+                        <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
+                        <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
+                        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+                    </svg>
+                    <span id="signup-btn-text">VERIFY &amp; PAIR ROVER ASSISTANT</span>
+                </button>
+
+                <div class="login-back-link">
+                    <span>Already have an account?</span>
+                    <a href="login.html">Login to existing rover &rarr;</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        // Array of images from the assets/images folder
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        // Build slide elements
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+
+        // Rotate slideshow every 6 seconds smoothly
+        setInterval(cycleSlide, 6000);
+
+        function selectBand(el) {
+            document.querySelectorAll('.radio-band-pill').forEach(pill => pill.classList.remove('selected'));
+            el.classList.add('selected');
+        }
+
+        function openQrScanner() {
+            const promptVal = prompt("Scan or Paste Rover QR Code payload / Channel ID:");
+            if (promptVal) {
+                document.getElementById('channelId').value = promptVal.trim();
+            }
+        }
+    </script>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { 
+            getAuth, 
+            createUserWithEmailAndPassword 
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        import { 
+            getFirestore, 
+            doc, 
+            getDoc,
+            setDoc,
+            updateDoc
+        } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        // Firebase Config
+        const firebaseConfig = {
+            apiKey: "AIzaSyA_5VxvfKg8NWGq_Zy_0khCjHkuk-wcm7U",
+            authDomain: "agri-sarthi-9849c.firebaseapp.com",
+            projectId: "agri-sarthi-9849c",
+            storageBucket: "agri-sarthi-9849c.firebasestorage.app",
+            messagingSenderId: "960208736864",
+            appId: "1:960208736864:web:8848c3c56d6b50cd716905",
+            measurementId: "G-BXXKFC0E8C"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app);
+
+        // UI elements
+        const toggleSignupPassword = document.getElementById('toggleSignupPassword');
+        const passwordInput = document.getElementById('password');
+        const signupBtn = document.getElementById('signupBtn');
+        const signupBtnText = document.getElementById('signup-btn-text');
+        const msg = document.getElementById('msg');
+
+        // Toggle password
+        toggleSignupPassword.addEventListener('click', () => {
+            const isPassword = passwordInput.type === 'password';
+            passwordInput.type = isPassword ? 'text' : 'password';
+            toggleSignupPassword.innerHTML = isPassword 
+                ? `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"></path><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"></path><path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"></path><line x1="2" y1="2" x2="22" y2="22"></line></svg>`
+                : `<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        });
+
+        function showMessage(text, isError = true) {
+            msg.style.display = 'block';
+            msg.style.background = isError ? 'rgba(239, 68, 68, 0.15)' : 'rgba(0, 229, 153, 0.15)';
+            msg.style.color = isError ? '#fca5a5' : '#86efac';
+            msg.style.border = isError ? '1px solid rgba(239, 68, 68, 0.4)' : '1px solid rgba(0, 229, 153, 0.4)';
+            msg.innerHTML = text;
+        }
+
+        function setBtnLoading(loading, label = 'VERIFY & PAIR ROVER ASSISTANT') {
+            if (loading) {
+                signupBtn.disabled = true;
+                signupBtn.style.opacity = '0.75';
+                signupBtnText.innerHTML = `<span class="loading-spin"></span> Authenticating & Pairing...`;
+            } else {
+                signupBtn.disabled = false;
+                signupBtn.style.opacity = '1';
+                signupBtnText.textContent = label;
+            }
+        }
+
+        // Signup Logic
+        signupBtn.addEventListener("click", async () => {
+            const name = document.getElementById("name").value.trim();
+            const email = document.getElementById("email").value.trim();
+            const password = document.getElementById("password").value;
+            const channelId = document.getElementById("channelId").value.trim();
+            const devicePass = document.getElementById("devicePass").value.trim();
+
+            if (!name || !email || !password) {
+                showMessage("⚠️ Please fill in your Operator Name, Email, and Password.");
+                return;
+            }
+
+            if (password.length < 6) {
+                showMessage("⚠️ Security Password must be at least 6 characters long.");
+                return;
+            }
+
+            setBtnLoading(true);
+
+            try {
+                let verifiedChannelId = null;
+
+                // If user provided a Channel ID, verify hardware credentials
+                if (channelId) {
+                    showMessage("⏳ Handshaking device credentials with field registry...", false);
+                    const channelRef = doc(db, "channels", channelId);
+                    const channelSnap = await getDoc(channelRef);
+
+                    if (channelSnap.exists()) {
+                        const deviceData = channelSnap.data();
+                        if (devicePass && deviceData.devicePassword && deviceData.devicePassword !== devicePass) {
+                            throw new Error("Incorrect Device Verification PIN for this rover.");
+                        }
+                        if (deviceData.assignedTo && deviceData.assignedTo !== null) {
+                            throw new Error("This rover chassis is already assigned to an active operator.");
+                        }
+                        verifiedChannelId = channelId;
+                    } else {
+                        verifiedChannelId = channelId;
+                    }
+                }
+
+                showMessage("⏳ Creating encrypted operator account...", false);
+
+                // Create user in Firebase Auth
+                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                const user = userCredential.user;
+
+                // Save user profile in Firestore
+                await setDoc(doc(db, "users", user.uid), {
+                    name: name,
+                    email: email,
+                    channelId: verifiedChannelId || null,
+                    createdAt: new Date()
+                });
+
+                // If channel was verified, claim it
+                if (verifiedChannelId) {
+                    try {
+                        const channelRef = doc(db, "channels", verifiedChannelId);
+                        const channelSnap = await getDoc(channelRef);
+                        if (channelSnap.exists()) {
+                            await updateDoc(channelRef, { assignedTo: user.uid });
+                        } else {
+                            await setDoc(channelRef, {
+                                channelId: verifiedChannelId,
+                                devicePassword: devicePass || "DEFAULT",
+                                readKey: "",
+                                writeKey: "",
+                                assignedTo: user.uid,
+                                registeredAt: new Date()
+                            });
+                        }
+                    } catch (e) {
+                        console.warn("Channel claim notice:", e);
+                    }
+                }
+
+                showMessage("🎉 Operator Profile Created & Rover Paired Successfully! Redirecting...", false);
+                
+                setTimeout(() => {
+                    window.location.href = "login.html";
+                }, 1800);
+
+            } catch (error) {
+                setBtnLoading(false);
+                let errText = error.message;
+                if (error.code === 'auth/email-already-in-use') {
+                    errText = "This email is already registered as an operator. Please log in.";
+                } else if (error.code === 'auth/invalid-email') {
+                    errText = "Invalid email format.";
+                } else if (error.code === 'auth/weak-password') {
+                    errText = "Password is too weak. Please use a stronger security key.";
+                }
+                showMessage("❌ " + errText, true);
+                console.error(error);
+            }
+        });
+    </script>
+</body>
+</html>

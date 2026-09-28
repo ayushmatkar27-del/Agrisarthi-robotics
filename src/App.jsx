@@ -10,6 +10,8 @@ import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
 import LegalPage from './pages/LegalPage';
 import NotFoundPage from './pages/NotFoundPage';
+import RoverDeepDiveModal from './components/RoverDeepDiveModal';
+import ConsolePage from './pages/ConsolePage';
 
 // Automatic Scroll Restoration and Hash Jump Handler
 function ScrollHandler() {
@@ -34,6 +36,7 @@ function ScrollHandler() {
 }
 
 export default function App() {
+  const location = useLocation();
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [preselectedRover, setPreselectedRover] = useState('sentinel');
 
@@ -74,19 +77,27 @@ export default function App() {
     return () => clearInterval(interval);
   }, []);
 
+  const [isRoverDeepDiveOpen, setIsRoverDeepDiveOpen] = useState(false);
+
   const handleOpenDemoModal = (roverId = 'sentinel') => {
     setPreselectedRover(typeof roverId === 'string' ? roverId : 'sentinel');
     setIsDemoModalOpen(true);
+  };
+
+  const handleOpenRoverDeepDive = () => {
+    setIsRoverDeepDiveOpen(true);
   };
 
   return (
     <div className="min-h-screen bg-[#f0f9f0] text-green-950 flex flex-col selection:bg-emerald-500 selection:text-white">
       <ScrollHandler />
       
-      {/* Fixed High-Tech Navbar */}
-      <Navbar 
-        onOpenDemo={() => handleOpenDemoModal('sentinel')} 
-      />
+      {/* Fixed High-Tech Navbar (Hidden on /console for total fullscreen console experience) */}
+      {!location.pathname.startsWith('/console') && (
+        <Navbar 
+          onOpenDemo={() => handleOpenDemoModal('sentinel')} 
+        />
+      )}
 
       <main className="flex-grow">
         <Routes>
@@ -96,6 +107,7 @@ export default function App() {
             element={
               <HomePage 
                 onOpenDemo={handleOpenDemoModal} 
+                onOpenRoverDeepDive={handleOpenRoverDeepDive}
                 liveTelemetry={liveTelemetry}
                 fleetStats={fleetStats}
               />
@@ -108,6 +120,7 @@ export default function App() {
             element={
               <RoversPage 
                 onOpenDemo={handleOpenDemoModal}
+                onOpenRoverDeepDive={handleOpenRoverDeepDive}
               />
             } 
           />
@@ -152,21 +165,34 @@ export default function App() {
           <Route path="/terms" element={<LegalPage />} />
           <Route path="/safety" element={<LegalPage />} />
 
+          {/* AgriSarthi Command & Telemetry Console */}
+          <Route path="/console" element={<ConsolePage />} />
+          <Route path="/console/*" element={<ConsolePage />} />
+
           {/* Branded 404 Lost Telemetry Signal */}
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
 
-      {/* Comprehensive Footer */}
-      <Footer 
-        onOpenDemo={() => handleOpenDemoModal('sentinel')}
-      />
+      {/* Comprehensive Footer (Hidden on /console for full dashboard immersion) */}
+      {!location.pathname.startsWith('/console') && (
+        <Footer 
+          onOpenDemo={() => handleOpenDemoModal('sentinel')}
+        />
+      )}
 
       {/* Interactive 3-Step Pilot Deployment & Demo Booking Modal */}
       <BookDemoModal 
         isOpen={isDemoModalOpen}
         onClose={() => setIsDemoModalOpen(false)}
         preselectedRover={preselectedRover}
+      />
+
+      {/* Interactive Technical Blueprints & Slide Deck Modal */}
+      <RoverDeepDiveModal 
+        isOpen={isRoverDeepDiveOpen}
+        onClose={() => setIsRoverDeepDiveOpen(false)}
+        onOpenDemo={handleOpenDemoModal}
       />
 
     </div>

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi — 3D Autonomous Rover & Farm Field Simulation | SIH 2026</title>
+    
+    <!-- Google Fonts: Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- Three.js and OrbitControls CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+    
+    <!-- Simulation Stylesheet -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- 3D WebGL Canvas Container -->
+    <div id="canvas-container"></div>
+
+    <!-- UI Overlay Layer -->
+    <div class="ui-overlay">
+        
+        <!-- Top Navigation & Header Bar -->
+        <header class="header-bar">
+            <div class="brand-section">
+                <div class="brand-logo-badge">🌱</div>
+                <div class="brand-titles">
+                    <h1>
+                        AgriSarthi 3D Farm Scout
+                        <span class="sih-badge">SIH 2026 • PS SIH26180</span>
+                    </h1>
+                    <p>Autonomous Mobile Edge-AI Smart Farming Assistant • Working Farm Simulation</p>
+                </div>
+            </div>
+
+            <div class="header-status-group">
+                <div class="status-pill online">
+                    <span class="indicator-dot"></span>
+                    <span>Edge AI Active</span>
+                </div>
+
+                <!-- Camera View Modes -->
+                <div class="view-modes">
+                    <button id="view-orbit" class="view-btn active" title="Free Orbit View">Orbit</button>
+                    <button id="view-follow" class="view-btn" title="Chase Follow Camera">Follow</button>
+                    <button id="view-pov" class="view-btn" title="Rover First-Person POV">Rover POV</button>
+                    <button id="view-top" class="view-btn" title="Top-down Field Map">Field Map</button>
+                </div>
+            </div>
+        </header>
+
+        <!-- Interactive Hint Badge -->
+        <div id="control-hint" class="hint-badge">
+            💡 Click any sensor or component on the rover to inspect its specifications and role
+        </div>
+
+        <!-- Middle Telemetry & Vision Grid -->
+        <div class="middle-grid">
+            
+            <!-- Left: Real-Time Multi-Modal Telemetry -->
+            <div class="telemetry-card">
+                <div class="card-header">
+                    <span class="card-title">📡 Live Field Telemetry</span>
+                    <span style="font-size: 0.75rem; color: var(--text-muted);">ESP32 + Pi 4 Fusion</span>
+                </div>
+
+                <div class="telemetry-item">
+                    <span class="item-label">🌱 Soil Moisture</span>
+                    <span id="val-moisture" class="item-val good">48%</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="item-label">🌡️ Canopy Temp</span>
+                    <span id="val-temp" class="item-val">28.4°C</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="item-label">💧 Air Humidity</span>
+                    <span id="val-humidity" class="item-val">62%</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="item-label">⚡ Rover Speed</span>
+                    <span id="val-speed" class="item-val">2.2 km/h</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="item-label">🔋 Battery Pack</span>
+                    <span id="val-battery" class="item-val good">92%</span>
+                </div>
+                <div class="telemetry-item">
+                    <span class="item-label">📍 GPS Coordinates</span>
+                    <span id="val-gps" class="item-val" style="font-family: monospace; font-size: 0.78rem;">18.5204°N, 73.8567°E</span>
+                </div>
+            </div>
+
+            <!-- Right: Edge AI Vision Mini HUD -->
+            <div class="vision-card">
+                <div class="card-header">
+                    <span class="card-title">👁️ Edge AI Vision (YOLO)</span>
+                    <span style="font-size: 0.75rem; color: var(--primary-green); font-weight: 700;">On-Device 24 FPS</span>
+                </div>
+
+                <div class="vision-feed-box">
+                    <canvas id="vision-canvas" width="300" height="150"></canvas>
+                    <span class="vision-overlay-tag">LIVE • CAM 1</span>
+                </div>
+
+                <div id="vision-status-banner" class="vision-status-banner normal">
+                    All systems nominal • Continuous farm scouting active.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Bottom Control Dock -->
+        <footer class="bottom-dock">
+            
+            <!-- Driving Mode Toggles -->
+            <div class="mode-toggle-group">
+                <button id="btn-auto" class="btn-primary active">
+                    🤖 Autonomous Patrol
+                </button>
+                <button id="btn-manual" class="btn-secondary">
+                    🎮 Manual Drive
+                </button>
+                <button id="btn-spray" class="btn-secondary">
+                    💧 Targeted Spray
+                </button>
+            </div>
+
+            <!-- Farmer Advisory Message -->
+            <div class="advisory-pill">
+                <span>🌾</span>
+                <span id="advisory-text">All systems nominal • Continuous farm scouting active.</span>
+            </div>
+
+        </footer>
+
+        <!-- Sensor Quick Selector Strip -->
+        <div class="sensor-pill-strip" style="background: var(--card-bg); border-radius: 10px; padding: 8px 14px; border: 1px solid var(--border-subtle); margin-top: 10px; box-shadow: var(--card-shadow); align-items: center;">
+            <span style="font-size: 0.75rem; font-weight: 700; color: var(--primary-green); margin-right: 8px;">HARDWARE:</span>
+            <button class="sensor-pill-btn" data-sensor="rpi4">Raspberry Pi 4</button>
+            <button class="sensor-pill-btn" data-sensor="esp32">ESP32</button>
+            <button class="sensor-pill-btn" data-sensor="camera">USB Camera</button>
+            <button class="sensor-pill-btn" data-sensor="soil_probe">Soil Moisture Probe</button>
+            <button class="sensor-pill-btn" data-sensor="dht22">DHT22 Temp/Humidity</button>
+            <button class="sensor-pill-btn" data-sensor="mq135">MQ-135 Gas</button>
+            <button class="sensor-pill-btn" data-sensor="ultrasonic">Ultrasonics</button>
+            <button class="sensor-pill-btn" data-sensor="pir">PIR Motion</button>
+            <button class="sensor-pill-btn" data-sensor="gps">GPS Module</button>
+            <button class="sensor-pill-btn" data-sensor="sprayer">Spray Nozzles</button>
+            <button class="sensor-pill-btn" data-sensor="tank">Liquid Tank</button>
+            <button class="sensor-pill-btn" data-sensor="battery">Battery Pack</button>
+            <button class="sensor-pill-btn" data-sensor="wheels">4WD Drive</button>
+        </div>
+
+    </div>
+
+    <!-- Enhanced Sensor Inspector Popup Modal -->
+    <div id="sensor-modal" class="sensor-modal">
+        <div class="modal-header">
+            <div>
+                <span id="modal-category" class="modal-category">Processing & Intelligence Subsystem</span>
+                <h3 id="modal-title" class="modal-title">Raspberry Pi 4</h3>
+            </div>
+            <button id="modal-close" class="modal-close-btn" title="Close">&times;</button>
+        </div>
+        
+        <div id="modal-specs" class="modal-specs">Specs: Broadcom BCM2711, Quad-Core Cortex-A72 @ 1.5GHz</div>
+        
+        <div id="modal-diagnostics" class="modal-diagnostics" style="background: #f0fdf4; border: 1px solid #bbf7d0; color: #166534; padding: 8px 12px; border-radius: 6px; font-size: 0.8rem; margin: 8px 0; font-family: monospace;">
+            <strong>Diagnostics:</strong> Active
+        </div>
+
+        <p id="modal-role" class="modal-role">Runs OpenCV image pipelines and YOLOv8n object detection on-device.</p>
+
+        <div style="margin-top: 14px; display: flex; justify-content: flex-end; gap: 10px;">
+            <button id="btn-resume-patrol" class="btn-primary" style="padding: 8px 16px; font-size: 0.82rem;">
+                ▶ Resume Farm Patrol
+            </button>
+        </div>
+    </div>
+
+    <!-- Scripts (Texture generator loaded first) -->
+    <script src="textures.js"></script>
+    <script src="rover.js"></script>
+    <script src="farm.js"></script>
+    <script src="simulation.js"></script>
+
+</body>
+</html>

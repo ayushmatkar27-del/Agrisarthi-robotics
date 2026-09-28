@@ -1,0 +1,2663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Roller Control - AgriSarthi</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Animated Background */
+        .bg-animation {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            opacity: 0.1;
+            background-image: 
+                radial-gradient(circle at 20% 50%, rgba(74, 124, 44, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(95, 163, 59, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 40% 20%, rgba(45, 80, 22, 0.3) 0%, transparent 50%);
+            animation: bgFloat 20s ease-in-out infinite;
+        }
+
+        @keyframes bgFloat {
+            0%, 100% { transform: translateY(0) scale(1); }
+            50% { transform: translateY(-20px) scale(1.05); }
+        }
+
+        /* Header */
+        .header {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(20px);
+            padding: 20px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            position: relative;
+            z-index: 10;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            color: white;
+        }
+
+        .logo-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #4a7c2c 0%, #5fa33b 100%);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            box-shadow: 0 8px 20px rgba(74, 124, 44, 0.4);
+            animation: logoFloat 3s ease-in-out infinite;
+        }
+
+        @keyframes logoFloat {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+        }
+
+        .logo h1 {
+            font-size: 28px;
+            font-weight: 700;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: translateX(-5px);
+        }
+
+        /* Connection Status Bar */
+        .connection-bar {
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            padding: 8px 20px;
+            text-align: center;
+            font-size: 13px;
+            position: relative;
+            z-index: 10;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .connection-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #f44336;
+            animation: blink 2s infinite;
+        }
+
+        .connection-dot.connected {
+            background: #4caf50;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.3; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .wifi-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            padding: 5px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 11px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .wifi-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
+        /* Container */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 30px;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* Title */
+        .title-section {
+            text-align: center;
+            color: white;
+            margin-bottom: 40px;
+            animation: fadeInDown 1s ease-out;
+        }
+
+        .title-section h2 {
+            font-size: 48px;
+            font-weight: 800;
+            margin-bottom: 10px;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .title-section p {
+            font-size: 18px;
+            opacity: 0.95;
+            text-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Main Grid */
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 35px;
+            align-items: start;
+        }
+
+        /* Camera Section */
+        .camera-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: slideInLeft 0.6s ease-out;
+        }
+
+        @keyframes slideInLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .camera-title {
+            font-size: 20px;
+            color: #2d5016;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .camera-feed {
+            position: relative;
+            width: 100%;
+            height: 430px;
+            background: linear-gradient(135deg, #1a1a1a, #2d2d2d);
+            border-radius: 18px;
+            overflow: hidden;
+            margin-bottom: 15px;
+            border: 2px solid #2d5016;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 0 4px 15px rgba(0, 0, 0, 0.5);
+        }
+
+        .camera-feed::before {
+            content: '📷';
+            font-size: 80px;
+            opacity: 0.3;
+            position: absolute;
+        }
+
+        .camera-feed.live::before {
+            animation: cameraFlash 2s ease-in-out infinite;
+        }
+
+        .camera-feed.connected::before {
+            display: none !important;
+        }
+
+        @keyframes cameraFlash {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 0.6; }
+        }
+
+        .camera-video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .camera-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 16px;
+            text-align: center;
+            padding: 20px;
+        }
+
+        #mjpegStream {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: none;
+        }
+
+        .detection-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: 3px solid transparent;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .detection-overlay.object-detected {
+            border-color: #f44336;
+            background: rgba(244, 67, 54, 0.1);
+        }
+
+        .detection-text {
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            display: none;
+            background: rgba(244, 67, 54, 0.8);
+            padding: 8px 16px;
+            border-radius: 10px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .detection-text.show {
+            display: block;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Status Bar */
+        .status-bar {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .status-item {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .status-label {
+            font-size: 11px;
+            color: #666;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 3px;
+        }
+
+        .status-value {
+            font-size: 16px;
+            font-weight: 800;
+            color: #2d5016;
+        }
+
+        .camera-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .camera-btn {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .camera-btn-start {
+            background: linear-gradient(135deg, #4caf50, #66bb6a);
+            color: white;
+        }
+
+        .camera-btn-stop {
+            background: linear-gradient(135deg, #f44336, #e53935);
+            color: white;
+        }
+
+        .camera-btn-capture {
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+        }
+
+        .camera-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+        }
+
+        /* Camera Settings Panel */
+        .camera-settings-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            display: none;
+        }
+
+        /* Remote Control Section - More Compact */
+        .remote-section {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 30px;
+            padding: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            animation: slideInRight 0.6s ease-out;
+        }
+
+        @keyframes slideInRight {
+            from {
+                opacity: 0;
+                transform: translateX(50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .remote-title {
+            font-size: 20px;
+            color: #2d5016;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            text-align: center;
+            justify-content: center;
+        }
+
+        /* Control Mode Tabs - Compact */
+        .control-mode-tabs {
+            display: flex;
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 12px;
+            padding: 4px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        .mode-tab {
+            flex: 1;
+            padding: 10px 8px;
+            border: none;
+            background: transparent;
+            color: white;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .mode-tab.active {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .mode-tab:hover:not(.active) {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        /* Control Panels */
+        .control-panel {
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .control-panel.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Control Containers - More Compact */
+        .control-container {
+            background: linear-gradient(135deg, #2d3436 0%, #1a1a1a 100%);
+            border-radius: 20px;
+            padding: 20px 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            margin-bottom: 15px;
+            border: 2px solid #667eea;
+        }
+
+        .auto-control-container {
+            background: linear-gradient(135deg, #2d3436 0%, #1a1a1a 100%);
+            border-radius: 20px;
+            padding: 20px 15px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            text-align: center;
+            margin-bottom: 15px;
+            border: 2px solid #4caf50;
+        }
+
+        .manual-header, .auto-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .manual-status {
+            color: #667eea;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(102, 126, 234, 0.2);
+            padding: 6px 12px;
+            border-radius: 15px;
+        }
+
+        .auto-status {
+            color: #4caf50;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            background: rgba(76, 175, 80, 0.2);
+            padding: 6px 12px;
+            border-radius: 15px;
+        }
+
+        /* Live Speed Display - Compact */
+        .live-speed-display {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.3), rgba(0, 0, 0, 0.5));
+            border-radius: 12px;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(33, 150, 243, 0.3);
+            text-align: center;
+        }
+
+        .live-speed-header {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+
+        .live-speed-icon {
+            font-size: 16px;
+            color: #2196f3;
+        }
+
+        .live-speed-title {
+            color: #2196f3;
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .live-speed-value {
+            font-size: 28px;
+            font-weight: 800;
+            color: #4caf50;
+            text-shadow: 0 0 10px rgba(76, 175, 80, 0.3);
+            margin-bottom: 4px;
+            transition: all 0.3s ease;
+        }
+
+        .live-speed-unit {
+            color: #ccc;
+            font-size: 11px;
+            font-weight: 600;
+        }
+
+        .live-speed-progress {
+            width: 100%;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 3px;
+            margin-top: 8px;
+            overflow: hidden;
+        }
+
+        .live-speed-progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #f44336, #ffc107, #4caf50);
+            border-radius: 3px;
+            transition: width 0.5s ease;
+        }
+
+        /* Manual Control Pad - More Compact */
+        .manual-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-bottom: 20px;
+            width: 240px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .manual-btn {
+            width: 100%;
+            aspect-ratio: 1;
+            border: none;
+            border-radius: 16px;
+            font-size: 20px;
+            cursor: pointer;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 6px 15px rgba(102, 126, 234, 0.3);
+            user-select: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .manual-btn:nth-child(5) {
+            grid-column: 2;
+            grid-row: 2;
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+        }
+
+        .manual-btn:nth-child(2) {
+            grid-column: 2;
+            grid-row: 1;
+            border-radius: 16px 16px 8px 8px;
+        }
+
+        .manual-btn:nth-child(8) {
+            grid-column: 2;
+            grid-row: 3;
+            border-radius: 8px 8px 16px 16px;
+        }
+
+        .manual-btn:nth-child(4) {
+            grid-column: 1;
+            grid-row: 2;
+            border-radius: 16px 8px 8px 16px;
+        }
+
+        .manual-btn:nth-child(6) {
+            grid-column: 3;
+            grid-row: 2;
+            border-radius: 8px 16px 16px 8px;
+        }
+
+        .manual-btn-label {
+            font-size: 9px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 4px;
+            font-weight: 600;
+            opacity: 0.9;
+        }
+
+        .manual-btn-icon {
+            font-size: 24px;
+            margin-bottom: 2px;
+        }
+
+        .manual-btn:active {
+            transform: scale(0.95);
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.5);
+        }
+
+        .manual-btn:hover {
+            transform: scale(1.05);
+            filter: brightness(1.1);
+        }
+
+        /* Auto Control Center - Compact */
+        .auto-control-center {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .auto-main-toggle {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            background: linear-gradient(135deg, #2d3436, #1a1a1a);
+            border-radius: 50%;
+            border: 2px solid #4caf50;
+            cursor: pointer;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: #4caf50;
+        }
+
+        .auto-main-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6);
+        }
+
+        .auto-main-toggle.active {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            border-color: #4caf50;
+            color: white;
+            box-shadow: 0 8px 25px rgba(76, 175, 80, 0.4);
+            animation: pulse 2s infinite;
+        }
+
+        .auto-main-toggle.active:hover {
+            box-shadow: 0 15px 40px rgba(76, 175, 80, 0.6);
+        }
+
+        .auto-toggle-icon {
+            font-size: 32px;
+            margin-bottom: 6px;
+        }
+
+        .auto-toggle-text {
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Auto Info Display - Compact */
+        .auto-info-display {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 12px;
+            width: 100%;
+            text-align: left;
+            color: white;
+            border: 1px solid rgba(76, 175, 80, 0.2);
+        }
+
+        .auto-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+            font-size: 11px;
+        }
+
+        .auto-info-label {
+            color: #ccc;
+            font-weight: 600;
+        }
+
+        .auto-info-value {
+            color: white;
+            font-weight: 700;
+        }
+
+        .auto-info-value.online {
+            color: #4caf50;
+        }
+
+        .auto-info-value.offline {
+            color: #f44336;
+        }
+
+        /* Speed Control - Compact */
+        .speed-control {
+            margin-bottom: 20px;
+        }
+
+        .speed-label {
+            font-size: 11px;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .speed-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 8px;
+            background: linear-gradient(90deg, #f44336, #ffc107, #4caf50);
+            outline: none;
+            -webkit-appearance: none;
+            appearance: none;
+            margin-bottom: 6px;
+        }
+
+        .speed-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            transition: all 0.2s ease;
+        }
+
+        .speed-slider::-webkit-slider-thumb:hover {
+            transform: scale(1.2);
+            box-shadow: 0 6px 18px rgba(102, 126, 234, 0.6);
+        }
+
+        .speed-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            border: none;
+            transition: all 0.2s ease;
+        }
+
+        .speed-value {
+            text-align: center;
+            font-size: 13px;
+            color: white;
+            font-weight: 700;
+        }
+
+        /* Roller Status - Compact */
+        .roller-status {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1), rgba(255, 255, 255, 0.05));
+            border-radius: 15px;
+            padding: 15px;
+            text-align: center;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 6px;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .status-indicator.running {
+            background: #4caf50;
+            box-shadow: 0 0 15px rgba(76, 175, 80, 0.6);
+        }
+
+        .status-indicator.stopped {
+            background: #9e9e9e;
+            box-shadow: 0 0 15px rgba(158, 158, 158, 0.2);
+        }
+
+        .roller-status-text {
+            font-size: 14px;
+            font-weight: 700;
+            color: white;
+        }
+
+        /* Buttons - More Compact */
+        .settings-btn {
+            width: 100%;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #ff9800, #f57c00);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 15px rgba(255, 152, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
+
+        .settings-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(255, 152, 0, 0.5);
+        }
+
+        /* Emergency Stop */
+        .emergency-stop {
+            width: 100%;
+            padding: 10px 12px;
+            background: linear-gradient(135deg, #f44336, #d32f2f);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 6px 15px rgba(244, 67, 54, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .emergency-stop:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 30px rgba(244, 67, 54, 0.5);
+        }
+
+        .emergency-stop:active {
+            transform: translateY(0);
+            box-shadow: 0 4px 10px rgba(244, 67, 54, 0.4);
+        }
+
+        /* Auto Settings Panel - Compact */
+        .auto-settings-panel {
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 12px;
+            padding: 15px;
+            margin-top: 15px;
+            border: 1px solid rgba(76, 175, 80, 0.3);
+            display: none;
+        }
+
+        .settings-title {
+            color: white;
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+
+        .setting-group {
+            margin-bottom: 12px;
+        }
+
+        .setting-label {
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            display: block;
+            margin-bottom: 4px;
+        }
+
+        .setting-input {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            font-size: 11px;
+        }
+
+        .setting-input:focus {
+            outline: none;
+            border-color: #4caf50;
+        }
+
+        .sequence-selector {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .sequence-btn {
+            flex: 1;
+            padding: 6px 8px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            background: rgba(0, 0, 0, 0.3);
+            color: white;
+            border-radius: 6px;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .sequence-btn.selected {
+            background: rgba(76, 175, 80, 0.7);
+            border-color: #4caf50;
+        }
+
+        .settings-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .save-btn, .cancel-btn {
+            flex: 1;
+            padding: 8px 10px;
+            border: none;
+            border-radius: 8px;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .save-btn {
+            background: linear-gradient(135deg, #4caf50, #2e7d32);
+            color: white;
+        }
+
+        .cancel-btn {
+            background: rgba(158, 158, 158, 0.5);
+            color: white;
+        }
+
+        .save-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.4);
+        }
+
+        /* Connection Modal */
+        .connection-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 20px;
+            max-width: 500px;
+            width: 90%;
+            text-align: center;
+        }
+
+        .modal-title {
+            color: #2d5016;
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .modal-steps {
+            text-align: left;
+            margin-bottom: 25px;
+            background: #f5f5f5;
+            padding: 20px;
+            border-radius: 10px;
+        }
+
+        .modal-step {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+
+        .step-number {
+            background: #4caf50;
+            color: white;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-weight: bold;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .modal-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+
+        .modal-btn.primary {
+            background: #4caf50;
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #2196f3;
+            color: white;
+        }
+
+        .modal-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+            }
+
+            .title-section h2 {
+                font-size: 32px;
+            }
+
+            .manual-pad, .auto-control-center {
+                width: 100%;
+                max-width: 240px;
+            }
+
+            .auto-main-toggle {
+                width: 90px;
+                height: 90px;
+            }
+
+            .auto-toggle-icon {
+                font-size: 28px;
+            }
+
+            .status-bar {
+                grid-template-columns: 1fr 1fr;
+            }
+            
+            .live-speed-value {
+                font-size: 24px;
+            }
+            
+            .camera-feed {
+                height: 250px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-animation"></div>
+
+    <!-- Connection Modal -->
+    <div class="connection-modal" id="connectionModal">
+        <div class="modal-content">
+            <h2 class="modal-title">🔗 Connect to Rover WiFi</h2>
+            
+            <div class="modal-steps">
+                <div class="modal-step">
+                    <div class="step-number">1</div>
+                    <div>Open your device's WiFi settings</div>
+                </div>
+                <div class="modal-step">
+                    <div class="step-number">2</div>
+                    <div>Connect to: <strong>ESP32_RC_CAR</strong></div>
+                </div>
+                <div class="modal-step">
+                    <div class="step-number">3</div>
+                    <div>Password: <strong>12345678</strong></div>
+                </div>
+                <div class="modal-step">
+                    <div class="step-number">4</div>
+                    <div>Wait for connection to establish</div>
+                </div>
+                <div class="modal-step">
+                    <div class="step-number">5</div>
+                    <div>Then enter Rover IP: <strong>192.168.4.1</strong></div>
+                </div>
+                <div class="modal-step">
+                    <div class="step-number">6</div>
+                    <div>For Camera: Enter your camera ESP32 IP address</div>
+                </div>
+            </div>
+            
+            <div class="modal-actions">
+                <button class="modal-btn primary" onclick="hideConnectionModal()">✅ I'm Connected</button>
+                <button class="modal-btn secondary" onclick="openWifiSettings()">📱 WiFi Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Header -->
+    <header class="header">
+        <div class="logo">
+            <div class="logo-icon">🌾</div>
+            <h1>AgriSarthi</h1>
+        </div>
+        <button class="back-btn" onclick="goBack()">← Back to Dashboard</button>
+    </header>
+
+    <!-- Connection Status Bar -->
+    <div class="connection-bar" id="connectionBar">
+        <div class="connection-status">
+            <div class="connection-dot" id="connectionDot"></div>
+            <span id="connectionText">Disconnected from Rover</span>
+        </div>
+        <button class="wifi-btn" onclick="showConnectionModal()">
+            📶 Connect WiFi
+        </button>
+    </div>
+
+    <div class="container">
+        <!-- Title -->
+        <div class="title-section">
+            <h2>🚜 Roller Control System</h2>
+            <p>Control your rover with live monitoring</p>
+        </div>
+
+        <!-- Main Content -->
+        <div class="main-grid">
+            <!-- Camera Section (Left) -->
+            <div class="camera-section">
+                <h3 class="camera-title">📹 Live Camera Feed</h3>
+
+                <div class="camera-feed live" id="cameraFeed">
+                    <div class="camera-placeholder" id="cameraPlaceholder">
+                        Camera Offline - Enter Camera IP to start
+                    </div>
+                    <img id="mjpegStream" style="display: none; width: 100%; height: 100%; object-fit: cover;" />
+                    <video id="cameraVideo" class="camera-video"></video>
+                </div>
+
+                <!-- Status Bar -->
+                <div class="status-bar">
+                    <div class="status-item">
+                        <div class="status-label">🎥 Camera Status</div>
+                        <div class="status-value" id="cameraStatus">Offline</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">🚨 Detection</div>
+                        <div class="status-value" id="detectionStatus">Clear</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="status-label">⚡ Live Speed</div>
+                        <div class="status-value" id="liveSpeedStatus">0 km/h</div>
+                    </div>
+                </div>
+
+                <!-- Camera Controls -->
+                <div class="camera-controls">
+                    <button class="camera-btn camera-btn-start" onclick="startCamera()">
+                        ▶️ Start Camera
+                    </button>
+                    <button class="camera-btn camera-btn-stop" onclick="stopCamera()">
+                        ⏹️ Stop Camera
+                    </button>
+                    <button class="camera-btn camera-btn-capture" onclick="capturePhoto()">
+                        📸 Capture Photo
+                    </button>
+                    <button class="camera-btn camera-btn-capture" onclick="captureScreen()">
+                        📸 Capture <picture>
+                        
+                    </button>
+                </div>
+
+                <!-- Camera Settings Panel -->
+                <div class="camera-settings-panel" id="cameraSettingsPanel">
+                    <div class="settings-title">📷 Camera Configuration</div>
+                    
+                    <!-- Camera IP Settings - SINGLE FIELD -->
+                    <div class="setting-group">
+                        <label class="setting-label">📡 Camera ESP32 IP Address:</label>
+                        <div style="display: flex; gap: 5px;">
+                            <input type="text" id="cameraIpInput" 
+                                   placeholder="10.147.209.165"
+                                   class="setting-input">
+                            <button class="camera-btn" onclick="testCameraConnection()" 
+                                    style="background: rgba(33, 150, 243, 0.8); padding: 8px 12px; font-size: 11px; white-space: nowrap; color: white;">
+                                🔍 Test
+                            </button>
+                        </div>
+                        <div style="font-size: 10px; color: #ccc; margin-top: 5px;">
+                            Enter just the IP address (no http:// or /stream)<br>
+                            Example: <strong>10.147.209.165</strong> or <strong>192.168.1.100</strong>
+                        </div>
+                    </div>
+                    
+                    <!-- Camera Type -->
+                    <div class="setting-group">
+                        <label class="setting-label">🎯 Camera Source:</label>
+                        <div class="sequence-selector">
+                            <button class="sequence-btn selected" onclick="setCameraSource('esp32')" id="camEsp32">ESP32 Camera</button>
+                            <button class="sequence-btn" onclick="setCameraSource('browser')" id="camBrowser">Webcam</button>
+                        </div>
+                    </div>
+                    
+                    <!-- Stream URL Info -->
+                    <div class="setting-group">
+                        <label class="setting-label">🔗 Camera Stream URL:</label>
+                        <div id="streamUrlDisplay" style="font-size: 10px; color: #ccc; padding: 8px; background: rgba(0,0,0,0.3); border-radius: 5px; margin-top: 5px;">
+                            Will be: http://[IP-ADDRESS]/
+                        </div>
+                    </div>
+                    
+                    <!-- Save/Cancel Buttons -->
+                    <div class="settings-actions">
+                        <button class="save-btn" onclick="saveCameraSettings()">
+                            💾 Save Settings
+                        </button>
+                        <button class="cancel-btn" onclick="closeCameraSettings()">
+                            ❌ Close
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Camera Settings Button -->
+                <button class="settings-btn" onclick="openCameraSettings()" style="margin-top: 10px;">
+                    ⚙️ Camera Settings
+                </button>
+            </div>
+
+            <!-- Remote Control Section (Right) -->
+            <div class="remote-section">
+                <h3 class="remote-title">🎮 Remote Control</h3>
+
+                <!-- Control Mode Tabs -->
+                <div class="control-mode-tabs">
+                    <button class="mode-tab active" onclick="switchControlMode('manual')">
+                        👋 Manual Control
+                    </button>
+                    <button class="mode-tab" onclick="switchControlMode('auto')">
+                        🤖 Auto Control
+                    </button>
+                </div>
+
+                <!-- Manual Control Panel -->
+                <div class="control-panel manual-control-panel active" id="manualPanel">
+                    <div class="control-container">
+                        <div class="manual-header">
+                            <div class="manual-status">MANUAL MODE ACTIVE</div>
+                        </div>
+
+                        <!-- Live Speed Display -->
+                        <div class="live-speed-display">
+                            <div class="live-speed-header">
+                                <span class="live-speed-icon">⚡</span>
+                                <span class="live-speed-title">LIVE SPEED</span>
+                            </div>
+                            <div class="live-speed-value" id="manualLiveSpeed">0</div>
+                            <div class="live-speed-unit">kilometers per hour</div>
+                            <div class="live-speed-progress">
+                                <div class="live-speed-progress-bar" id="manualSpeedProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Roller Status -->
+                        <div class="roller-status">
+                            <span class="status-indicator stopped" id="manualRollerIndicator"></span>
+                            <span class="roller-status-text" id="manualRollerStatusText">READY FOR MANUAL CONTROL</span>
+                        </div>
+
+                        <!-- Manual Control Pad -->
+                        <div class="manual-pad">
+                            <div style="grid-column: 1; grid-row: 1;"></div>
+                            <button class="manual-btn" 
+                                    onmousedown="moveRoller('forward')" 
+                                    onmouseup="stopRoller()" 
+                                    ontouchstart="moveRoller('forward')" 
+                                    ontouchend="stopRoller()">
+                                <span class="manual-btn-icon">⬆️</span>
+                                <span class="manual-btn-label">Forward</span>
+                            </button>
+                            <div style="grid-column: 3; grid-row: 1;"></div>
+
+                            <button class="manual-btn" 
+                                    onmousedown="moveRoller('left')" 
+                                    onmouseup="stopRoller()" 
+                                    ontouchstart="moveRoller('left')" 
+                                    ontouchend="stopRoller()">
+                                <span class="manual-btn-icon">⬅️</span>
+                                <span class="manual-btn-label">Left</span>
+                            </button>
+                            <button class="manual-btn" 
+                                    onmousedown="rotateRoller('cw')" 
+                                    onmouseup="stopRoller()" 
+                                    ontouchstart="rotateRoller('cw')" 
+                                    ontouchend="stopRoller()">
+                                <span class="manual-btn-icon">🔄</span>
+                                <span class="manual-btn-label">Rotate</span>
+                            </button>
+                            <button class="manual-btn" 
+                                    onmousedown="moveRoller('right')" 
+                                    onmouseup="stopRoller()" 
+                                    ontouchstart="moveRoller('right')" 
+                                    ontouchend="stopRoller()">
+                                <span class="manual-btn-icon">➡️</span>
+                                <span class="manual-btn-label">Right</span>
+                            </button>
+
+                            <div style="grid-column: 1; grid-row: 3;"></div>
+                            <button class="manual-btn" 
+                                    onmousedown="moveRoller('backward')" 
+                                    onmouseup="stopRoller()" 
+                                    ontouchstart="moveRoller('backward')" 
+                                    ontouchend="stopRoller()">
+                                <span class="manual-btn-icon">⬇️</span>
+                                <span class="manual-btn-label">Backward</span>
+                            </button>
+                            <div style="grid-column: 3; grid-row: 3;"></div>
+                        </div>
+
+                        <!-- Speed Control -->
+                        <div class="speed-control">
+                            <label class="speed-label">Target Speed Control</label>
+                            <input type="range" class="speed-slider" id="manualSpeedSlider" min="0" max="100" value="50" oninput="updateSpeed(this.value)">
+                            <div class="speed-value" id="manualSpeedValue">50%</div>
+                        </div>
+
+                        <!-- Remote Settings -->
+                        <button class="settings-btn" onclick="openRemoteSettings()">
+                            ⚙️ Rover Settings
+                        </button>
+
+                        <!-- Emergency Stop -->
+                        <button class="emergency-stop" onclick="emergencyStop()">
+                            🛑 EMERGENCY STOP
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Auto Control Panel -->
+                <div class="control-panel auto-control-panel" id="autoPanel">
+                    <div class="auto-control-container">
+                        <div class="auto-header">
+                            <div class="auto-status" id="autoModeStatusText">AUTO MODE READY</div>
+                        </div>
+
+                        <!-- Live Speed Display -->
+                        <div class="live-speed-display">
+                            <div class="live-speed-header">
+                                <span class="live-speed-icon">⚡</span>
+                                <span class="live-speed-title">LIVE SPEED</span>
+                            </div>
+                            <div class="live-speed-value" id="autoLiveSpeed">0</div>
+                            <div class="live-speed-unit">kilometers per hour</div>
+                            <div class="live-speed-progress">
+                                <div class="live-speed-progress-bar" id="autoSpeedProgress" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Auto Control Center -->
+                        <div class="auto-control-center">
+                            <!-- Main Toggle Button -->
+                            <button class="auto-main-toggle" id="autoMainToggle" onclick="toggleAutoMode()">
+                                <span class="auto-toggle-icon">🤖</span>
+                                <span class="auto-toggle-text" id="autoToggleText">START AUTO</span>
+                            </button>
+
+                            <!-- Auto Info Display -->
+                            <div class="auto-info-display">
+                                <div class="auto-info-row">
+                                    <span class="auto-info-label">🤖 Status:</span>
+                                    <span class="auto-info-value offline" id="autoStatusValue">OFFLINE</span>
+                                </div>
+                                <div class="auto-info-row">
+                                    <span class="auto-info-label">🎯 Rover IP:</span>
+                                    <span class="auto-info-value" id="autoRoverIp">192.168.4.1</span>
+                                </div>
+                                <div class="auto-info-row">
+                                    <span class="auto-info-label">⏱️ Interval:</span>
+                                    <span class="auto-info-value" id="autoIntervalValue">3s</span>
+                                </div>
+                                <div class="auto-info-row">
+                                    <span class="auto-info-label">🔄 Sequence:</span>
+                                    <span class="auto-info-value" id="autoSequenceValue">4 Steps</span>
+                                </div>
+                                <div class="auto-info-row">
+                                    <span class="auto-info-label">⚡ Current Step:</span>
+                                    <span class="auto-info-value" id="autoCurrentStep">-</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Roller Status -->
+                        <div class="roller-status">
+                            <span class="status-indicator stopped" id="autoRollerIndicator"></span>
+                            <span class="roller-status-text" id="autoRollerStatusText">AUTO MODE READY</span>
+                        </div>
+
+                        <!-- Speed Control -->
+                        <div class="speed-control">
+                            <label class="speed-label">Target Speed Control</label>
+                            <input type="range" class="speed-slider" id="autoSpeedSlider" min="0" max="100" value="50" oninput="updateSpeed(this.value)">
+                            <div class="speed-value" id="autoSpeedValue">50%</div>
+                        </div>
+
+                        <!-- Settings Button -->
+                        <button class="settings-btn" onclick="openAutoSettings()">
+                            ⚙️ Auto Settings
+                        </button>
+
+                        <!-- Emergency Stop -->
+                        <button class="emergency-stop" onclick="emergencyStop()">
+                            🛑 EMERGENCY STOP
+                        </button>
+                    </div>
+
+                    <!-- Auto Settings Panel -->
+                    <div class="auto-settings-panel" id="autoSettingsPanel">
+                        <div class="settings-title">🤖 Auto Mode Configuration</div>
+                        
+                        <!-- Rover IP Settings -->
+                        <div class="setting-group">
+                            <label class="setting-label">🎯 Rover IP Address:</label>
+                            <div style="display: flex; gap: 5px;">
+                                <input type="text" id="roverIpInput" 
+                                       placeholder="192.168.4.1"
+                                       class="setting-input">
+                                <button class="camera-btn" onclick="testRoverConnection()" 
+                                        style="background: rgba(33, 150, 243, 0.8); padding: 8px 12px; font-size: 11px; white-space: nowrap; color: white;">
+                                    🔍 Test
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Interval Settings -->
+                        <div class="setting-group">
+                            <label class="setting-label">⏱️ Movement Interval (seconds):</label>
+                            <input type="range" id="autoIntervalSlider" min="1" max="10" value="3" 
+                                   class="setting-input"
+                                   oninput="updateAutoIntervalDisplay(this.value)">
+                            <div style="display: flex; justify-content: space-between; margin-top: 5px;">
+                                <span style="color: #ccc; font-size: 11px;">1s</span>
+                                <span style="color: white; font-weight: 700; font-size: 12px;">
+                                    <span id="autoIntervalDisplay">3</span> seconds
+                                </span>
+                                <span style="color: #ccc; font-size: 11px;">10s</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Sequence Settings -->
+                        <div class="setting-group">
+                            <label class="setting-label">🔄 Movement Sequence:</label>
+                            <div class="sequence-selector">
+                                <button class="sequence-btn" onclick="toggleSequence('forward')" id="seqForward">Forward</button>
+                                <button class="sequence-btn" onclick="toggleSequence('left')" id="seqLeft">Left</button>
+                                <button class="sequence-btn" onclick="toggleSequence('right')" id="seqRight">Right</button>
+                                <button class="sequence-btn" onclick="toggleSequence('backward')" id="seqBackward">Backward</button>
+                            </div>
+                        </div>
+                        
+                        <!-- Save/Cancel Buttons -->
+                        <div class="settings-actions">
+                            <button class="save-btn" onclick="saveAutoSettings()">
+                                💾 Save Settings
+                            </button>
+                            <button class="cancel-btn" onclick="closeAutoSettings()">
+                                ❌ Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Canvas for Photo Capture -->
+    <canvas id="captureCanvas" style="display: none;"></canvas>
+    <script src="https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js"></script>
+    <script src="html2canvas.min.js"></script>
+
+
+    <script>
+        // ============ GLOBAL VARIABLES ============
+        let cameraActive = false;
+        let rollerMoving = false;
+        let currentSpeed = 50;
+        let currentControlMode = 'manual';
+        let objectDetected = false;
+
+        // Camera stream
+        let cameraStream = null;
+        let currentCameraSource = 'esp32';
+        let esp32CameraIp = localStorage.getItem('esp32CameraIp') || '10.164.223.165:81';
+        let esp32StreamUrl = '';
+        let mjpegImg = null;
+
+        // Rover Control variables
+        let roverIpAddress = localStorage.getItem('roverIpAddress') || '192.168.4.1';
+        let roverWebSocket = null;
+        let isConnectedToRover = false;
+
+        // Auto Mode variables
+        let autoModeActive = false;
+        let autoModeInterval = null;
+        let autoModeSequence = ['forward', 'left', 'backward', 'right'];
+        let autoModeIndex = 0;
+        let autoIntervalSeconds = 3;
+
+        // Live Speed Simulation
+        let liveSpeed = 0;
+        let targetSpeed = 0;
+        let speedUpdateInterval = null;
+        let currentDirection = 'stopped';
+
+        // ============ INITIALIZATION ============
+        window.addEventListener('load', () => {
+            console.log('🚜 Roller Control System Ready');
+            
+            // Load saved settings
+            loadSettings();
+            
+            // Initialize UI
+            updateAutoModeUI();
+            updateSequenceUI();
+            
+            // Set interval display
+            document.getElementById('autoIntervalDisplay').textContent = autoIntervalSeconds;
+            document.getElementById('autoIntervalSlider').value = autoIntervalSeconds;
+            document.getElementById('autoIntervalValue').textContent = `${autoIntervalSeconds}s`;
+            
+            // Initialize live speed simulation
+            startLiveSpeedSimulation();
+            
+            // Auto-check connection on page load
+            setTimeout(() => {
+                checkRoverConnection();
+            }, 1000);
+            
+            console.log(`🎯 Rover IP: ${roverIpAddress}`);
+            console.log(`📷 Camera IP: ${esp32CameraIp}`);
+            
+            // Update stream URL display
+            updateStreamUrlDisplay();
+        });
+
+        // ============ CONNECTION MANAGEMENT ============
+        function showConnectionModal() {
+            document.getElementById('connectionModal').style.display = 'flex';
+        }
+
+        function hideConnectionModal() {
+            document.getElementById('connectionModal').style.display = 'none';
+        }
+
+        function openWifiSettings() {
+            alert('Please open your device WiFi settings and connect to "ESP32_RC_CAR" WiFi with password "12345678"');
+        }
+
+        // ============ ROVER CONNECTION FUNCTIONS ============
+        async function checkRoverConnection() {
+            if (!roverIpAddress) {
+                updateConnectionStatus(false);
+                return false;
+            }
+            
+            try {
+                // Try to fetch from rover
+                const controller = new AbortController();
+                const timeoutId = setTimeout(() => controller.abort(), 2000);
+                
+                const response = await fetch(`http://${roverIpAddress}`, {
+                    method: 'GET',
+                    mode: 'no-cors',
+                    signal: controller.signal
+                });
+                
+                clearTimeout(timeoutId);
+                
+                // If we get here without error, connection is good
+                updateConnectionStatus(true);
+                
+                // Try to connect WebSocket
+                await connectRoverWebSocket();
+                
+                return true;
+                
+            } catch (error) {
+                console.log('⚠️ Rover connection check failed:', error.message);
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
+
+        async function connectRoverWebSocket() {
+            if (roverWebSocket && (roverWebSocket.readyState === WebSocket.OPEN || roverWebSocket.readyState === WebSocket.CONNECTING)) {
+                return roverWebSocket;
+            }
+
+            const wsUrl = `ws://${roverIpAddress}:81`;
+            console.log(`Connecting to WebSocket: ${wsUrl}`);
+
+            try {
+                roverWebSocket = new WebSocket(wsUrl);
+                
+                roverWebSocket.onopen = function(event) {
+                    console.log('✅ WebSocket connected to rover');
+                    updateConnectionStatus(true);
+                    document.getElementById('autoStatusValue').textContent = 'ONLINE';
+                    document.getElementById('autoStatusValue').className = 'auto-info-value online';
+                };
+                
+                roverWebSocket.onclose = function(event) {
+                    console.log('❌ WebSocket disconnected');
+                    updateConnectionStatus(false);
+                    document.getElementById('autoStatusValue').textContent = 'OFFLINE';
+                    document.getElementById('autoStatusValue').className = 'auto-info-value offline';
+                    
+                    // Attempt to reconnect after 2 seconds
+                    setTimeout(() => {
+                        if (!isConnectedToRover) {
+                            connectRoverWebSocket();
+                        }
+                    }, 2000);
+                };
+                
+                roverWebSocket.onerror = function(error) {
+                    console.error('WebSocket error:', error);
+                    updateConnectionStatus(false);
+                };
+                
+                roverWebSocket.onmessage = function(event) {
+                    console.log('Received from rover:', event.data);
+                    // Update UI based on rover response
+                    updateUIFromRoverMessage(event.data);
+                };
+                
+            } catch (error) {
+                console.error('WebSocket connection failed:', error);
+                updateConnectionStatus(false);
+            }
+            
+            return roverWebSocket;
+        }
+
+        function updateUIFromRoverMessage(message) {
+            if (message.includes('AUTO MODE')) {
+                document.getElementById('autoRollerStatusText').textContent = 'AUTO MODE ACTIVE';
+                document.getElementById('autoRollerIndicator').classList.remove('stopped');
+                document.getElementById('autoRollerIndicator').classList.add('running');
+            } else if (message.includes('MANUAL MODE')) {
+                document.getElementById('manualRollerStatusText').textContent = 'MANUAL MODE ACTIVE';
+            } else if (message.includes('MOVING')) {
+                rollerMoving = true;
+                if (currentControlMode === 'manual') {
+                    document.getElementById('manualRollerIndicator').classList.remove('stopped');
+                    document.getElementById('manualRollerIndicator').classList.add('running');
+                } else {
+                    document.getElementById('autoRollerIndicator').classList.remove('stopped');
+                    document.getElementById('autoRollerIndicator').classList.add('running');
+                }
+            } else if (message.includes('STOPPED')) {
+                rollerMoving = false;
+                if (currentControlMode === 'manual') {
+                    document.getElementById('manualRollerIndicator').classList.add('stopped');
+                    document.getElementById('manualRollerIndicator').classList.remove('running');
+                } else {
+                    document.getElementById('autoRollerIndicator').classList.add('stopped');
+                    document.getElementById('autoRollerIndicator').classList.remove('running');
+                }
+            }
+        }
+
+        function updateConnectionStatus(connected) {
+            isConnectedToRover = connected;
+            const dot = document.getElementById('connectionDot');
+            const text = document.getElementById('connectionText');
+            
+            if (connected) {
+                dot.className = 'connection-dot connected';
+                text.textContent = `Connected to Rover (${roverIpAddress})`;
+            } else {
+                dot.className = 'connection-dot';
+                text.textContent = 'Disconnected from Rover';
+            }
+        }
+
+        // ============ CAMERA FUNCTIONS ============
+        function setCameraSource(source) {
+            currentCameraSource = source;
+            
+            // Update UI buttons
+            document.getElementById('camEsp32').classList.remove('selected');
+            document.getElementById('camBrowser').classList.remove('selected');
+            document.getElementById(`cam${source.charAt(0).toUpperCase() + source.slice(1)}`).classList.add('selected');
+            
+            // Stop any active camera
+            stopCamera();
+            
+            console.log(`📷 Camera source set to: ${source}`);
+        }
+
+        function startCamera() {
+            if (currentCameraSource === 'browser') {
+                startBrowserCamera();
+            } else {
+                startESPCamera();
+            }
+        }
+
+        async function startESPCamera() {
+            if (!esp32CameraIp) {
+                alert('Please enter Camera ESP32 IP address in settings!');
+                openCameraSettings();
+                return;
+            }
+
+            const mjpegElement = document.getElementById('mjpegStream');
+            const placeholder = document.getElementById('cameraPlaceholder');
+
+            stopCamera();
+
+            placeholder.textContent = 'Connecting to ESP32 Camera...';
+            placeholder.style.display = 'flex';
+            mjpegElement.style.display = 'none';
+
+            // Clean IP address and normalize to host:port
+            let cleanIp = esp32CameraIp.trim();
+            cleanIp = cleanIp.replace(/^https?:\/\//, '');
+            cleanIp = cleanIp.split('/')[0];
+
+            const streamUrl = `http://${cleanIp}/stream`;
+            console.log(`Connecting to: ${streamUrl}`);
+
+            // Wait for actual image load before marking camera online
+            mjpegElement.onload = () => {
+                mjpegElement.style.display = 'block';
+                placeholder.style.display = 'none';
+
+                const cameraFeed = document.getElementById('cameraFeed');
+                cameraFeed.classList.add('connected');
+
+                cameraActive = true;
+                document.getElementById('cameraStatus').textContent = 'ESP32 Camera Online';
+                document.getElementById('cameraStatus').style.color = '#4caf50';
+                console.log('Camera stream loaded:', streamUrl);
+            };
+
+            mjpegElement.onerror = () => {
+                cameraActive = false;
+                mjpegElement.style.display = 'none';
+                placeholder.style.display = 'flex';
+                placeholder.textContent = `Unable to load stream from ${streamUrl}`;
+                document.getElementById('cameraStatus').textContent = 'Offline';
+                document.getElementById('cameraStatus').style.color = '#666';
+                console.log('Camera stream failed:', streamUrl);
+            };
+
+            // Cache bust to avoid stale image state
+            mjpegElement.src = `${streamUrl}?t=${Date.now()}`;
+        }
+
+        async function startBrowserCamera() {
+            const video = document.getElementById('cameraVideo');
+            const mjpegElement = document.getElementById('mjpegStream');
+            const placeholder = document.getElementById('cameraPlaceholder');
+            
+            try {
+                if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+                    alert('Camera access is not supported by this browser.');
+                    return;
+                }
+
+                // Stop any existing stream
+                stopCamera();
+                
+                cameraStream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { facingMode: 'environment' }, 
+                    audio: false 
+                });
+                
+                video.srcObject = cameraStream;
+                video.style.display = 'block';
+                mjpegElement.style.display = 'none';
+                await video.play();
+
+                cameraActive = true;
+                document.getElementById('cameraStatus').textContent = 'Webcam Online';
+                document.getElementById('cameraStatus').style.color = '#4caf50';
+                placeholder.style.display = 'none';
+                console.log('📷 Webcam started');
+            } catch (err) {
+                console.error('Camera start error:', err);
+                placeholder.textContent = 'Unable to access webcam';
+                placeholder.style.display = 'flex';
+                alert('Unable to access camera: ' + (err.message || err));
+            }
+        }
+
+        function stopCamera() {
+            // Stop browser camera
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+                cameraStream = null;
+            }
+            
+            const video = document.getElementById('cameraVideo');
+            if (video) {
+                video.pause();
+                video.srcObject = null;
+                video.style.display = 'none';
+            }
+            
+            // Stop ESP32 camera stream
+            const mjpegElement = document.getElementById('mjpegStream');
+            if (mjpegElement) {
+                mjpegElement.src = '';
+                mjpegElement.style.display = 'none';
+            }
+
+            cameraActive = false;
+            document.getElementById('cameraStatus').textContent = 'Offline';
+            document.getElementById('cameraStatus').style.color = '#666';
+            document.getElementById('cameraPlaceholder').style.display = 'flex';
+            document.getElementById('cameraPlaceholder').textContent = 'Camera Offline - Enter Camera IP to start';
+            
+            // Show camera icon when disconnected
+            const cameraFeed = document.getElementById('cameraFeed');
+            cameraFeed.classList.remove('connected');
+            
+            console.log('📷 Camera stopped');
+        }
+
+        // ============ FIXED PHOTO CAPTURE FUNCTION ============
+        function capturePhoto() {
+
+    let sourceElement;
+    let sourceType;
+
+    if (currentCameraSource === 'browser') {
+        sourceElement = document.getElementById('cameraVideo');
+        sourceType = 'video';
+    } else {
+        sourceElement = document.getElementById('mjpegStream');
+        sourceType = 'image';
+    }
+
+    if (!sourceElement) {
+        alert('❌ Camera source not found');
+        return;
+    }
+
+    if (!cameraActive) {
+        alert('⚠️ Please start the camera first!');
+        return;
+    }
+
+    const canvas = document.getElementById('captureCanvas');
+    const ctx = canvas.getContext('2d');
+
+    try {
+        if (sourceType === 'video') {
+            if (sourceElement.videoWidth === 0) {
+                alert('⚠️ Camera not ready yet');
+                return;
+            }
+            canvas.width = sourceElement.videoWidth;
+            canvas.height = sourceElement.videoHeight;
+        } else {
+            canvas.width = sourceElement.naturalWidth || 640;
+            canvas.height = sourceElement.naturalHeight || 480;
+        }
+
+        ctx.drawImage(sourceElement, 0, 0);
+
+        const link = document.createElement('a');
+        link.download = `roller-photo-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        console.log('📸 Photo captured');
+
+    } catch (err) {
+        console.error(err);
+        alert('❌ Capture failed (CORS or camera issue)');
+    }
+}
+
+
+        // ============ CAMERA SETTINGS ============
+        function openCameraSettings() {
+            document.getElementById('cameraSettingsPanel').style.display = 'block';
+            document.getElementById('cameraIpInput').value = esp32CameraIp;
+            updateStreamUrlDisplay();
+        }
+
+        function closeCameraSettings() {
+            document.getElementById('cameraSettingsPanel').style.display = 'none';
+        }
+
+        function updateStreamUrlDisplay() {
+            const display = document.getElementById('streamUrlDisplay');
+            if (esp32CameraIp) {
+                // Clean the IP address
+                let cleanIp = esp32CameraIp.trim();
+                cleanIp = cleanIp.replace(/^https?:\/\//, '');
+                cleanIp = cleanIp.split('/')[0];
+                
+                display.innerHTML = `<strong>Access in browser:</strong> http://${cleanIp}/stream<br>
+                                     <small>Make sure ESP32-CAM is connected to WiFi</small>`;
+                display.style.color = '#4caf50';
+            } else {
+                display.innerHTML = 'Enter Camera IP address above (just numbers and dots)';
+                display.style.color = '#ff9800';
+            }
+        }
+
+        async function testCameraConnection() {
+            let ipInput = document.getElementById('cameraIpInput').value.trim();
+            if (!ipInput) {
+                alert('⚠️ Please enter a valid camera IP address');
+                return;
+            }
+            
+            // Clean the input
+            ipInput = ipInput.replace(/^https?:\/\//, '');
+            ipInput = ipInput.split('/')[0];
+            
+            const testUrl = `http://${ipInput}/stream`;
+            const testBtn = event.target;
+            const originalText = testBtn.innerHTML;
+            testBtn.innerHTML = '🔍 Testing...';
+            testBtn.disabled = true;
+            
+            console.log(`🔍 Testing camera connection to: ${testUrl}`);
+            
+            try {
+                // Create a test image to load
+                const testImg = new Image();
+                testImg.src = testUrl;
+                
+                // Set timeout for test
+                const timeoutPromise = new Promise((_, reject) => {
+                    setTimeout(() => reject(new Error('Connection timeout (5s)')), 5000);
+                });
+                
+                const loadPromise = new Promise((resolve, reject) => {
+                    testImg.onload = () => resolve(true);
+                    testImg.onerror = () => reject(new Error('Cannot load stream'));
+                });
+                
+                await Promise.race([loadPromise, timeoutPromise]);
+                
+                esp32CameraIp = ipInput;
+                localStorage.setItem('esp32CameraIp', esp32CameraIp);
+                alert(`✅ Successfully connected to ESP32-CAM at ${ipInput}\n\nYou can now start the camera.`);
+                updateStreamUrlDisplay();
+                
+            } catch (error) {
+                alert(`❌ Cannot connect to ESP32-CAM at ${ipInput}\n\nPlease check:\n1. ESP32-CAM is powered ON\n2. Connected to WiFi network\n3. You're on the same WiFi network\n4. Correct IP address: ${ipInput}\n\nTry accessing in browser: http://${ipInput}/stream`);
+            } finally {
+                testBtn.innerHTML = originalText;
+                testBtn.disabled = false;
+            }
+        }
+
+        function saveCameraSettings() {
+            // Save camera IP
+            let ipInput = document.getElementById('cameraIpInput').value.trim();
+            if (ipInput) {
+                // Clean the input
+                ipInput = ipInput.replace(/^https?:\/\//, '');
+                ipInput = ipInput.split('/')[0];
+
+                esp32CameraIp = ipInput;
+                localStorage.setItem('esp32CameraIp', esp32CameraIp);
+            }
+
+            // Save camera source
+            localStorage.setItem('cameraSource', currentCameraSource);
+
+            updateStreamUrlDisplay();
+
+            // Restart camera if active
+            if (cameraActive) {
+                stopCamera();
+                setTimeout(() => {
+                    startCamera();
+                }, 500);
+            }
+
+            closeCameraSettings();
+
+            console.log(`💾 Camera settings saved: ${esp32CameraIp}, Source: ${currentCameraSource}`);
+            alert('✅ Camera settings saved successfully!');
+        }
+
+        // ============ SETTINGS MANAGEMENT ============
+        function loadSettings() {
+            // Load rover IP
+            if (localStorage.getItem('roverIpAddress')) {
+                roverIpAddress = localStorage.getItem('roverIpAddress');
+            }
+            
+            // Load camera settings
+            if (localStorage.getItem('esp32CameraIp')) {
+                esp32CameraIp = localStorage.getItem('esp32CameraIp');
+            }
+            if (!esp32CameraIp || esp32CameraIp.includes('192.168.')) {
+                esp32CameraIp = '10.164.223.165:81';
+                localStorage.setItem('esp32CameraIp', esp32CameraIp);
+            }
+            
+            if (localStorage.getItem('cameraSource')) {
+                currentCameraSource = localStorage.getItem('cameraSource');
+            }
+            if (currentCameraSource !== 'esp32' && currentCameraSource !== 'browser') {
+                currentCameraSource = 'esp32';
+            }
+            // Keep ESP32 as default source for this project
+            if (currentCameraSource !== 'esp32') {
+                currentCameraSource = 'esp32';
+                localStorage.setItem('cameraSource', currentCameraSource);
+            }
+            
+            // Load auto settings
+            if (localStorage.getItem('autoInterval')) {
+                autoIntervalSeconds = parseInt(localStorage.getItem('autoInterval'));
+            }
+            
+            if (localStorage.getItem('autoModeSequence')) {
+                autoModeSequence = JSON.parse(localStorage.getItem('autoModeSequence'));
+            }
+            
+            // Update UI with loaded settings
+            document.getElementById('roverIpInput').value = roverIpAddress;
+            document.getElementById('cameraIpInput').value = esp32CameraIp;
+            document.getElementById('autoRoverIp').textContent = roverIpAddress;
+            
+            // Set correct camera source button
+            setCameraSource(currentCameraSource);
+        }
+
+        // ============ SPEED MANAGEMENT ============
+        function startLiveSpeedSimulation() {
+            if (speedUpdateInterval) {
+                clearInterval(speedUpdateInterval);
+            }
+            
+            speedUpdateInterval = setInterval(() => {
+                updateLiveSpeed();
+            }, 100);
+        }
+
+        function updateLiveSpeed() {
+            targetSpeed = (currentSpeed / 100) * 10;
+            
+            if (rollerMoving) {
+                if (liveSpeed < targetSpeed) {
+                    liveSpeed += 0.5;
+                    if (liveSpeed > targetSpeed) liveSpeed = targetSpeed;
+                } else if (liveSpeed > targetSpeed) {
+                    liveSpeed -= 0.5;
+                    if (liveSpeed < targetSpeed) liveSpeed = targetSpeed;
+                }
+            } else {
+                if (liveSpeed > 0) {
+                    liveSpeed -= 1;
+                    if (liveSpeed < 0) liveSpeed = 0;
+                }
+            }
+            
+            const roundedSpeed = Math.round(liveSpeed * 10) / 10;
+            const speedPercentage = Math.round((liveSpeed / 10) * 100);
+            
+            document.getElementById('manualLiveSpeed').textContent = roundedSpeed;
+            document.getElementById('manualSpeedProgress').style.width = speedPercentage + '%';
+            
+            document.getElementById('autoLiveSpeed').textContent = roundedSpeed;
+            document.getElementById('autoSpeedProgress').style.width = speedPercentage + '%';
+            
+            document.getElementById('liveSpeedStatus').textContent = roundedSpeed + ' km/h';
+            
+            updateSpeedColor(roundedSpeed);
+        }
+
+        function updateSpeedColor(speed) {
+            const manualSpeedElement = document.getElementById('manualLiveSpeed');
+            const autoSpeedElement = document.getElementById('autoLiveSpeed');
+            
+            if (speed === 0) {
+                manualSpeedElement.style.color = '#9e9e9e';
+                autoSpeedElement.style.color = '#9e9e9e';
+            } else if (speed < 3) {
+                manualSpeedElement.style.color = '#4caf50';
+                autoSpeedElement.style.color = '#4caf50';
+            } else if (speed < 7) {
+                manualSpeedElement.style.color = '#ffc107';
+                autoSpeedElement.style.color = '#ffc107';
+            } else {
+                manualSpeedElement.style.color = '#f44336';
+                autoSpeedElement.style.color = '#f44336';
+            }
+        }
+
+        // ============ CONTROL MODE MANAGEMENT ============
+        function switchControlMode(mode) {
+            currentControlMode = mode;
+            
+            document.querySelectorAll('.mode-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            document.getElementById('manualPanel').classList.remove('active');
+            document.getElementById('autoPanel').classList.remove('active');
+            
+            if (mode === 'manual') {
+                document.getElementById('manualPanel').classList.add('active');
+                console.log('👋 Switched to Manual Control');
+                if (autoModeActive) {
+                    toggleAutoMode();
+                }
+            } else {
+                document.getElementById('autoPanel').classList.add('active');
+                console.log('🤖 Switched to Auto Control');
+            }
+        }
+
+        // ============ ROVER CONTROL FUNCTIONS ============
+        async function sendRoverCommand(commandChar) {
+            if (!isConnectedToRover || !roverWebSocket || roverWebSocket.readyState !== WebSocket.OPEN) {
+                alert('⚠️ Not connected to rover!\n\nPlease connect to "ESP32_RC_CAR" WiFi first.');
+                showConnectionModal();
+                return false;
+            }
+
+            try {
+                roverWebSocket.send(commandChar);
+                console.log(`📡 Sent command: ${commandChar}`);
+                return true;
+                
+            } catch (error) {
+                console.error('❌ Command failed:', error);
+                alert('⚠️ Cannot communicate with rover. Please check connection.');
+                updateConnectionStatus(false);
+                return false;
+            }
+        }
+
+        function moveRoller(direction) {
+            if (currentControlMode !== 'manual') return;
+            
+            rollerMoving = true;
+            currentDirection = direction;
+            
+            // Map direction to command character
+            const directionMap = {
+                'forward': 'F',
+                'backward': 'B',
+                'left': 'L',
+                'right': 'R'
+            };
+            
+            const commandChar = directionMap[direction];
+            if (commandChar) {
+                sendRoverCommand(commandChar);
+            }
+        }
+
+        function rotateRoller(direction) {
+            if (currentControlMode !== 'manual') return;
+            
+            rollerMoving = true;
+            currentDirection = 'rotating';
+            
+            // For rotating, we'll use left/right commands
+            const commandChar = direction === 'cw' ? 'R' : 'L';
+            sendRoverCommand(commandChar);
+            
+            // Stop after a short delay for rotation
+            setTimeout(() => {
+                stopRoller();
+            }, 500);
+        }
+
+        function stopRoller() {
+            rollerMoving = false;
+            currentDirection = 'stopped';
+            sendRoverCommand('S');
+        }
+
+        function updateSpeed(value) {
+            currentSpeed = value;
+            document.getElementById('manualSpeedValue').textContent = value + '%';
+            document.getElementById('autoSpeedValue').textContent = value + '%';
+            console.log(`📊 Target speed updated to ${value}%`);
+        }
+
+        function emergencyStop() {
+            rollerMoving = false;
+            currentDirection = 'stopped';
+            currentSpeed = 0;
+            liveSpeed = 0;
+            
+            document.getElementById('manualSpeedSlider').value = 0;
+            document.getElementById('autoSpeedSlider').value = 0;
+            document.getElementById('manualSpeedValue').textContent = '0%';
+            document.getElementById('autoSpeedValue').textContent = '0%';
+            
+            // Send stop command
+            sendRoverCommand('S');
+            
+            if (currentControlMode === 'manual') {
+                document.getElementById('manualRollerStatusText').textContent = 'EMERGENCY STOPPED';
+                document.getElementById('manualRollerIndicator').classList.add('stopped');
+            } else {
+                document.getElementById('autoRollerStatusText').textContent = 'EMERGENCY STOPPED';
+                document.getElementById('autoRollerIndicator').classList.add('stopped');
+                if (autoModeActive) {
+                    toggleAutoMode();
+                }
+            }
+            
+            console.log('🛑 EMERGENCY STOP ACTIVATED!');
+            alert('⚠️ EMERGENCY STOP ACTIVATED!\nAll systems halted immediately.');
+        }
+
+        // ============ AUTO MODE FUNCTIONS ============
+        function toggleAutoMode() {
+            if (currentControlMode !== 'auto') {
+                switchControlMode('auto');
+                return;
+            }
+            
+            if (!isConnectedToRover) {
+                alert('⚠️ Not connected to rover!\n\nPlease connect to rover WiFi first.');
+                showConnectionModal();
+                return;
+            }
+            
+            autoModeActive = !autoModeActive;
+            const btn = document.getElementById('autoMainToggle');
+            const statusText = document.getElementById('autoModeStatusText');
+            const toggleText = document.getElementById('autoToggleText');
+
+            if (autoModeActive) {
+                btn.classList.add('active');
+                statusText.textContent = 'AUTO MODE ACTIVE';
+                toggleText.textContent = 'STOP AUTO';
+                document.getElementById('autoStatusValue').textContent = 'ACTIVE';
+                document.getElementById('autoStatusValue').className = 'auto-info-value online';
+                
+                console.log('🤖 AUTO MODE ACTIVATED');
+                
+                // Send command to ESP32 to switch to auto mode
+                sendRoverCommand('A');
+                
+                // Start local auto mode simulation
+                startAutoMode();
+                
+            } else {
+                btn.classList.remove('active');
+                statusText.textContent = 'AUTO MODE READY';
+                toggleText.textContent = 'START AUTO';
+                document.getElementById('autoStatusValue').textContent = 'READY';
+                document.getElementById('autoStatusValue').className = 'auto-info-value offline';
+                
+                console.log('🤖 AUTO MODE DEACTIVATED');
+                
+                // Send command to ESP32 to switch to manual mode
+                sendRoverCommand('M');
+                
+                // Stop local auto mode
+                stopAutoMode();
+            }
+        }
+
+        function startAutoMode() {
+            console.log('🚀 Starting automatic rover control...');
+            autoModeIndex = 0;
+            
+            if (autoModeInterval) {
+                clearInterval(autoModeInterval);
+            }
+            
+            autoModeInterval = setInterval(() => {
+                if (!autoModeActive || autoModeSequence.length === 0) return;
+                
+                const direction = autoModeSequence[autoModeIndex];
+                currentDirection = direction;
+                rollerMoving = true;
+                
+                // Map direction to command character
+                const directionMap = {
+                    'forward': 'F',
+                    'left': 'L',
+                    'backward': 'B',
+                    'right': 'R'
+                };
+                
+                const commandChar = directionMap[direction];
+                if (commandChar) {
+                    sendRoverCommand(commandChar);
+                }
+                
+                // Update UI
+                const directionEmojis = {
+                    'forward': '⬆️ MOVING FORWARD',
+                    'left': '⬅️ TURNING LEFT',
+                    'backward': '⬇️ MOVING BACKWARD',
+                    'right': '➡️ TURNING RIGHT'
+                };
+                
+                document.getElementById('autoRollerStatusText').textContent = directionEmojis[direction];
+                document.getElementById('autoRollerIndicator').classList.remove('stopped');
+                document.getElementById('autoRollerIndicator').classList.add('running');
+                
+                const directionNames = {
+                    'forward': 'Forward',
+                    'left': 'Left Turn',
+                    'backward': 'Backward',
+                    'right': 'Right Turn'
+                };
+                
+                document.getElementById('autoCurrentStep').textContent = directionNames[direction];
+                
+                // Move to next step in sequence
+                autoModeIndex = (autoModeIndex + 1) % autoModeSequence.length;
+                
+            }, autoIntervalSeconds * 1000);
+        }
+
+        function stopAutoMode() {
+            console.log('⏹️ Stopping automatic rover control...');
+            if (autoModeInterval) {
+                clearInterval(autoModeInterval);
+                autoModeInterval = null;
+            }
+            
+            rollerMoving = false;
+            currentDirection = 'stopped';
+            
+            // Send stop command
+            sendRoverCommand('S');
+            
+            document.getElementById('autoRollerStatusText').textContent = 'AUTO MODE READY';
+            document.getElementById('autoRollerIndicator').classList.add('stopped');
+            document.getElementById('autoRollerIndicator').classList.remove('running');
+            document.getElementById('autoCurrentStep').textContent = '-';
+        }
+
+        function updateAutoModeUI() {
+            document.getElementById('autoRoverIp').textContent = roverIpAddress;
+            document.getElementById('autoIntervalValue').textContent = `${autoIntervalSeconds}s`;
+            document.getElementById('autoSequenceValue').textContent = `${autoModeSequence.length} Steps`;
+        }
+
+        // ============ SETTINGS UI FUNCTIONS ============
+        function openRemoteSettings() {
+            const url = prompt(
+                '📡 Enter Rover IP Address\n\n' +
+                'Connect to "ESP32_RC_CAR" WiFi first!\n' +
+                'Default ESP32 WiFi IP: 192.168.4.1\n' +
+                'Enter your rover\'s IP:',
+                roverIpAddress
+            );
+            
+            if (url !== null && url.trim()) {
+                roverIpAddress = url.trim();
+                localStorage.setItem('roverIpAddress', roverIpAddress);
+                
+                document.getElementById('autoRoverIp').textContent = roverIpAddress;
+                document.getElementById('roverIpInput').value = roverIpAddress;
+                
+                alert('✅ Rover IP saved: ' + roverIpAddress + '\n\nTesting connection...');
+                
+                setTimeout(() => {
+                    checkRoverConnection();
+                }, 500);
+            }
+        }
+
+        function openAutoSettings() {
+            document.getElementById('autoSettingsPanel').style.display = 'block';
+            document.getElementById('roverIpInput').value = roverIpAddress;
+            document.getElementById('autoIntervalDisplay').textContent = autoIntervalSeconds;
+            document.getElementById('autoIntervalSlider').value = autoIntervalSeconds;
+            updateSequenceButtons();
+        }
+
+        function closeAutoSettings() {
+            document.getElementById('autoSettingsPanel').style.display = 'none';
+        }
+
+        function updateAutoIntervalDisplay(value) {
+            document.getElementById('autoIntervalDisplay').textContent = value;
+        }
+
+        function toggleSequence(direction) {
+            const btn = document.getElementById(`seq${direction.charAt(0).toUpperCase() + direction.slice(1)}`);
+            if (autoModeSequence.includes(direction)) {
+                autoModeSequence = autoModeSequence.filter(dir => dir !== direction);
+                btn.classList.remove('selected');
+            } else {
+                autoModeSequence.push(direction);
+                btn.classList.add('selected');
+            }
+            updateSequenceUI();
+            console.log('🔄 Updated sequence:', autoModeSequence);
+        }
+
+        function updateSequenceButtons() {
+            ['forward', 'left', 'right', 'backward'].forEach(dir => {
+                const btn = document.getElementById(`seq${dir.charAt(0).toUpperCase() + dir.slice(1)}`);
+                if (autoModeSequence.includes(dir)) {
+                    btn.classList.add('selected');
+                } else {
+                    btn.classList.remove('selected');
+                }
+            });
+        }
+
+        function updateSequenceUI() {
+            document.getElementById('autoSequenceValue').textContent = `${autoModeSequence.length} Steps`;
+            updateSequenceButtons();
+        }
+
+        async function testRoverConnection() {
+            const ipInput = document.getElementById('roverIpInput').value.trim();
+            if (!ipInput) {
+                alert('⚠️ Please enter a valid IP address');
+                return;
+            }
+            
+            const testBtn = event.target;
+            const originalText = testBtn.innerHTML;
+            testBtn.innerHTML = '🔍 Testing...';
+            testBtn.disabled = true;
+            
+            console.log(`🔍 Testing connection to: ${ipInput}`);
+            
+            try {
+                roverIpAddress = ipInput;
+                localStorage.setItem('roverIpAddress', roverIpAddress);
+                
+                document.getElementById('autoRoverIp').textContent = roverIpAddress;
+                
+                // Test connection
+                const connected = await checkRoverConnection();
+                
+                if (connected) {
+                    alert(`✅ Successfully connected to rover at ${roverIpAddress}\n\nYou can now control the rover.`);
+                } else {
+                    alert(`⚠️ Could not connect to rover at ${roverIpAddress}\n\nPlease check:\n1. Connect to "ESP32_RC_CAR" WiFi\n2. Password: 12345678\n3. Rover is powered ON\n4. IP address: 192.168.4.1`);
+                }
+                
+            } catch (error) {
+                alert('❌ Connection test failed: ' + error.message);
+            } finally {
+                testBtn.innerHTML = originalText;
+                testBtn.disabled = false;
+            }
+        }
+    function captureScreen() {
+    html2canvas(document.body).then(canvas => {
+
+        const link = document.createElement('a');
+        link.download = `screen-shot-${Date.now()}.png`;
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+
+        console.log('🖥️ Screen screenshot captured');
+    }).catch(err => {
+        console.error('❌ Screen capture failed:', err);
+        alert('❌ Unable to capture screen');
+    });
+}
+
+
+
+        function saveAutoSettings() {
+            // Save rover IP
+            const ipInput = document.getElementById('roverIpInput').value.trim();
+            if (ipInput) {
+                roverIpAddress = ipInput;
+                localStorage.setItem('roverIpAddress', roverIpAddress);
+                document.getElementById('autoRoverIp').textContent = roverIpAddress;
+            }
+            
+            // Save interval
+            const interval = parseInt(document.getElementById('autoIntervalSlider').value);
+            if (interval >= 1 && interval <= 10) {
+                autoIntervalSeconds = interval;
+                localStorage.setItem('autoInterval', interval);
+                document.getElementById('autoIntervalValue').textContent = `${interval}s`;
+            }
+            
+            // Save sequence
+            localStorage.setItem('autoModeSequence', JSON.stringify(autoModeSequence));
+            
+            // Update UI
+            updateSequenceUI();
+            
+            // Restart auto mode if active
+            if (autoModeActive) {
+                startAutoMode();
+            }
+            
+            // Test connection with new settings
+            checkRoverConnection();
+            
+            // Close settings panel
+            closeAutoSettings();
+            
+            console.log(`💾 Settings saved: ${roverIpAddress}, ${autoIntervalSeconds}s`);
+            
+            alert('✅ Settings saved successfully!');
+        }
+
+        // ============ UTILITY FUNCTIONS ============
+        function goBack() {
+            window.history.back();
+        }
+    </script>
+</body>
+</html>

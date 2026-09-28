@@ -4,57 +4,96 @@
 ================================================================================
 
 
-1. DESIGN PHILOSOPHY & VISUAL IDENTITY
+1. DEFINITIVE HOMEPAGE THEME, TYPOGRAPHY & DESIGN RULES (PERPETUAL REFERENCE)
 ================================================================================
 
-Style              : Clean Light Green Farming / Agricultural Aesthetic
-Theme              : Light cream-green (#f0f9f0) base with rich Emerald
-                     (#059669) accent. Inspired by Earth Rover's clean
-                     agricultural website (earthrover.farm) and modern
-                     agri-tech product pages.
-Feel               : Fresh, natural, farm-connected. The website evokes
-                     open green fields and smart technology working together.
-                     Sensor values tick in real-time, cards have soft green
-                     borders, and the overall palette feels organic and alive.
-Target Audience    : Investors, competition judges (SIH, Techathon, Eureka),
-                     and potential farm operator customers.
+Style & Aesthetics   : High-Impact Autonomous Agricultural Robotics
+                       Clean Light Green Farming base (#f0f6f0) with vibrant chlorophyll 
+                       emerald (#16a34a / #22c55e) and industrial obsidian (#090e0b) contrasts.
+                       Inspired by Earth Rover (earthrover.farm) and OTTO Motors robotics.
 
-Official Brand Logo   : Custom corporate emblem fusing an autonomous rover sensor
-                     lens/circuit track with an agricultural green sprouting leaf.
-                     Emblem saved at /images/agrisarthi_logo.jpg and /assets/.
-                     Integrated into Navbar, Footer, and Favicon.
+Target Audience      : Investors, competition judges (SIH, Techathon, Eureka),
+                       and Indian smallholder / estate farmers.
 
-Color Gamut System (Defined 5-Zone Architecture — Eliminates White-Page Fatigue):
-  Rather than a repetitive, flat white or monotone light-green page, AgriSarthi uses
-  an intentional 5-zone agricultural & industrial color gamut that alternates dynamically:
-  • Zone 1 — Earth Rover High-Impact Editorial (Canvas #fbfdfb):
-    Stark, high-contrast pitch-black typography (#081a0e) with vibrant chlorophyll
-    agritech green (#16a34a) color blocking (e.g. "PATROL EVERY ROW. PROTECT EVERY ACRE.").
+Official Brand Assets: 
+  • Logo Emblem      : Transparent vector/PNG emblem (/images/agrisarthi_logo_transparent.png)
+                       fusing an autonomous rover sensor with an agritech sprouting leaf.
+  • Wordmark         : /images/agrisarthi_wordmark.png
+  • Hero Rover Photo : /images/agrisarthi_hero_rover.jpg
+  • Actual Prototype : /images/rover_prototype.jpeg (Tested in field soil beds)
+
+Typography Hierarchy (Exact Stacks & CSS Variables):
+  1. Display / Headings (Primary):
+     • Font Family   : 'Archivo', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif
+     • CSS Class     : .font-display, .heading-earth, .heading-otto
+     • Weights       : 700 (Bold), 800 (ExtraBold), 900 (Black)
+     • Tracking      : -0.025em to -0.035em (Tight, punchy industrial grotesque)
+     • Usage         : Hero statements ("BUILD YOUR AUTONOMOUS FARM WORKFORCE", "PATROL EVERY ROW.")
+
+  2. Display Accent:
+     • Font Family   : 'Syne', -apple-system, BlinkMacSystemFont, sans-serif
+     • CSS Class     : .font-syne
+     • Weights       : 700, 800
+     • Usage         : Key brand callouts and distinctive AgTech headings
+
+  3. Editorial Body:
+     • Font Family   : 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif
+     • CSS Class     : .font-body, .font-sans
+     • Weights       : 400 (Regular), 500 (Medium), 600 (SemiBold), 700 (Bold)
+     • Line Height   : 1.5 to 1.6 (Generous reading comfort)
+     • Usage         : Paragraph descriptions, card copy, and specs explanations
+
+  4. Tactical Telemetry & Code:
+     • Font Family   : 'JetBrains Mono', monospace
+     • CSS Class     : .font-mono, .kicker-label
+     • Weights       : 500 (Medium), 700 (Bold)
+     • Tracking      : 0.12em (Wide uppercase tracking)
+     • Usage         : Live sensor telemetry, kickers, model codes (AS-SENTINEL-2026), and badges
+
+Color Gamut System (Defined 5-Zone Architecture — Eliminates Monotone Fatigue):
+  • Zone 1 — Earth Rover High-Impact Editorial (Canvas #fbfdfb / #f0f6f0):
+    Pitch-black industrial typography (#081a0e) with vibrant chlorophyll green (#16a34a).
   • Zone 2 — OTTO Industrial Concrete & Field Stone (Canvas #dbe5db to #e4ede4):
-    Muted warm stone canvas with crisp white elevated product cards, ruled spec divider
-    lines, and interactive METRIC / IMPERIAL unit toggle.
-  • Zone 3 — AgriTech Night / Obsidian Cockpit (Canvas #09170e to #0e2114):
-    Deep forest obsidian telemetry HUD with glowing neon emerald (#22c55e), night-vision
-    IR/thermal camera, and radar waypoint map. Breaks up the light page with intense contrast.
-  • Zone 4 — Warm Loam & Solar Harvest (Canvas #faf6ee with amber #d97706 & loam #c25e2e):
+    Muted warm stone canvas with crisp white elevated product cards and ruled divider lines.
+  • Zone 3 — Obsidian Cockpit & Mission Control (Canvas #090e0b to #09170e):
+    Deep forest obsidian telemetry HUD, Three.js 3D WebGL simulator, and Command Palette modal.
+  • Zone 4 — Solar Harvest & Warm Loam (Canvas #faf6ee with amber #d97706 & loam #b45309):
     Earthy sun-warmed agricultural tones applied to the Farm ROI & Payback Engine.
-  • Zone 5 — Organic Field Mist & Sage (Canvas #eef5ee):
-    Clean, structured tone for the Pitch Deck Carousel, Founding Team, and Lab Contacts.
+  • Zone 5 — Organic Field Mist & Sage (Canvas #eef5ee / #edf7ed):
+    Clean tone for Investor Pitch Deck, Founding Team Showcase, and Lab Contacts.
 
-Bespoke Industrial AgriTech Typography System (Non-AI Generated Aesthetic):
-  Eliminates the generic "AI-generated default sans" look by utilizing authentic European
-  agtech (Earth Rover) & autonomous industrial robotics (OTTO Motors) typographic hierarchy:
-  • Display / Headline Font  : Archivo (Weights: 700, 800, 900)
-    Condensed, punchy, heavyweight industrial grotesque. Used with `heading-earth` and
-    `heading-otto` classes for bold uppercase titles (e.g. "MEET AGRISARTHI™", "PATROL EVERY ROW.").
-  • Display Accent Font      : Syne (Weights: 700, 800)
-    Boutique geometric display serif/sans hybrid for distinctive agtech branding.
-  • Editorial Body Font      : Plus Jakarta Sans (Weights: 400, 500, 600)
-    Crisp, highly legible geometric sans with generous line-heights and neutral warmth.
-  • Tactical Telemetry Font  : JetBrains Mono (Weights: 500, 600, 700)
-    Uppercase-tracked kicker tags, live sensor outputs, and hardware model codes.
-  • Action Buttons           : .btn-earth-pill (Solid vibrant green #16a34a rounded pill
-    with white bold uppercase text, matching Earth Rover reference).
+Button & Action Component Guidelines:
+  • Primary Solid Action : .btn-earth-pill
+    `bg-[#16a34a] hover:bg-[#15803d] text-white font-bold rounded-full uppercase tracking-wider`
+    Used for "CONTACT US →", "BOOK PILOT", and primary triggers.
+  • Industrial Outlined  : `bg-black/50 hover:bg-white/10 text-white border-2 border-white/60 rounded-full`
+    Used for secondary hero actions ("GET STARTED NOW →").
+  • Card Trigger         : `bg-stone-900 hover:bg-stone-800 text-white rounded-xl font-mono text-xs font-bold`
+
+Critical Navbar Layout & Collision Prevention Rules (MANDATORY):
+  1. Logo on far left with `shrink-0`.
+  2. NEVER append extra bulky text badges (such as "ROBOTICS AI FLEET") beside the logo in the navbar.
+     The official transparent emblem already carries full branding. Adding extra pills breaks layout on 1366px laptops.
+  3. Navigation Links (`HOME`, `ROVERS`, `MISSION CONTROL`, `SERVICES`, `ABOUT`) MUST have:
+     `whitespace-nowrap`, `shrink-0`, and `tracking-[0.12em]` so "MISSION CONTROL" stays on one single line.
+   4. Search Trigger: Sleek minimalist button displaying emerald search icon and clean "Search" label (without Ctrl K badge).
+  5. Action Button: `.btn-earth-pill` with `shrink-0 whitespace-nowrap`.
+
+Command Palette Modal Design Specification:
+  • Backdrop     : `bg-black/75 backdrop-blur-md`
+  • Modal Window : `bg-[#09150d] border border-emerald-500/40 rounded-3xl shadow-[0_0_50px_rgba(16,185,129,0.2)]`
+  • Hotkey       : `Ctrl + K` / `Cmd + K` and `/` key
+  • Content      : Live instant search across Rovers, 3D Simulation, Telemetry HUD, ROI Calculator, and Team.
+
+Interactive Farm ROI Engine Calibration:
+  • Must offer 1-click Indian Regional Farm Presets:
+    1. 🍇 Nashik Grapes (15 Acres, High Fungicide/Spray care)
+    2. 🎋 Kolhapur Sugarcane (25 Acres, Flood Furrow moisture balance)
+    3. ☁️ Vidarbha Cotton & Soybean (20 Acres, Bollworm early warning)
+    4. 🍓 Polyhouse & Berries (6 Acres, Strict humidity control)
+    5. 🌾 Punjab Wheat / Paddy (35 Acres, Broad-acre moisture profiling)
+  • Displays verified annual savings in ₹ Lakhs and payback window in months.
+
 
 
 2. GLOBAL UI PATTERNS & DYNAMIC SCROLL ANIMATIONS

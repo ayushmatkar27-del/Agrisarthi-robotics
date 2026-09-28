@@ -1,0 +1,367 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi AI - Plant Disease Detection Console</title>
+    <meta name="description" content="AgriSarthi AI plant disease detection. Upload a plant image for instant expert diagnosis.">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13,22,38,0.85);
+            --border-card: rgba(255,255,255,0.08);
+            --primary: #00e599;
+            --primary-glow: rgba(0,229,153,0.35);
+            --accent-cyan: #38bdf8;
+            --accent-amber: #fbbf24;
+            --accent-purple: #c084fc;
+            --accent-red: #f87171;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --input-bg: rgba(9,19,34,0.85);
+        }
+        * { margin:0; padding:0; box-sizing:border-box; font-family:'Plus Jakarta Sans',sans-serif; }
+        body { background:var(--bg-dark); min-height:100vh; color:var(--text-main); display:flex; flex-direction:column; position:relative; overflow-x:hidden; }
+        .slideshow-backdrop { position:fixed; top:0; left:0; width:100vw; height:100vh; z-index:0; overflow:hidden; pointer-events:none; }
+        .slideshow-slide { position:absolute; inset:0; background-size:cover; background-position:center; opacity:0; transform:scale(1.08); transition:opacity 1.8s ease-in-out,transform 8s cubic-bezier(0.25,1,0.5,1); }
+        .slideshow-slide.active { opacity:1; transform:scale(1); }
+        .slideshow-overlay { position:absolute; inset:0; background:linear-gradient(160deg,rgba(7,13,24,0.93) 0%,rgba(7,13,24,0.80) 50%,rgba(7,13,24,0.95) 100%); }
+        .topnav { position:relative; z-index:10; display:flex; align-items:center; justify-content:space-between; padding:0 28px; height:58px; background:rgba(7,13,24,0.75); border-bottom:1px solid rgba(0,229,153,0.15); backdrop-filter:blur(14px); }
+        .nav-brand { display:flex; align-items:center; gap:10px; text-decoration:none; }
+        .nav-brand-icon { width:30px; height:30px; background:linear-gradient(135deg,var(--primary),var(--accent-cyan)); border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px; }
+        .nav-brand-text { font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px; color:var(--text-main); }
+        .nav-brand-text span { color:var(--primary); }
+        .nav-pills { display:flex; align-items:center; gap:6px; }
+        .nav-pill { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:30px; padding:4px 12px; display:flex; align-items:center; gap:5px; }
+        .nav-pill .dot { width:6px; height:6px; border-radius:50%; background:var(--primary); box-shadow:0 0 6px var(--primary); animation:blink 1.6s ease-in-out infinite; }
+        @keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.3} }
+        .nav-back-btn { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--primary); background:rgba(0,229,153,0.08); border:1px solid rgba(0,229,153,0.25); border-radius:6px; padding:6px 14px; cursor:pointer; text-decoration:none; transition:all 0.2s; display:flex; align-items:center; gap:6px; }
+        .nav-back-btn:hover { background:rgba(0,229,153,0.15); box-shadow:0 0 12px rgba(0,229,153,0.2); }
+        .page-header { position:relative; z-index:5; padding:36px 32px 20px; }
+        .page-header-inner { max-width:1200px; margin:0 auto; display:flex; align-items:flex-start; justify-content:space-between; gap:24px; }
+        .page-header-title { display:flex; align-items:center; gap:16px; }
+        .header-icon-box { width:56px; height:56px; background:linear-gradient(135deg,rgba(0,229,153,0.15),rgba(56,189,248,0.10)); border:1px solid rgba(0,229,153,0.3); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:26px; box-shadow:0 0 24px rgba(0,229,153,0.15); }
+        .page-header h1 { font-size:28px; font-weight:800; line-height:1.2; background:linear-gradient(135deg,#fff 30%,var(--primary) 100%); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text; }
+        .page-header h1 span { display:block; font-size:12px; font-family:'JetBrains Mono',monospace; font-weight:500; -webkit-text-fill-color:var(--text-muted); letter-spacing:1px; margin-bottom:4px; }
+        .header-badges { display:flex; align-items:center; gap:8px; flex-wrap:wrap; }
+        .badge { font-family:'JetBrains Mono',monospace; font-size:10px; padding:5px 12px; border-radius:20px; border:1px solid rgba(0,229,153,0.25); color:var(--primary); background:rgba(0,229,153,0.07); letter-spacing:0.5px; }
+        .badge.cyan { color:var(--accent-cyan); border-color:rgba(56,189,248,0.25); background:rgba(56,189,248,0.07); }
+        .badge.purple { color:var(--accent-purple); border-color:rgba(192,132,252,0.25); background:rgba(192,132,252,0.07); }
+        .main-content { position:relative; z-index:5; flex:1; padding:0 32px 40px; }
+        .metrics-row { max-width:1200px; margin:0 auto 20px; display:grid; grid-template-columns:repeat(3,1fr); gap:16px; }
+        .metric-tile { background:var(--bg-card); border:1px solid var(--border-card); border-radius:16px; padding:18px 20px; backdrop-filter:blur(16px); transition:all 0.3s; }
+        .metric-tile:hover { border-color:rgba(0,229,153,0.2); transform:translateY(-2px); }
+        .metric-label { font-family:'JetBrains Mono',monospace; font-size:9px; color:var(--text-dim); letter-spacing:1px; text-transform:uppercase; margin-bottom:10px; }
+        .metric-value { font-family:'JetBrains Mono',monospace; font-size:22px; font-weight:700; color:var(--primary); line-height:1; }
+        .metric-value.cyan { color:var(--accent-cyan); }
+        .metric-value.purple { color:var(--accent-purple); }
+        .metric-sub { font-size:11px; color:var(--text-muted); margin-top:5px; }
+        .content-grid { max-width:1200px; margin:0 auto; display:grid; grid-template-columns:400px 1fr; gap:24px; }
+        .glass-card { background:var(--bg-card); border:1px solid var(--border-card); border-radius:20px; backdrop-filter:blur(20px); overflow:hidden; transition:border-color 0.3s; }
+        .glass-card:hover { border-color:rgba(0,229,153,0.2); }
+        .card-header { padding:18px 24px; border-bottom:1px solid rgba(255,255,255,0.06); display:flex; align-items:center; justify-content:space-between; }
+        .card-header-left { display:flex; align-items:center; gap:10px; }
+        .card-header-icon { width:32px; height:32px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:15px; background:rgba(0,229,153,0.1); border:1px solid rgba(0,229,153,0.2); }
+        .card-header-icon.cyan-icon { background:rgba(56,189,248,0.1); border-color:rgba(56,189,248,0.2); }
+        .card-title { font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:600; color:var(--text-main); letter-spacing:0.5px; }
+        .card-subtitle { font-size:10px; color:var(--text-dim); margin-top:2px; }
+        .card-body { padding:24px; }
+        .upload-zone { border:2px dashed rgba(0,229,153,0.25); border-radius:16px; padding:32px 20px; text-align:center; background:rgba(0,229,153,0.03); cursor:pointer; transition:all 0.3s; position:relative; overflow:hidden; }
+        .upload-zone:hover, .upload-zone.dragover { border-color:rgba(0,229,153,0.55); background:rgba(0,229,153,0.07); box-shadow:0 0 30px rgba(0,229,153,0.1) inset; }
+        .upload-zone-icon { font-size:40px; margin-bottom:12px; display:block; }
+        .upload-zone h3 { font-size:14px; font-weight:700; color:var(--text-main); margin-bottom:6px; }
+        .upload-zone p { font-size:12px; color:var(--text-muted); }
+        .upload-zone input[type="file"] { position:absolute; inset:0; opacity:0; cursor:pointer; width:100%; height:100%; }
+        .preview-container { margin-top:20px; display:none; position:relative; }
+        .preview-container.visible { display:block; }
+        .preview-container img { width:100%; max-height:220px; object-fit:cover; border-radius:12px; border:1px solid rgba(0,229,153,0.2); }
+        .preview-badge { position:absolute; top:10px; left:10px; font-family:'JetBrains Mono',monospace; font-size:9px; background:rgba(0,229,153,0.85); color:#000; padding:3px 8px; border-radius:4px; font-weight:700; }
+        .form-group { margin-top:20px; }
+        .form-label { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-muted); display:block; margin-bottom:8px; letter-spacing:0.5px; }
+        .form-select { width:100%; padding:10px 14px; background:var(--input-bg); border:1px solid rgba(255,255,255,0.1); border-radius:10px; color:var(--text-main); font-size:13px; cursor:pointer; outline:none; appearance:none; transition:border-color 0.25s; }
+        .form-select:focus { border-color:rgba(0,229,153,0.4); }
+        .form-select option { background:#0d1626; }
+        .analyze-btn { width:100%; margin-top:20px; padding:14px; font-size:14px; font-weight:700; font-family:'JetBrains Mono',monospace; color:#030712; background:linear-gradient(135deg,var(--primary),#00c97a); border:none; border-radius:12px; cursor:pointer; letter-spacing:0.5px; transition:all 0.25s; display:flex; align-items:center; justify-content:center; gap:8px; }
+        .analyze-btn:hover { transform:translateY(-2px); box-shadow:0 8px 28px rgba(0,229,153,0.4); }
+        .analyze-btn:disabled { opacity:0.5; cursor:not-allowed; transform:none; box-shadow:none; }
+        .spinner { width:16px; height:16px; border:2px solid rgba(0,0,0,0.3); border-top-color:#000; border-radius:50%; animation:spin 0.75s linear infinite; display:none; }
+        .analyze-btn.loading .spinner { display:block; }
+        .analyze-btn.loading .btn-text { display:none; }
+        @keyframes spin { to{transform:rotate(360deg)} }
+        .voice-btn { width:100%; padding:10px; background:rgba(56,189,248,0.08); border:1px solid rgba(56,189,248,0.2); border-radius:10px; color:var(--accent-cyan); font-family:'JetBrains Mono',monospace; font-size:11px; cursor:pointer; transition:all 0.25s; display:flex; align-items:center; justify-content:center; gap:8px; margin-top:12px; }
+        .voice-btn:hover { background:rgba(56,189,248,0.15); box-shadow:0 0 12px rgba(56,189,248,0.2); }
+        .voice-btn.speaking { background:rgba(56,189,248,0.18); animation:voicePulse 1s ease-in-out infinite; }
+        @keyframes voicePulse { 0%,100%{box-shadow:0 0 8px rgba(56,189,248,0.3)} 50%{box-shadow:0 0 24px rgba(56,189,248,0.5)} }
+        .right-panel { display:flex; flex-direction:column; gap:20px; }
+        .result-placeholder { text-align:center; padding:60px 30px; color:var(--text-dim); }
+        .result-placeholder-icon { font-size:52px; margin-bottom:16px; opacity:0.5; display:block; }
+        .result-placeholder h3 { font-size:15px; color:var(--text-muted); margin-bottom:8px; }
+        .result-placeholder p { font-size:12px; line-height:1.6; }
+        .analyzing-state { text-align:center; padding:60px 30px; display:none; }
+        .ai-brain-pulse { font-size:60px; margin-bottom:20px; display:block; animation:brainPulse 1s ease-in-out infinite; }
+        @keyframes brainPulse { 0%,100%{transform:scale(1);opacity:1} 50%{transform:scale(1.08);opacity:0.7} }
+        .analyzing-state h3 { font-size:16px; font-weight:700; color:var(--primary); margin-bottom:8px; }
+        .analyzing-state p { font-size:12px; color:var(--text-muted); }
+        .progress-bar-wrap { width:100%; background:rgba(255,255,255,0.05); border-radius:30px; height:4px; margin-top:20px; overflow:hidden; }
+        .progress-bar-fill { height:100%; width:0%; background:linear-gradient(90deg,var(--primary),var(--accent-cyan)); border-radius:30px; animation:progressAnim 3s ease-in-out infinite; }
+        @keyframes progressAnim { 0%{width:0%;opacity:1} 80%{width:95%;opacity:1} 100%{width:100%;opacity:0.5} }
+        .report-content { display:none; }
+        .report-content.visible { display:block; }
+        .report-status-bar { display:flex; align-items:center; justify-content:space-between; padding:12px 20px; background:rgba(0,229,153,0.06); border-bottom:1px solid rgba(0,229,153,0.12); font-family:'JetBrains Mono',monospace; font-size:10px; }
+        .report-status-label { display:flex; align-items:center; gap:8px; color:var(--primary); }
+        .report-status-label .dot { width:7px; height:7px; border-radius:50%; background:var(--primary); box-shadow:0 0 6px var(--primary); }
+        .report-timestamp { color:var(--text-dim); }
+        .report-body { padding:24px; font-size:13.5px; line-height:1.75; color:var(--text-main); }
+        .report-body h2,.report-body h3 { color:var(--primary); font-size:14px; font-weight:700; margin:18px 0 8px; font-family:'JetBrains Mono',monospace; letter-spacing:0.5px; }
+        .report-body p { margin-bottom:12px; }
+        .report-body strong { color:var(--accent-cyan); }
+        .report-body ul { padding-left:20px; margin-bottom:12px; }
+        .report-body ul li { margin-bottom:6px; color:var(--text-muted); }
+        .error-state { display:none; padding:40px 24px; text-align:center; }
+        .error-state.visible { display:block; }
+        .error-icon { font-size:48px; margin-bottom:14px; }
+        .error-state h3 { color:var(--accent-red); font-size:15px; font-weight:700; margin-bottom:8px; }
+        .error-state p { font-size:12px; color:var(--text-muted); }
+        .footer { position:relative; z-index:5; padding:14px 32px; border-top:1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between; background:rgba(7,13,24,0.6); backdrop-filter:blur(10px); }
+        .footer-left { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); }
+        .footer-right { display:flex; align-items:center; gap:14px; }
+        .footer-stat { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--text-dim); display:flex; align-items:center; gap:5px; }
+        .footer-stat .v { color:var(--primary); font-weight:700; }
+        @media(max-width:900px) { .content-grid{grid-template-columns:1fr} .metrics-row{grid-template-columns:repeat(2,1fr)} .page-header-inner{flex-direction:column} }
+        @media(max-width:560px) { .metrics-row{grid-template-columns:1fr} .main-content{padding:0 16px 32px} .page-header{padding:24px 16px 16px} }
+    </style>
+</head>
+<body>
+<div class="slideshow-backdrop" id="slideshowBackdrop">
+    <div class="slideshow-overlay"></div>
+</div>
+<nav class="topnav">
+    <a href="dashboard.html" class="nav-brand">
+        <div class="nav-brand-icon">🌱</div>
+        <div class="nav-brand-text">Agri<span>Sarthi</span></div>
+    </a>
+    <div class="nav-pills">
+        <div class="nav-pill"><div class="dot"></div>GEMINI AI ONLINE</div>
+        <div class="nav-pill">🔬 DISEASE DETECT v2.5</div>
+        <div class="nav-pill">🌐 AES-256 SECURE</div>
+    </div>
+    <a href="dashboard.html" class="nav-back-btn">← BACK TO DASHBOARD</a>
+</nav>
+<div class="page-header">
+    <div class="page-header-inner">
+        <div class="page-header-title">
+            <div class="header-icon-box">🦠</div>
+            <div>
+                <h1>
+                    <span>MODULE // PLANT-HEALTH-AI</span>
+                    Plant Disease Detection Console
+                </h1>
+            </div>
+        </div>
+        <div class="header-badges">
+            <div class="badge">✦ GEMINI 2.5 FLASH</div>
+            <div class="badge cyan">📡 MULTI-LANGUAGE</div>
+            <div class="badge purple">🎙️ VOICE SYNTHESIS</div>
+        </div>
+    </div>
+</div>
+<main class="main-content">
+    <div class="metrics-row">
+        <div class="metric-tile">
+            <div class="metric-label">MODEL ENGINE</div>
+            <div class="metric-value" style="font-size:15px;">Gemini 2.5</div>
+            <div class="metric-sub">Flash Vision API</div>
+        </div>
+        <div class="metric-tile">
+            <div class="metric-label">SUPPORTED CROPS</div>
+            <div class="metric-value cyan">200+</div>
+            <div class="metric-sub">Disease types indexed</div>
+        </div>
+        <div class="metric-tile">
+            <div class="metric-label">OUTPUT LANGUAGES</div>
+            <div class="metric-value purple">2</div>
+            <div class="metric-sub">English · मराठी</div>
+        </div>
+    </div>
+    <div class="content-grid">
+        <div>
+            <div class="glass-card">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-header-icon">📷</div>
+                        <div>
+                            <div class="card-title">IMAGE CAPTURE INPUT</div>
+                            <div class="card-subtitle">Upload field sample for AI diagnosis</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="upload-zone" id="uploadZone">
+                        <input type="file" id="imageInput" accept="image/*">
+                        <span class="upload-zone-icon">🌿</span>
+                        <h3>Drop plant image here</h3>
+                        <p>or click to browse · JPG, PNG, WEBP supported</p>
+                    </div>
+                    <div class="preview-container" id="previewContainer">
+                        <div class="preview-badge">SAMPLE LOADED</div>
+                        <img id="preview" alt="Plant sample preview">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">OUTPUT LANGUAGE</label>
+                        <select class="form-select" id="languageSelect">
+                            <option value="en">🇬🇧 English</option>
+                            <option value="mr">🇮🇳 मराठी (Marathi)</option>
+                        </select>
+                    </div>
+                    <button class="analyze-btn" id="analyzeBtn" onclick="analyzeImage()">
+                        <div class="spinner" id="btnSpinner"></div>
+                        <span class="btn-text">🔍  ANALYZE PLANT HEALTH</span>
+                    </button>
+                    <button class="voice-btn" id="voiceBtn" style="display:none;" onclick="toggleVoice()">
+                        🎙️ READ REPORT ALOUD
+                    </button>
+                </div>
+            </div>
+        </div>
+        <div class="right-panel">
+            <div class="glass-card" style="flex:1;">
+                <div class="card-header">
+                    <div class="card-header-left">
+                        <div class="card-header-icon cyan-icon">📋</div>
+                        <div>
+                            <div class="card-title">AI DIAGNOSTIC REPORT</div>
+                            <div class="card-subtitle">Real-time Gemini Vision analysis output</div>
+                        </div>
+                    </div>
+                    <div id="reportStatusDot" style="display:none;" class="nav-pill">
+                        <div class="dot"></div>ANALYSIS COMPLETE
+                    </div>
+                </div>
+                <div class="result-placeholder" id="placeholderState">
+                    <span class="result-placeholder-icon">🔬</span>
+                    <h3>Awaiting Plant Sample</h3>
+                    <p>Upload a clear photo of the affected leaf, stem, or root. The AI will identify diseases, symptoms, treatment and prevention strategies.</p>
+                </div>
+                <div class="analyzing-state" id="analyzingState">
+                    <span class="ai-brain-pulse">🧠</span>
+                    <h3>AI ANALYZING SAMPLE…</h3>
+                    <p>Gemini Vision is processing your plant image.<br>This usually takes 3–8 seconds.</p>
+                    <div class="progress-bar-wrap"><div class="progress-bar-fill"></div></div>
+                </div>
+                <div class="report-content" id="reportContent">
+                    <div class="report-status-bar">
+                        <div class="report-status-label"><div class="dot"></div>ANALYSIS COMPLETE</div>
+                        <div class="report-timestamp" id="reportTimestamp">--:--:--</div>
+                    </div>
+                    <div class="report-body" id="reportBody"></div>
+                </div>
+                <div class="error-state" id="errorState">
+                    <div class="error-icon">⚠️</div>
+                    <h3>Analysis Failed</h3>
+                    <p id="errorMessage">Unable to process image. Check connection and try again.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+<footer class="footer">
+    <div class="footer-left">AgriSarthi AI · Plant Health Console · v2.5.0</div>
+    <div class="footer-right">
+        <div class="footer-stat">ENGINE: <span class="v">Gemini 2.5 Flash</span></div>
+        <div class="footer-stat">SECURE: <span class="v">AES-256</span></div>
+        <div class="footer-stat">STATUS: <span class="v" id="footerStatus">IDLE</span></div>
+    </div>
+</footer>
+<script>
+const slideshowImages = ['images/dashboard-bg.jpg','images/dashboard-bg1.jpg','images/dashboard-bg3.jpg','images/farm.jpg','images/farming.jpg','images/dashimg.jpg'];
+(function(){
+    const backdrop = document.getElementById('slideshowBackdrop');
+    const overlay = backdrop.querySelector('.slideshow-overlay');
+    const slides = [];
+    slideshowImages.forEach((src,i)=>{
+        const div = document.createElement('div');
+        div.className = 'slideshow-slide'+(i===0?' active':'');
+        div.style.backgroundImage = `url('${src}')`;
+        backdrop.insertBefore(div,overlay);
+        slides.push(div);
+    });
+    let cur=0;
+    setInterval(()=>{ slides[cur].classList.remove('active'); cur=(cur+1)%slides.length; slides[cur].classList.add('active'); },6000);
+})();
+const uploadZone = document.getElementById('uploadZone');
+uploadZone.addEventListener('dragover',e=>{e.preventDefault();uploadZone.classList.add('dragover');});
+uploadZone.addEventListener('dragleave',()=>uploadZone.classList.remove('dragover'));
+uploadZone.addEventListener('drop',e=>{e.preventDefault();uploadZone.classList.remove('dragover');const f=e.dataTransfer.files[0];if(f&&f.type.startsWith('image/'))loadFile(f);});
+const API_KEY="AIzaSyDNUgLwHrQFT_bvDvBey0bieuAZE4suYoU";
+const MODEL="gemini-2.5-flash";
+const imageInput=document.getElementById('imageInput');
+const preview=document.getElementById('preview');
+const previewCtr=document.getElementById('previewContainer');
+let imageBase64='',imageMime='',lastReportText='',isSpeaking=false;
+imageInput.addEventListener('change',()=>{const f=imageInput.files[0];if(f)loadFile(f);});
+function loadFile(file){imageMime=file.type;const r=new FileReader();r.onload=()=>{preview.src=r.result;imageBase64=r.result.split(',')[1];previewCtr.classList.add('visible');};r.readAsDataURL(file);}
+function showState(s){
+    document.getElementById('placeholderState').style.display=s==='placeholder'?'':'none';
+    document.getElementById('analyzingState').style.display=s==='analyzing'?'':'none';
+    document.getElementById('reportContent').classList.toggle('visible',s==='report');
+    document.getElementById('errorState').classList.toggle('visible',s==='error');
+    document.getElementById('reportStatusDot').style.display=s==='report'?'':'none';
+}
+async function analyzeImage(){
+    if(!imageBase64){alert('Please upload a plant image first.');return;}
+    const btn=document.getElementById('analyzeBtn');
+    btn.disabled=true;btn.classList.add('loading');
+    document.getElementById('footerStatus').textContent='PROCESSING';
+    showState('analyzing');
+    const lang=document.getElementById('languageSelect').value;
+    const prompt=lang==='mr'
+        ?'तुम्ही कृषी तज्ञ आहात. या वनस्पतीच्या फोटोवरून रोग, लक्षणे, कारणे, उपाय व प्रतिबंध मराठीत विस्ताराने सांगा.'
+        :'You are a senior agricultural pathologist. Analyze this plant image and provide: 1. Identified Disease/Condition 2. Visible Symptoms 3. Probable Causes 4. Recommended Treatment 5. Prevention Strategies. Use clear headings for each section.';
+    const body={contents:[{parts:[{text:prompt},{inlineData:{mimeType:imageMime,data:imageBase64}}]}]};
+    try{
+        const res=await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${MODEL}:generateContent?key=${API_KEY}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+        const data=await res.json();
+        if(!data.candidates)throw new Error(JSON.stringify(data.error||data));
+        lastReportText=data.candidates[0].content.parts[0].text;
+        const html=lastReportText
+            .replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>')
+            .replace(/^#{1,3}\s+(.+)$/gm,'<h3>$1</h3>')
+            .replace(/^\d+\.\s+(.+)$/gm,'<p><strong>$1</strong></p>')
+            .replace(/^[-*]\s+(.+)$/gm,'<li>$1</li>')
+            .replace(/\n{2,}/g,'</p><p>')
+            .replace(/\n/g,'<br>');
+        document.getElementById('reportBody').innerHTML='<p>'+html+'</p>';
+        document.getElementById('reportTimestamp').textContent=new Date().toLocaleTimeString();
+        showState('report');
+        document.getElementById('voiceBtn').style.display='';
+        document.getElementById('footerStatus').textContent='ANALYSIS DONE';
+    }catch(err){
+        console.error('Gemini Error:',err);
+        document.getElementById('errorMessage').textContent=err.message||'API request failed.';
+        showState('error');
+        document.getElementById('footerStatus').textContent='ERROR';
+    }finally{
+        btn.disabled=false;btn.classList.remove('loading');
+    }
+}
+function toggleVoice(){
+    if(!window.speechSynthesis)return;
+    const btn=document.getElementById('voiceBtn');
+    if(isSpeaking){speechSynthesis.cancel();isSpeaking=false;btn.textContent='🎙️ READ REPORT ALOUD';btn.classList.remove('speaking');}
+    else{
+        const lang=document.getElementById('languageSelect').value;
+        const msg=new SpeechSynthesisUtterance(lastReportText);
+        msg.lang=lang==='mr'?'mr-IN':'en-IN';
+        msg.onend=()=>{isSpeaking=false;btn.textContent='🎙️ READ REPORT ALOUD';btn.classList.remove('speaking');};
+        speechSynthesis.cancel();speechSynthesis.speak(msg);
+        isSpeaking=true;btn.textContent='⏹️ STOP READING';btn.classList.add('speaking');
+    }
+}
+showState('placeholder');
+</script>
+</body>
+</html>
