@@ -8,6 +8,8 @@ import RoversPage from './pages/RoversPage';
 import MissionControlPage from './pages/MissionControlPage';
 import ServicesPage from './pages/ServicesPage';
 import AboutPage from './pages/AboutPage';
+import LegalPage from './pages/LegalPage';
+import NotFoundPage from './pages/NotFoundPage';
 
 // Automatic Scroll Restoration and Hash Jump Handler
 function ScrollHandler() {
@@ -144,8 +146,14 @@ export default function App() {
             } 
           />
 
-          {/* Fallback to Home */}
-          <Route path="*" element={<Navigate to="/" replace />} />
+          {/* Legal, Privacy & Safety Guidelines */}
+          <Route path="/legal" element={<LegalPage />} />
+          <Route path="/privacy" element={<LegalPage />} />
+          <Route path="/terms" element={<LegalPage />} />
+          <Route path="/safety" element={<LegalPage />} />
+
+          {/* Branded 404 Lost Telemetry Signal */}
+          <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
 

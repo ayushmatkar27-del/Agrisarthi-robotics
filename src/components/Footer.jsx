@@ -154,8 +154,13 @@ export default function Footer({ onOpenDemo }) {
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-[11px] text-gray-500">
           <p>© {new Date().getFullYear()} AgriSarthi Robotics. All rights reserved. Developed by Ayush Matkar & Atharva Pachpol (JSPM Narhe Technical Campus).</p>
           
-          <div className="flex items-center gap-4">
-            <span>Built with Precision Robotics & Edge AI</span>
+          <div className="flex items-center gap-3 sm:gap-4 flex-wrap">
+            <Link to="/privacy" className="hover:text-emerald-700 transition font-mono">Privacy Policy</Link>
+            <span>•</span>
+            <Link to="/terms" className="hover:text-emerald-700 transition font-mono">Terms of Service</Link>
+            <span>•</span>
+            <Link to="/safety" className="hover:text-emerald-700 transition font-mono">Safety Standards</Link>
+            <span>•</span>
             <button
               onClick={scrollToTop}
               className="p-2 rounded-lg bg-white hover:bg-green-100 text-gray-600 hover:text-green-950 border border-green-200 transition cursor-pointer"

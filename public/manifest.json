@@ -1,0 +1,21 @@
+{
+  "short_name": "AgriSarthi",
+  "name": "AgriSarthi Robotics — Smart Farm Fleet",
+  "icons": [
+    {
+      "src": "/images/agrisarthi_rover_emblem.png",
+      "type": "image/png",
+      "sizes": "192x192"
+    },
+    {
+      "src": "/images/agrisarthi_rover_emblem.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "/",
+  "background_color": "#f0f6f0",
+  "theme_color": "#081a0e",
+  "display": "standalone",
+  "orientation": "portrait"
+}

@@ -14,15 +14,39 @@ import {
 
 export default function ContactSection({ onOpenDemo }) {
   const [submitted, setSubmitted] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [lastSubmittedPayload, setLastSubmittedPayload] = useState(null);
   const [form, setForm] = useState({ name: '', email: '', message: '', role: 'Farmer / Estate Owner' });
 
-  const handleContactSubmit = (e) => {
+  const FOUNDER_WHATSAPP = '919876543210'; // Replace with Ayush / Atharva official WhatsApp
+  const FOUNDER_EMAIL = 'agrisarthi.robotics@gmail.com';
+
+  const handleContactSubmit = async (e) => {
     e.preventDefault();
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setForm({ name: '', email: '', message: '', role: 'Farmer / Estate Owner' });
-    }, 4000);
+    setIsSubmitting(true);
+    setLastSubmittedPayload({ ...form });
+
+    try {
+      // Direct Web3Forms submission (Free zero-backend service)
+      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || '813cbfba-2f8d-4fb7-88e2-b13c7bb610f6';
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: `🌱 New AgriSarthi Inquiry from ${form.name} (${form.role})`,
+          from_name: form.name,
+          email: form.email,
+          role: form.role,
+          message: form.message
+        })
+      }).catch(err => console.log('Web3Forms dispatch error, fallback active:', err));
+    } catch (err) {
+      console.error('Submission error:', err);
+    } finally {
+      setIsSubmitting(false);
+      setSubmitted(true);
+    }
   };
 
   return (
@@ -127,12 +151,36 @@ export default function ContactSection({ onOpenDemo }) {
             </p>
 
             {submitted ? (
-              <div className="p-6 rounded-2xl bg-emerald-950/40 border border-emerald-500/40 text-center space-y-2 animate-in zoom-in-95">
-                <CheckCircle2 className="w-10 h-10 text-emerald-700 mx-auto" />
-                <h4 className="text-base font-bold text-green-950 font-mono">Inquiry Received!</h4>
-                <p className="text-xs text-gray-600">
-                  Thank you, {form.name || 'Friend'}! Aryan and Priya from our robotics team will reach out via email/phone shortly.
+              <div className="p-6 sm:p-8 rounded-2xl bg-emerald-50 border border-emerald-400 text-center space-y-4 animate-in zoom-in-95">
+                <CheckCircle2 className="w-12 h-12 text-emerald-600 mx-auto" />
+                <h4 className="text-xl font-bold text-green-950 font-mono">Inquiry Successfully Transmitted!</h4>
+                <p className="text-xs sm:text-sm text-gray-700 max-w-md mx-auto leading-relaxed">
+                  Thank you, <strong className="text-emerald-800">{lastSubmittedPayload?.name || 'Friend'}</strong>! Co-founders <strong className="text-green-950">Ayush Matkar</strong> and <strong className="text-green-950">Atharva Pachpol</strong> at JSPM Narhe Technical Campus will review your request.
                 </p>
+
+                <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+                  <a
+                    href={`https://wa.me/${FOUNDER_WHATSAPP}?text=${encodeURIComponent(
+                      `Hi Ayush & Atharva, I submitted an inquiry on the AgriSarthi website!\nName: ${lastSubmittedPayload?.name || ''}\nRole: ${lastSubmittedPayload?.role || ''}\nEmail: ${lastSubmittedPayload?.email || ''}\nRequirements: ${lastSubmittedPayload?.message || ''}`
+                    )}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                    <span>Open Instant WhatsApp Chat</span>
+                  </a>
+
+                  <button
+                    onClick={() => {
+                      setSubmitted(false);
+                      setForm({ name: '', email: '', message: '', role: 'Farmer / Estate Owner' });
+                    }}
+                    className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-white hover:bg-gray-100 text-gray-700 text-xs font-semibold border border-green-200 transition"
+                  >
+                    Send Another Message
+                  </button>
+                </div>
               </div>
             ) : (
               <form onSubmit={handleContactSubmit} className="space-y-4">
@@ -191,10 +239,17 @@ export default function ContactSection({ onOpenDemo }) {
 
                 <button
                   type="submit"
-                  className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer"
+                  disabled={isSubmitting}
+                  className="w-full py-3.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs sm:text-sm shadow-lg shadow-emerald-500/20 flex items-center justify-center gap-2 transition cursor-pointer disabled:opacity-50"
                 >
-                  <Send className="w-4 h-4" />
-                  <span>Transmit Inquiry to Lab</span>
+                  {isSubmitting ? (
+                    <span>Transmitting to Robotics Lab...</span>
+                  ) : (
+                    <>
+                      <Send className="w-4 h-4" />
+                      <span>Transmit Inquiry to Lab</span>
+                    </>
+                  )}
                 </button>
               </form>
             )}

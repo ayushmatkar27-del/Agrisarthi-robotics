@@ -13,13 +13,16 @@ import {
   Zap,
   Phone,
   User,
-  Mail
+  Mail,
+  MessageSquare
 } from 'lucide-react';
 
 export default function BookDemoModal({ isOpen, onClose, preselectedRover }) {
   const [step, setStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
+
+  const FOUNDER_WHATSAPP = '919876543210';
 
   // Form Data State
   const [formData, setFormData] = useState({
@@ -44,15 +47,28 @@ export default function BookDemoModal({ isOpen, onClose, preselectedRover }) {
     });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setIsSubmitting(true);
 
-    setTimeout(() => {
+    try {
+      const accessKey = import.meta.env.VITE_WEB3FORMS_ACCESS_KEY || '813cbfba-2f8d-4fb7-88e2-b13c7bb610f6';
+      await fetch('https://api.web3forms.com/submit', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({
+          access_key: accessKey,
+          subject: `🚜 New AgriSarthi Pilot Booking: ${formData.name} (${formData.farmSize} Acres)`,
+          ...formData
+        })
+      }).catch(err => console.log('Web3Forms dispatch error, fallback active:', err));
+    } catch (err) {
+      console.error('Booking submission error:', err);
+    } finally {
       setIsSubmitting(false);
       setIsSuccess(true);
       triggerConfetti();
-    }, 1200);
+    }
   };
 
   return (
@@ -377,16 +393,38 @@ export default function BookDemoModal({ isOpen, onClose, preselectedRover }) {
               Thank you, <strong className="text-emerald-700">{formData.name || 'Farmer'}</strong>! Our field robotics team from <strong className="text-green-950">JSPM Narhe Technical Campus</strong> has logged your {formData.farmSize}-acre farm in {formData.location || 'your area'}.
             </p>
 
-            <div className="p-4 rounded-2xl bg-white/80 border border-green-200 text-xs font-mono text-gray-500 max-w-sm mx-auto text-left space-y-1">
+            <div className="p-4 rounded-2xl bg-white/80 border border-green-200 text-xs font-mono text-gray-700 max-w-sm mx-auto text-left space-y-1.5 shadow-sm">
               <div>• Assigned Unit: <span className="text-emerald-700 uppercase font-bold">{formData.roverModel}</span></div>
-              <div>• Format: <span className="text-green-800">{formData.demoType}</span></div>
-              <div>• Dispatch Window: <span className="text-green-800">Within 48 Hours</span></div>
+              <div>• Farm Size: <span className="text-green-950 font-bold">{formData.farmSize} Acres</span> ({formData.cropType})</div>
+              <div>• Location: <span className="text-green-950">{formData.location || 'Pending GPS Pin'}</span></div>
+              <div>• Dispatch Window: <span className="text-emerald-700 font-bold">Within 48 Hours</span></div>
             </div>
 
-            <div className="pt-4">
+            <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+              <a
+                href={`https://wa.me/${FOUNDER_WHATSAPP}?text=${encodeURIComponent(
+                  `🚜 *New AgriSarthi Pilot Booking Confirmation*\n\n` +
+                  `• Name: ${formData.name || 'Farmer'}\n` +
+                  `• Phone: ${formData.phone || 'N/A'}\n` +
+                  `• Email: ${formData.email || 'N/A'}\n` +
+                  `• Rover Model: ${formData.roverModel.toUpperCase()}\n` +
+                  `• Farm Size: ${formData.farmSize} Acres\n` +
+                  `• Crop: ${formData.cropType}\n` +
+                  `• Location: ${formData.location || 'Not Specified'}\n` +
+                  `• Format: ${formData.demoType}\n` +
+                  `• Preferred Date: ${formData.preferredDate || 'Earliest Slot'}`
+                )}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-md transition"
+              >
+                <MessageSquare className="w-4 h-4" />
+                <span>Notify Founders via WhatsApp</span>
+              </a>
+
               <button
                 onClick={onClose}
-                className="px-8 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs transition cursor-pointer"
+                className="w-full sm:w-auto px-6 py-3 rounded-xl bg-white hover:bg-gray-100 text-gray-700 font-bold text-xs border border-green-200 transition cursor-pointer"
               >
                 Back to Dashboard
               </button>
