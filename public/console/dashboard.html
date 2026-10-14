@@ -176,7 +176,9 @@
         .nav-right-cluster {
             display: flex;
             align-items: center;
-            gap: 14px;
+            gap: 12px;
+            flex-shrink: 0;
+            white-space: nowrap;
         }
 
         .telemetry-pill {
@@ -190,6 +192,8 @@
             gap: 6px;
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .status-dot-green {
@@ -228,6 +232,7 @@
             text-decoration: none;
             transition: all 0.2s;
             font-size: 16px;
+            flex-shrink: 0;
         }
 
         .btn-icon-nav:hover {
@@ -237,11 +242,44 @@
             transform: scale(1.05);
         }
 
+        .btn-rpi-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            height: 36px;
+            border-radius: 20px;
+            background: rgba(0, 229, 153, 0.1);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            outline: none;
+            text-decoration: none;
+        }
+
+        .btn-rpi-pill:hover {
+            background: rgba(0, 229, 153, 0.2);
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
         .user-welcome-tag {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
             font-weight: 700;
             color: var(--primary);
+            white-space: nowrap;
+            flex-shrink: 0;
+            padding: 0 4px;
         }
 
         .btn-logout {
@@ -254,6 +292,8 @@
             font-weight: 700;
             cursor: pointer;
             transition: all 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn-logout:hover {
@@ -834,7 +874,7 @@
                 <span>🔋 Battery: <strong style="color: var(--accent-amber);" id="headerBatVal">86%</strong></span>
             </div>
             <a href="notifications.html" class="btn-icon-nav" title="Alerts & Notifications">🔔</a>
-            <button class="btn-icon-nav" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings" style="background:rgba(0,229,153,0.12);border:1px solid rgba(0,229,153,0.3);color:#00e599;font-size:12px;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;">
+            <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
                 <span>⚙️</span><span>RPi Connect</span>
             </button>
             <span class="user-welcome-tag" id="welcomeText">Welcome, Operator!</span>
