@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- MQTT.js CDN -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
 
     <style>
         :root {
@@ -1226,11 +1228,11 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
-        // MQTT Client Setup
+        // MQTT Client Setup (Unified via RPiConfig)
         let client = null;
         let isConnected = false;
-        const MQTT_BROKER = "wss://test.mosquitto.org:8081";
-        const MQTT_TOPIC = "rpi/agrisarthi/sensors/climate";
+        const MQTT_BROKER = RPiConfig.getMqttBrokerUrl();
+        const MQTT_TOPIC = RPiConfig.TOPICS.telemetry;
 
         function connectMQTT() {
             if (isConnected) {
@@ -1238,21 +1240,25 @@
                 return;
             }
 
-            appendTerminalLog("MQTT", "t-tag-mqtt", `Initiating secure WebSocket handshake with ${MQTT_BROKER}...`);
+            appendTerminalLog("MQTT", "t-tag-mqtt", `Initiating connection with ${MQTT_BROKER}...`);
 
             try {
-                client = mqtt.connect(MQTT_BROKER);
+                client = mqtt.connect(MQTT_BROKER, {
+                    clientId: 'AgriSarthi_Climate_' + Math.random().toString(16).substr(2, 8),
+                    reconnectPeriod: 3000
+                });
 
                 client.on('connect', () => {
                     isConnected = true;
                     document.getElementById("mqttStatusText").innerText = "Status: Connected (Active Stream)";
                     document.getElementById("mqttStatusText").style.color = "var(--primary)";
-                    appendTerminalLog("MQTT", "t-tag-mqtt", `Connected to broker successfully. ClientID: AgriSarthi_Rover04_${Math.floor(Math.random()*1000)}`);
+                    appendTerminalLog("MQTT", "t-tag-mqtt", `Connected to broker successfully. ClientID: AgriSarthi_Rover04`);
                     client.subscribe(MQTT_TOPIC, (err) => {
                         if (!err) {
                             appendTerminalLog("TOPIC", "t-tag-topic", `Subscribed to channel: ${MQTT_TOPIC} (QoS 1)`);
                         }
                     });
+                    client.subscribe("rpi/agrisarthi/sensors/climate");
                 });
 
                 client.on('message', (topic, message) => {

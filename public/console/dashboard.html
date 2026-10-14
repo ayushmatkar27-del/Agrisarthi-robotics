@@ -15,6 +15,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- MQTT.js CDN -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
 
     <style>
         :root {
@@ -832,6 +834,9 @@
                 <span>🔋 Battery: <strong style="color: var(--accent-amber);" id="headerBatVal">86%</strong></span>
             </div>
             <a href="notifications.html" class="btn-icon-nav" title="Alerts & Notifications">🔔</a>
+            <button class="btn-icon-nav" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings" style="background:rgba(0,229,153,0.12);border:1px solid rgba(0,229,153,0.3);color:#00e599;font-size:12px;font-weight:700;cursor:pointer;padding:6px 12px;border-radius:20px;display:flex;align-items:center;gap:6px;">
+                <span>⚙️</span><span>RPi Connect</span>
+            </button>
             <span class="user-welcome-tag" id="welcomeText">Welcome, Operator!</span>
             <button class="btn-logout" id="logoutBtn">Logout</button>
         </div>
@@ -1110,36 +1115,80 @@
         const db = getFirestore(app);
 
         let config = { channelId: null, readKey: null, writeKey: null };
+        let mqttClient = null;
 
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                try {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        const userData = userDoc.data();
-                        const welcomeEl = document.getElementById("welcomeText");
-                        if (welcomeEl) welcomeEl.innerText = `Welcome, ${userData.name || "Operator"}!`;
-                        config.channelId = userData.channelId;
+        // Check for direct offline mode
+        const urlParams = new URLSearchParams(window.location.search);
+        const isDirectMode = urlParams.get('mode') === 'direct' || localStorage.getItem('agrisarthi_direct_mode') === 'true';
+
+        function initDirectRoverMode() {
+            console.log("🚜 Initializing Direct Offline Rover Mode via RPi...");
+            const welcomeEl = document.getElementById("welcomeText");
+            if (welcomeEl) welcomeEl.innerText = `Field Mode (${RPiConfig.getRoverIp()})`;
+            
+            const loader = document.getElementById("loader");
+            if (loader) loader.style.display = 'none';
+
+            // Connect to RPi MQTT telemetry stream
+            mqttClient = RPiConfig.initMqtt({
+                onConnect: (client) => {
+                    client.subscribe(RPiConfig.TOPICS.telemetry);
+                    console.log("Subscribed to telemetry topic:", RPiConfig.TOPICS.telemetry);
+                },
+                onMessage: (topic, data, raw) => {
+                    if (data) {
+                        updateUI(data.temp, data.hum, data.soil, data.water, data.pump, data.battery);
                     }
-                    if (config.channelId) {
-                        const channelDoc = await getDoc(doc(db, "channels", config.channelId));
-                        if (channelDoc.exists()) {
-                            config.readKey = channelDoc.data().readKey;
-                            config.writeKey = channelDoc.data().writeKey;
-                            fetchData();
-                            setInterval(fetchData, 15000);
-                        }
+                }
+            });
+
+            // Local RPi REST Polling Fallback
+            setInterval(async () => {
+                try {
+                    const res = await fetch(`${RPiConfig.getApiBaseUrl()}/api/telemetry`, { signal: AbortSignal.timeout(2500) });
+                    const data = await res.json();
+                    if (data) {
+                        updateUI(data.temp, data.hum, data.soil, data.water, data.pump, data.battery);
                     }
                 } catch (e) {
-                    console.error("Dashboard auth state error:", e);
-                } finally {
-                    const loader = document.getElementById("loader");
-                    if (loader) loader.style.display = 'none';
+                    // Ignore transient errors
                 }
-            } else {
-                window.location.href = "login.html";
-            }
-        });
+            }, 3000);
+        }
+
+        if (isDirectMode) {
+            initDirectRoverMode();
+        } else {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    try {
+                        const userDoc = await getDoc(doc(db, "users", user.uid));
+                        if (userDoc.exists()) {
+                            const userData = userDoc.data();
+                            const welcomeEl = document.getElementById("welcomeText");
+                            if (welcomeEl) welcomeEl.innerText = `Welcome, ${userData.name || "Operator"}!`;
+                            config.channelId = userData.channelId;
+                        }
+                        if (config.channelId) {
+                            const channelDoc = await getDoc(doc(db, "channels", config.channelId));
+                            if (channelDoc.exists()) {
+                                config.readKey = channelDoc.data().readKey;
+                                config.writeKey = channelDoc.data().writeKey;
+                                fetchData();
+                                setInterval(fetchData, 15000);
+                            }
+                        }
+                    } catch (e) {
+                        console.error("Dashboard auth state error:", e);
+                    } finally {
+                        const loader = document.getElementById("loader");
+                        if (loader) loader.style.display = 'none';
+                    }
+                } else {
+                    window.location.href = "login.html";
+                }
+            });
+        }
 
         async function fetchData() {
             if (!config.readKey || !config.channelId) return;
@@ -1200,7 +1249,7 @@
             }
         }
 
-        // Pump Toggle Action
+        // Pump Toggle Action (dispatches to RPi / MQTT and ThingSpeak)
         const pumpToggleEl = document.getElementById("pumpToggle");
         if (pumpToggleEl) {
             pumpToggleEl.addEventListener('change', async (e) => {
@@ -1210,22 +1259,26 @@
                     label.innerText = state === 1 ? "PUMP ON" : "PUMP OFF";
                     label.style.color = state === 1 ? "#00e599" : "var(--text-dim)";
                 }
-                if (!config.writeKey) {
-                    console.log("Mocking pump state switch (no write key yet)");
-                    return;
-                }
-                try {
-                    await fetch(`https://api.thingspeak.com/update?api_key=${config.writeKey}&field5=${state}`);
-                } catch (err) {
-                    alert("Error sending command to pump actuator");
-                    e.target.checked = !state;
+
+                // Dispatch to Raspberry Pi Actuators
+                RPiConfig.dispatchActuatorCommand(mqttClient, { target: "pump", state: state });
+
+                if (config.writeKey) {
+                    try {
+                        await fetch(`https://api.thingspeak.com/update?api_key=${config.writeKey}&field5=${state}`);
+                    } catch (err) {
+                        console.warn("ThingSpeak cloud pump update failed:", err);
+                    }
                 }
             });
         }
 
         const logoutBtn = document.getElementById("logoutBtn");
         if (logoutBtn) {
-            logoutBtn.onclick = () => signOut(auth).then(() => window.location.href = "login.html");
+            logoutBtn.onclick = () => {
+                localStorage.removeItem('agrisarthi_direct_mode');
+                signOut(auth).then(() => window.location.href = "login.html").catch(() => window.location.href = "login.html");
+            };
         }
     </script>
 </body>

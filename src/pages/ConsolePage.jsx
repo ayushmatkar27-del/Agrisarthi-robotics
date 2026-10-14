@@ -1,6 +1,6 @@
 import React, { useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, ExternalLink } from 'lucide-react';
 
 export default function ConsolePage() {
   const navigate = useNavigate();
@@ -24,15 +24,28 @@ export default function ConsolePage() {
   return (
     <div className="fixed inset-0 w-screen h-screen bg-[#070d18] overflow-hidden z-50">
 
-      {/* Minimal Floating Back Button (navigates within console) */}
-      <button
-        onClick={handleBack}
-        className="fixed top-3.5 left-1/2 -translate-x-1/2 z-50 flex items-center justify-center w-8 h-8 rounded-full bg-[#080d0a]/90 hover:bg-[#102416] text-gray-200 hover:text-emerald-400 border border-white/10 hover:border-emerald-500/40 shadow-xl backdrop-blur-md transition-all duration-200 cursor-pointer group"
-        title="Go Back"
-        aria-label="Go Back within console"
-      >
-        <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
-      </button>
+      {/* Floating Control Pill (Back & Open in Separate Tab) */}
+      <div className="fixed top-3.5 left-1/2 -translate-x-1/2 z-50 flex items-center gap-1.5 p-1 rounded-full bg-[#080d0a]/90 border border-white/10 shadow-xl backdrop-blur-md">
+        <button
+          onClick={handleBack}
+          className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#102416] text-gray-200 hover:text-emerald-400 transition-all cursor-pointer group"
+          title="Go Back"
+          aria-label="Go Back within console"
+        >
+          <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-0.5" />
+        </button>
+        <div className="w-[1px] h-4 bg-white/15" />
+        <a
+          href="/console/dashboard.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center w-8 h-8 rounded-full hover:bg-[#102416] text-gray-200 hover:text-emerald-400 transition-all cursor-pointer group"
+          title="Open in Separate Tab"
+          aria-label="Open console in separate tab"
+        >
+          <ExternalLink className="w-3.5 h-3.5 transition-transform group-hover:scale-110" />
+        </a>
+      </div>
 
       {/* Fullscreen Embedded Console Viewport */}
       <iframe

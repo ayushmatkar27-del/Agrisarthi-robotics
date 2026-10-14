@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- MQTT.js -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
 
     <style>
         :root {
@@ -1193,10 +1195,33 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
+        // MQTT Client Setup for Soil Moisture & Robotic Probe Arm
+        let soilMqttClient = null;
+
+        function initSoilConnectivity() {
+            soilMqttClient = RPiConfig.initMqtt({
+                onConnect: (client) => {
+                    appendSoilLog("MQTT", "t-tag-mqtt", `Connected to RPi Broker (${RPiConfig.getMqttBrokerUrl()}).`);
+                    client.subscribe(RPiConfig.TOPICS.telemetry);
+                    document.getElementById("armStatusBadge").innerText = "ARM READY (MQTT)";
+                    document.getElementById("armStatusBadge").className = "status-badge-pill badge-optimal";
+                },
+                onMessage: (topic, data) => {
+                    if (data && (data.soil !== undefined || data.soil_vwc !== undefined)) {
+                        const val = parseFloat(data.soil_vwc || data.soil).toFixed(1);
+                        document.getElementById("disp-soil-vwc").innerText = val;
+                        appendSoilLog("LIVE_DATA", "t-tag-probe", `Soil moisture telemetry updated: ${val}%`);
+                    }
+                }
+            });
+        }
+        window.addEventListener('load', initSoilConnectivity);
+
         // Servo Functions
         function updateServo(num, angle) {
             document.getElementById(`valServo${num}`).innerText = `${angle}°`;
             appendSoilLog(`SERVO_${num}`, "t-tag-arm", `Angle dispatched: ${angle}°`);
+            RPiConfig.dispatchActuatorCommand(soilMqttClient, { target: "arm", servo: num, angle: parseInt(angle) });
         }
 
         function setServoAngle(num, angle) {
@@ -1205,20 +1230,22 @@
         }
 
         function connectArm() {
-            const ip = document.getElementById("armIpAddress").value.trim();
-            appendSoilLog("ARM_CONNECT", "t-tag-arm", `Connecting to ESP32 Servo Bus at ${ip}:80... Handshake OK.`);
-            document.getElementById("armStatusBadge").innerText = "ARM CONNECTED";
-            document.getElementById("armStatusBadge").className = "status-badge-pill badge-optimal";
+            const ip = document.getElementById("armIpAddress").value.trim() || RPiConfig.getRoverIp();
+            RPiConfig.setRoverIp(ip);
+            appendSoilLog("ARM_CONNECT", "t-tag-arm", `Connecting to Rover Arm Controller at ${ip}...`);
+            initSoilConnectivity();
         }
 
         function scanNetwork() {
-            appendSoilLog("NETWORK_SCAN", "t-tag-diag", "Scanning rover subnet 192.168.4.0/24... Found ESP32_PROBE_CONTROLLER [MAC: 48:E7:29:A1:02]");
+            const ip = RPiConfig.getRoverIp();
+            appendSoilLog("NETWORK_SCAN", "t-tag-diag", `Scanning rover subnet for ${ip}... RPi 4 / ESP32 Controller verified.`);
         }
 
         function deployAndSample() {
             appendSoilLog("MACRO_DEPLOY", "t-tag-arm", "Deploying Soil Probe Arm: Servo 1 -> 180° (Full Insertion), Servo 2 -> 90°");
             setServoAngle(1, 180);
             setServoAngle(2, 90);
+            RPiConfig.dispatchActuatorCommand(soilMqttClient, { target: "arm", action: "deploy", servo1: 180, servo2: 90 });
             setTimeout(() => {
                 const sampleVwc = (34.5 + Math.random() * 0.8).toFixed(1);
                 document.getElementById("disp-soil-vwc").innerText = sampleVwc;
@@ -1230,6 +1257,7 @@
             appendSoilLog("MACRO_RETRACT", "t-tag-arm", "Retracting Arm: Returning to 0° stowage position.");
             setServoAngle(1, 0);
             setServoAngle(2, 90);
+            RPiConfig.dispatchActuatorCommand(soilMqttClient, { target: "arm", action: "retract", servo1: 0, servo2: 90 });
         }
     </script>
 </body>

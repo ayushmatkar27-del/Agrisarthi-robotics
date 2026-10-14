@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Roller Control - AgriSarthi</title>
+    <!-- MQTT & Centralized RPi Config Engine -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <script src="rpi_config.js"></script>
     <style>
         * {
             margin: 0;
@@ -1861,12 +1864,20 @@
             mjpegElement.style.display = 'none';
 
             // Clean IP address and normalize to host:port
-            let cleanIp = esp32CameraIp.trim();
+            let cleanIp = (esp32CameraIp || RPiConfig.getRoverIp()).trim();
             cleanIp = cleanIp.replace(/^https?:\/\//, '');
             cleanIp = cleanIp.split('/')[0];
 
-            const streamUrl = `http://${cleanIp}/stream`;
-            console.log(`Connecting to: ${streamUrl}`);
+            let streamUrl = '';
+            if (cleanIp.includes(':5000') || cleanIp.includes('/video_feed')) {
+                streamUrl = `http://${cleanIp.replace('/video_feed', '')}/video_feed`;
+            } else if (cleanIp.includes(':81') || cleanIp.includes(':80')) {
+                streamUrl = `http://${cleanIp}/stream`;
+            } else {
+                // Default to Raspberry Pi YOLOv8 AI stream on port 5000
+                streamUrl = `http://${cleanIp}:5000/video_feed`;
+            }
+            console.log(`Connecting to Rover Camera: ${streamUrl}`);
 
             // Wait for actual image load before marking camera online
             mjpegElement.onload = () => {
@@ -2133,18 +2144,18 @@
 
         // ============ SETTINGS MANAGEMENT ============
         function loadSettings() {
-            // Load rover IP
-            if (localStorage.getItem('roverIpAddress')) {
-                roverIpAddress = localStorage.getItem('roverIpAddress');
-            }
-            
-            // Load camera settings
-            if (localStorage.getItem('esp32CameraIp')) {
-                esp32CameraIp = localStorage.getItem('esp32CameraIp');
-            }
-            if (!esp32CameraIp || esp32CameraIp.includes('192.168.')) {
-                esp32CameraIp = '10.164.223.165:81';
-                localStorage.setItem('esp32CameraIp', esp32CameraIp);
+            // Load rover IP from centralized RPiConfig
+            roverIpAddress = RPiConfig.getRoverIp();
+            esp32CameraIp = localStorage.getItem('esp32CameraIp') || RPiConfig.getRoverIp();
+
+            // Connect MQTT for telemetry & motion
+            if (!window.RPiMqttClient) {
+                window.RPiMqttClient = RPiConfig.initMqtt({
+                    onConnect: () => {
+                        console.log('✅ MQTT Connected on Roller Interface');
+                        updateConnectionStatus(true);
+                    }
+                });
             }
             
             if (localStorage.getItem('cameraSource')) {
@@ -2265,23 +2276,40 @@
 
         // ============ ROVER CONTROL FUNCTIONS ============
         async function sendRoverCommand(commandChar) {
-            if (!isConnectedToRover || !roverWebSocket || roverWebSocket.readyState !== WebSocket.OPEN) {
-                alert('⚠️ Not connected to rover!\n\nPlease connect to "ESP32_RC_CAR" WiFi first.');
-                showConnectionModal();
-                return false;
+            let sent = false;
+
+            // 1. WebSocket dispatch (port 81)
+            if (roverWebSocket && roverWebSocket.readyState === WebSocket.OPEN) {
+                try {
+                    roverWebSocket.send(commandChar);
+                    sent = true;
+                } catch (e) {
+                    console.warn('WS send failed:', e);
+                }
             }
 
-            try {
-                roverWebSocket.send(commandChar);
-                console.log(`📡 Sent command: ${commandChar}`);
-                return true;
-                
-            } catch (error) {
-                console.error('❌ Command failed:', error);
-                alert('⚠️ Cannot communicate with rover. Please check connection.');
-                updateConnectionStatus(false);
-                return false;
+            // 2. MQTT dispatch (agrisarthi/control/motion)
+            if (window.RPiMqttClient && window.RPiMqttClient.connected) {
+                try {
+                    window.RPiMqttClient.publish(RPiConfig.TOPICS.motion, JSON.stringify({
+                        cmd: commandChar,
+                        speed: currentSpeed
+                    }));
+                    sent = true;
+                } catch (e) {
+                    console.warn('MQTT send failed:', e);
+                }
             }
+
+            // 3. REST API dispatch fallback to Raspberry Pi 4
+            fetch(`${RPiConfig.getApiBaseUrl()}/api/control`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: 'motion', cmd: commandChar, speed: currentSpeed })
+            }).then(() => { sent = true; }).catch(() => {});
+
+            console.log(`📡 Rover motion dispatched: ${commandChar} (${currentSpeed}%)`);
+            return true;
         }
 
         function moveRoller(direction) {
@@ -2652,7 +2680,8 @@
             console.log(`💾 Settings saved: ${roverIpAddress}, ${autoIntervalSeconds}s`);
             
             alert('✅ Settings saved successfully!');
-        }
+        }
+
 
         // ============ UTILITY FUNCTIONS ============
         function goBack() {

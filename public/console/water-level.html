@@ -12,6 +12,8 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- MQTT.js -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
 
     <style>
         :root {
@@ -1206,6 +1208,29 @@
             logBox.scrollTop = logBox.scrollHeight;
         }
 
+        // MQTT Client Setup for Water & Irrigation
+        let waterMqttClient = null;
+
+        function initWaterConnectivity() {
+            waterMqttClient = RPiConfig.initMqtt({
+                onConnect: (client) => {
+                    appendWaterLog("MQTT", "t-tag-mqtt", `Connected to RPi Broker (${RPiConfig.getMqttBrokerUrl()}).`);
+                    client.subscribe(RPiConfig.TOPICS.telemetry);
+                },
+                onMessage: (topic, data) => {
+                    if (data && (data.water !== undefined || data.tank !== undefined)) {
+                        const level = parseFloat(data.water !== undefined ? data.water : data.tank).toFixed(0);
+                        const disp = document.getElementById("disp-water-pct");
+                        if (disp) disp.innerText = `${level}%`;
+                        const mainVal = document.getElementById("disp-water-liters");
+                        if (mainVal) mainVal.innerText = `${Math.round(level * 5)}L`;
+                        appendWaterLog("LIVE_DATA", "t-tag-pump", `Reservoir level updated: ${level}%`);
+                    }
+                }
+            });
+        }
+        window.addEventListener('load', initWaterConnectivity);
+
         // Pump & Valve Handlers
         function togglePump(isOn) {
             document.getElementById("masterPumpText").innerText = `PRIMARY PUMP: ${isOn ? 'RUNNING (ACTIVE)' : 'OFF (STANDBY)'}`;
@@ -1214,6 +1239,7 @@
             document.getElementById("pumpBadgeState").innerText = isOn ? 'PUMP RUNNING' : 'PUMP STANDBY';
             
             appendWaterLog("PUMP_ACTUATOR", "t-tag-pump", `Pump state dispatched: ${isOn ? '1 (ACTIVE)' : '0 (OFF)'}`);
+            RPiConfig.dispatchActuatorCommand(waterMqttClient, { target: "pump", state: isOn ? 1 : 0 });
         }
 
         function toggleValve(num, el) {
@@ -1221,6 +1247,7 @@
             const sub = el.querySelector('.valve-sub');
             if (sub) sub.innerText = `Status: ${isActive ? 'OPEN' : 'CLOSED'}`;
             appendWaterLog(`VALVE_${num}`, "t-tag-valve", `Solenoid Valve ${num} switched to: ${isActive ? 'OPEN (FLOWING)' : 'CLOSED'}`);
+            RPiConfig.dispatchActuatorCommand(waterMqttClient, { target: "valve", valve_id: num, state: isActive ? 1 : 0 });
         }
 
         function flushCycle() {

@@ -7,6 +7,8 @@
     
     <!-- MQTT.js CDN -->
     <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
     
     <style>
         body {
@@ -287,12 +289,13 @@ let latestSensorData = {
     timestamp: null
 };
 
-// MQTT Configuration - Same as your monitoring dashboard
+// MQTT Configuration - Centralized via RPiConfig
 const mqttConfig = {
-    broker: 'wss://broker.hivemq.com:8884/mqtt',
+    broker: RPiConfig.getMqttBrokerUrl(),
     topics: [
+        RPiConfig.TOPICS.telemetry,
+        RPiConfig.TOPICS.alerts,
         'rpi4/sensors'
-        
     ]
 };
 
