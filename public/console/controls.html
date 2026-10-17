@@ -1,0 +1,1530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Master Robotics Cockpit & Rover Actuation Controls</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.85);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-cyan: #38bdf8;
+            --accent-teal: #2dd4bf;
+            --accent-amber: #fbbf24;
+            --accent-purple: #c084fc;
+            --accent-red: #ef4444;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Backdrop */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.86) 0%, rgba(7, 13, 24, 0.80) 45%, rgba(7, 13, 24, 0.94) 100%),
+                radial-gradient(circle at 20% 25%, rgba(0, 229, 153, 0.08) 0%, transparent 60%),
+                radial-gradient(circle at 80% 75%, rgba(56, 189, 248, 0.08) 0%, transparent 50%);
+            backdrop-filter: blur(6px);
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            background: rgba(56, 189, 248, 0.12);
+            border: 1px solid var(--accent-cyan);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-cyan);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .badge-farm {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-cyan);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .badge-unit {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .nav-right-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .btn-demo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(13, 22, 38, 0.9);
+            color: #ffffff;
+        }
+
+        .btn-demo-pill.demo-active {
+            background: rgba(251, 191, 36, 0.18);
+            border-color: rgba(251, 191, 36, 0.6);
+            color: #fbbf24;
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+        }
+
+        .btn-demo-pill.demo-off {
+            background: rgba(0, 229, 153, 0.15);
+            border-color: rgba(0, 229, 153, 0.5);
+            color: #00e599;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.35);
+        }
+
+        .demo-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+        .btn-rpi-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-rpi-pill:hover {
+            background: #38bdf8;
+            color: #051410;
+        }
+
+        .btn-dashboard-back {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-dashboard-back:hover {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .main-container {
+            flex: 1;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Cockpit Grid */
+        .cockpit-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 22px;
+        }
+
+        @media (max-width: 1080px) {
+            .cockpit-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Generic Control Box */
+        .control-box {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            position: relative;
+        }
+
+        .control-box-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 12px;
+        }
+
+        .box-title-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .box-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+        }
+
+        .badge-cyan { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-green { background: rgba(0, 229, 153, 0.15); color: var(--primary); border: 1px solid rgba(0, 229, 153, 0.3); }
+        .badge-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
+
+        /* Camera Viewport */
+        .camera-viewport-wrap {
+            position: relative;
+            width: 100%;
+            height: 330px;
+            background: #040810;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(0, 229, 153, 0.25);
+            box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
+        }
+
+        #cameraFeedCanvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .cam-hud-overlay {
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            padding: 12px 16px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--primary);
+            text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+        }
+
+        .cam-hud-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .cam-hud-center {
+            display: flex;
+            align-self: center;
+            position: relative;
+            width: 80px;
+            height: 80px;
+            border: 1px dashed rgba(0, 229, 153, 0.5);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .cam-hud-center::after {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: var(--primary);
+            border-radius: 50%;
+        }
+
+        .cam-hud-bottom {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            font-size: 10px;
+            color: #94a3b8;
+        }
+
+        /* Camera Controls Bar */
+        .cam-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .btn-cam-tool {
+            background: rgba(9, 19, 34, 0.9);
+            border: 1px solid var(--border-card);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 8px 14px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-cam-tool:hover {
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .btn-cam-tool.active {
+            background: rgba(0, 229, 153, 0.2);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Motion & D-Pad Section */
+        .motion-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .dpad-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            gap: 20px;
+            background: rgba(5, 10, 19, 0.85);
+            padding: 18px;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .dpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 56px);
+            grid-template-rows: repeat(3, 56px);
+            gap: 6px;
+        }
+
+        .dpad-btn {
+            background: rgba(13, 22, 38, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 16px;
+            font-weight: 800;
+            border-radius: 12px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .dpad-btn span.key-hint {
+            font-size: 9px;
+            color: var(--text-dim);
+            font-weight: 600;
+        }
+
+        .dpad-btn:hover {
+            background: rgba(56, 189, 248, 0.25);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+            transform: scale(1.05);
+        }
+
+        .dpad-btn:active, .dpad-btn.key-pressed {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 18px var(--primary-glow);
+            transform: scale(0.96);
+        }
+
+        .dpad-btn.dpad-stop {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: var(--accent-red);
+        }
+
+        .dpad-btn.dpad-stop:hover {
+            background: var(--accent-red);
+            color: #ffffff;
+        }
+
+        /* Motion Telemetry & Slider */
+        .motion-telemetry-col {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            flex: 1;
+        }
+
+        .throttle-slider-wrap {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .slider-label-row {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        .slider-label-row strong {
+            color: var(--accent-cyan);
+        }
+
+        input[type="range"] {
+            -webkit-appearance: none;
+            width: 100%;
+            height: 8px;
+            border-radius: 4px;
+            background: #091322;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            background: var(--primary);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--primary);
+        }
+
+        /* Giant E-STOP Button */
+        .btn-estop {
+            background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%);
+            border: 2px solid #f87171;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            padding: 14px;
+            border-radius: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.45);
+            transition: all 0.2s;
+            animation: pulseEstop 2s infinite ease-in-out;
+        }
+
+        @keyframes pulseEstop {
+            0%, 100% { box-shadow: 0 0 20px rgba(239, 68, 68, 0.45); }
+            50% { box-shadow: 0 0 35px rgba(239, 68, 68, 0.85); }
+        }
+
+        .btn-estop:hover {
+            background: #dc2626;
+            transform: scale(1.02);
+        }
+
+        .btn-estop:active {
+            transform: scale(0.97);
+        }
+
+        /* 3-Column Tool Mechanisms Grid */
+        .tools-tri-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        @media (max-width: 1080px) {
+            .tools-tri-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Quick Actuator Toggle Button */
+        .actuator-toggle-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(5, 10, 19, 0.7);
+            padding: 10px 14px;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .actuator-name {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        .toggle-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 800;
+            padding: 6px 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .toggle-btn.active {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        .toggle-btn.active.red {
+            background: var(--accent-red);
+            color: #ffffff;
+            border-color: var(--accent-red);
+            box-shadow: 0 0 12px rgba(239, 68, 68, 0.5);
+        }
+
+        /* Probe Vertical Step Indicator */
+        .probe-steps-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-probe-step {
+            flex: 1;
+            background: rgba(9, 19, 34, 0.9);
+            border: 1px solid var(--border-card);
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 8px;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .btn-probe-step.active, .btn-probe-step:hover {
+            border-color: #2dd4bf;
+            color: #2dd4bf;
+            background: rgba(45, 212, 191, 0.15);
+        }
+
+        /* 4-Zone Matrix Grid */
+        .zones-quad {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+        }
+
+        .zone-chip {
+            background: rgba(9, 19, 34, 0.9);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .zone-chip.active {
+            background: rgba(56, 189, 248, 0.18);
+            border-color: var(--accent-cyan);
+            color: var(--accent-cyan);
+        }
+
+        /* Live Command Terminal */
+        .terminal-box {
+            background: #040810;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 18px;
+            padding: 18px 22px;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .term-log {
+            font-size: 11px;
+            color: #38bdf8;
+            background: #02050a;
+            border: 1px solid rgba(56, 189, 248, 0.15);
+            border-radius: 10px;
+            padding: 12px 16px;
+            max-height: 110px;
+            overflow-y: auto;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Footer */
+        .status-footer {
+            padding: 14px 40px;
+            background: rgba(5, 10, 19, 0.95);
+            border-top: 1px solid var(--border-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Backdrop Slideshow -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="top-navbar">
+        <a class="brand-section" href="dashboard.html" style="text-decoration:none;">
+            <div class="brand-icon-box">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="6" width="20" height="12" rx="2"></rect>
+                    <path d="M6 12h4m-2-2v4"></path>
+                    <circle cx="17" cy="10" r="1"></circle>
+                    <circle cx="15" cy="14" r="1"></circle>
+                </svg>
+            </div>
+            <div class="brand-text-col">
+                <div class="brand-title-line">
+                    <span class="brand-h1">AgriSarthi</span>
+                    <span class="badge-farm">Robotics Cockpit</span>
+                    <span class="badge-unit">UNIT-04</span>
+                </div>
+                <span class="brand-sub">Block 02 // Camera HUD, WASD Drive, Soil Lever, Cutter &amp; Actuators</span>
+            </div>
+        </a>
+
+        <div class="nav-right-cluster">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+                <span id="demoDot" class="demo-status-dot"></span>
+                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+            </button>
+            <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
+                <span>⚙️</span><span>RPi Connect</span>
+            </button>
+            <a href="dashboard.html" class="btn-dashboard-back">
+                <span>&larr;</span><span>Mission Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- Top Cockpit Row: Camera HUD & WASD Traction Motion -->
+        <div class="cockpit-grid">
+            
+            <!-- Section A: Vision HUD & Camera Control -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>📹</span>
+                        <span>LIVE VISION HUD &amp; PTZ CAMERA STREAM</span>
+                    </div>
+                    <span class="box-badge badge-green" id="camStreamBadge">● 1080p 30FPS</span>
+                </div>
+
+                <div class="camera-viewport-wrap">
+                    <canvas id="cameraFeedCanvas"></canvas>
+                    <div class="cam-hud-overlay">
+                        <div class="cam-hud-top">
+                            <span>CAM: <strong style="color:#ffffff;" id="hudCamLens">MACRO 60mm</strong></span>
+                            <span>AZIMUTH: <strong style="color:var(--accent-cyan);" id="hudAzimuth">182° S</strong></span>
+                            <span>EXPOSURE: <strong>AUTO</strong></span>
+                        </div>
+                        <div class="cam-hud-center"></div>
+                        <div class="cam-hud-bottom">
+                            <span>YOLOv8: <strong style="color:var(--primary);">TRACKING ACTIVE</strong></span>
+                            <span>ZOOM: <strong id="hudZoomVal">1.0x</strong></span>
+                            <span>STATUS: <strong style="color:var(--accent-cyan);">STABILIZED</strong></span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="cam-toolbar">
+                    <button class="btn-cam-tool active" id="btnCamMacro" onclick="switchCamMode('macro')">🔍 Macro Close-Up</button>
+                    <button class="btn-cam-tool" id="btnCamWide" onclick="switchCamMode('wide')">🌐 Wide Navigation</button>
+                    <button class="btn-cam-tool" id="btnCamNight" onclick="toggleNightVision()">🌙 IR Night Vision</button>
+                    <button class="btn-cam-tool" onclick="takeSnapshot()">📸 Snapshot</button>
+                    <button class="btn-cam-tool active" id="btnBbox" onclick="toggleBboxes()">🎯 YOLO Boxes</button>
+                </div>
+            </div>
+
+            <!-- Section B: Rover Motion & WASD Drive D-Pad -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>🚜</span>
+                        <span>ROVER MOTION &amp; TRACTION DRIVE</span>
+                    </div>
+                    <span class="box-badge badge-cyan" id="driveStateBadge">WASD / STANDBY</span>
+                </div>
+
+                <div class="motion-panel">
+                    <div class="dpad-container">
+                        <div class="dpad-grid">
+                            <button class="dpad-btn" id="btn-turn-left" onmousedown="sendMotion('turn_left')" onmouseup="sendMotion('stop')">
+                                <span>↖</span><span class="key-hint">Q</span>
+                            </button>
+                            <button class="dpad-btn" id="btn-forward" onmousedown="sendMotion('forward')" onmouseup="sendMotion('stop')">
+                                <span>▲</span><span class="key-hint">W</span>
+                            </button>
+                            <button class="dpad-btn" id="btn-turn-right" onmousedown="sendMotion('turn_right')" onmouseup="sendMotion('stop')">
+                                <span>↗</span><span class="key-hint">E</span>
+                            </button>
+                            <button class="dpad-btn" id="btn-pivot-left" onmousedown="sendMotion('pivot_left')" onmouseup="sendMotion('stop')">
+                                <span>◀</span><span class="key-hint">A</span>
+                            </button>
+                            <button class="dpad-btn dpad-stop" id="btn-stop" onclick="sendMotion('stop')">
+                                <span>■</span><span class="key-hint">SPACE</span>
+                            </button>
+                            <button class="dpad-btn" id="btn-pivot-right" onmousedown="sendMotion('pivot_right')" onmouseup="sendMotion('stop')">
+                                <span>▶</span><span class="key-hint">D</span>
+                            </button>
+                            <div></div>
+                            <button class="dpad-btn" id="btn-backward" onmousedown="sendMotion('backward')" onmouseup="sendMotion('stop')">
+                                <span>▼</span><span class="key-hint">S</span>
+                            </button>
+                            <div></div>
+                        </div>
+
+                        <div class="motion-telemetry-col">
+                            <div class="throttle-slider-wrap">
+                                <div class="slider-label-row">
+                                    <span>SPEED THROTTLE:</span>
+                                    <strong id="throttleVal">65%</strong>
+                                </div>
+                                <input type="range" id="throttleSlider" min="20" max="100" value="65" oninput="updateThrottle(this.value)">
+                            </div>
+                            <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); line-height:1.5;">
+                                Drive System: <strong>Twin High-Torque Tracks</strong><br>
+                                Motor Current: <strong style="color:var(--primary);" id="motorCurrentVal">2.8 A</strong><br>
+                                Steering Trim: <strong>Center 0.0°</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Huge Emergency Stop -->
+                    <button class="btn-estop" onclick="triggerEmergencyStop()">
+                        <span>⚠️</span>
+                        <span>EMERGENCY STOP (E-STOP)</span>
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Middle Tools Grid: Soil Lever, Rotary Cutter, Precision Irrigation -->
+        <div class="tools-tri-grid">
+
+            <!-- Tool 1: Soil Moisture Probe Depth Lever -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>🌱</span>
+                        <span>SOIL PROBE DEPTH LEVER</span>
+                    </div>
+                    <span class="box-badge badge-teal" id="probeDepthBadge">15cm ROOT ZONE</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="slider-label-row">
+                        <span>PROBE PENETRATION DEPTH:</span>
+                        <strong id="probeDepthVal" style="color:#2dd4bf;">15 cm</strong>
+                    </div>
+                    <input type="range" id="probeSlider" min="0" max="30" value="15" oninput="setProbeDepth(this.value)">
+
+                    <div class="probe-steps-row">
+                        <button class="btn-probe-step" onclick="setProbeDepth(0)">0cm<br><small>Stowed</small></button>
+                        <button class="btn-probe-step" onclick="setProbeDepth(5)">5cm<br><small>Surface</small></button>
+                        <button class="btn-probe-step active" onclick="setProbeDepth(15)">15cm<br><small>Root</small></button>
+                        <button class="btn-probe-step" onclick="setProbeDepth(30)">30cm<br><small>Deep</small></button>
+                    </div>
+
+                    <button class="btn-cam-tool active" style="width:100%; justify-content:center; padding:10px;" onclick="runAutoSamplingRoutine()">
+                        <span>⚡ Run Auto-Depth Sampling Macro</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tool 2: Rotary Weeder / Cutter Blade -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>⚔️</span>
+                        <span>ROTARY WEEDER &amp; CUTTER</span>
+                    </div>
+                    <span class="box-badge badge-amber" id="cutterBadge">IDLE (0 RPM)</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div class="actuator-toggle-row">
+                        <span class="actuator-name">CUTTER BLADE POWER</span>
+                        <button class="toggle-btn" id="btnCutterPower" onclick="toggleCutterPower()">DISENGAGED</button>
+                    </div>
+
+                    <div class="throttle-slider-wrap">
+                        <div class="slider-label-row">
+                            <span>BLADE RPM SPEED:</span>
+                            <strong id="cutterRpmVal" style="color:var(--accent-amber);">0 RPM</strong>
+                        </div>
+                        <input type="range" id="cutterRpmSlider" min="0" max="3200" step="100" value="0" oninput="setCutterRpm(this.value)">
+                    </div>
+
+                    <div class="throttle-slider-wrap">
+                        <div class="slider-label-row">
+                            <span>CUTTING HEIGHT CLEARANCE:</span>
+                            <strong id="cutterHeightVal">0 mm (Flush)</strong>
+                        </div>
+                        <input type="range" id="cutterHeightSlider" min="-30" max="60" step="5" value="0" oninput="setCutterHeight(this.value)">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool 3: Precision Irrigation Spray Matrix -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>🚿</span>
+                        <span>IRRIGATION SPRAY MATRIX</span>
+                    </div>
+                    <span class="box-badge badge-cyan" id="pumpBadge">PUMP OFF</span>
+                </div>
+
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div class="actuator-toggle-row">
+                        <span class="actuator-name">MAIN 12V HIGH-PRESSURE PUMP</span>
+                        <button class="toggle-btn" id="btnMainPump" onclick="togglePump()">PUMP OFF</button>
+                    </div>
+
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim);">
+                        4-ZONE SOLENOID VALVES:
+                    </div>
+                    <div class="zones-quad">
+                        <div class="zone-chip active" id="zone-1" onclick="toggleZone(1)"><span>ZONE 1 (FL)</span> <span>✓</span></div>
+                        <div class="zone-chip active" id="zone-2" onclick="toggleZone(2)"><span>ZONE 2 (FR)</span> <span>✓</span></div>
+                        <div class="zone-chip" id="zone-3" onclick="toggleZone(3)"><span>ZONE 3 (RL)</span> <span>OFF</span></div>
+                        <div class="zone-chip" id="zone-4" onclick="toggleZone(4)"><span>ZONE 4 (RR)</span> <span>OFF</span></div>
+                    </div>
+
+                    <div class="slider-label-row">
+                        <span>SPRAY FLOW REGULATOR:</span>
+                        <strong id="flowRateVal" style="color:var(--accent-cyan);">2.4 L/min</strong>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Auxiliary & Sowing Row -->
+        <div class="tools-tri-grid">
+
+            <!-- Tool 4: Sowing Compaction Roller -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>🚜</span>
+                        <span>SOWING ROLLER &amp; HOPPER</span>
+                    </div>
+                    <span class="box-badge badge-green" id="rollerBadge">STANDBY</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="actuator-toggle-row">
+                        <span class="actuator-name">COMPACTION ROLLER DRIVE</span>
+                        <button class="toggle-btn" id="btnRollerDrive" onclick="toggleRollerDrive()">IDLE</button>
+                    </div>
+                    <div class="actuator-toggle-row">
+                        <span class="actuator-name">SEED METERING AGITATOR</span>
+                        <button class="toggle-btn" id="btnSeedAgitator" onclick="toggleSeedAgitator()">DISABLED</button>
+                    </div>
+                    <div class="slider-label-row">
+                        <span>SEED DROP RATE:</span>
+                        <strong>20 seeds/meter</strong>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tool 5: Worklights & Radar -->
+            <div class="control-box">
+                <div class="control-box-header">
+                    <div class="box-title-group">
+                        <span>💡</span>
+                        <span>WORKLIGHTS &amp; SENSORS</span>
+                    </div>
+                    <span class="box-badge badge-amber">AUX ACTIVE</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:12px;">
+                    <div class="actuator-toggle-row">
+                        <span class="actuator-name">HIGH-POWER LED LIGHTS</span>
+                        <button class="toggle-btn" id="btnLights" onclick="toggleLights()">OFF</button>
+                    </div>
+                    <div class="actuator-toggle-row">
+                        <span class="actuator-name">ULTRASONIC RADAR AVOIDANCE</span>
+                        <button class="toggle-btn active" id="btnRadar" onclick="toggleRadar()">ACTIVE</button>
+                    </div>
+                    <button class="btn-cam-tool" style="width:100%; justify-content:center;" onclick="chirpHorn()">
+                        <span>📢 Sound Safety Beacon / Horn</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Live MQTT Dispatch Terminal -->
+            <div class="terminal-box">
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <span style="font-size:12px; font-weight:700; color:var(--accent-cyan); display:flex; align-items:center; gap:8px;">
+                        <span>&gt;_</span><span>COMMAND DISPATCH TERMINAL (MQTT)</span>
+                    </span>
+                    <span style="font-size:10px; color:var(--text-dim);">agrisarthi/control/*</span>
+                </div>
+                <div class="term-log" id="cmdDispatchLog">Ready to dispatch motion and actuator payloads...</div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- Bottom Status Footer -->
+    <footer class="status-footer">
+        <div><span>AgriSarthi Technologies</span> • <span>Precision Farm Monitoring Rover-04</span></div>
+        <div><span>Actuator Bus: <strong>RS485 + PWM + MQTT</strong></span> • <span>Heartbeat: <strong style="color:var(--primary);" id="heartbeatTimer">42ms</strong></span></div>
+    </footer>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+        setInterval(cycleSlide, 6000);
+    </script>
+
+    <!-- Cockpit & Robotics Control Logic Script -->
+    <script>
+        // State
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false';
+        let currentThrottle = 65;
+        let isPumpActive = false;
+        let isCutterActive = false;
+        let isRollerActive = false;
+        let isSeedAgitatorActive = false;
+        let isLightsActive = false;
+        let isRadarActive = true;
+        let isNightVisionActive = false;
+        let showBboxes = true;
+        let currentCamMode = 'macro';
+        let activeZones = { 1: true, 2: true, 3: false, 4: false };
+        let mqttClient = null;
+
+        // Terminal Log
+        const logBox = document.getElementById("cmdDispatchLog");
+        function logDispatch(msg) {
+            if (!logBox) return;
+            const now = new Date().toLocaleTimeString();
+            logBox.innerText = `[${now}] ${msg}\n` + logBox.innerText.split('\n').slice(0, 5).join('\n');
+        }
+
+        // Demo Toggle
+        function toggleDemoMode() {
+            isDemoMode = !isDemoMode;
+            localStorage.setItem('agrisarthi_demo_mode', isDemoMode ? 'true' : 'false');
+            applyDemoModeUI();
+        }
+
+        function applyDemoModeUI() {
+            const btn = document.getElementById("demoToggleBtn");
+            const label = document.getElementById("demoBtnLabel");
+            const currentEl = document.getElementById("motorCurrentVal");
+            const azimEl = document.getElementById("hudAzimuth");
+
+            if (isDemoMode) {
+                if (btn) {
+                    btn.classList.add("demo-active");
+                    btn.classList.remove("demo-off");
+                }
+                if (label) label.innerText = "🧪 Demo Data: ON";
+                if (currentEl) currentEl.innerText = "2.8 A";
+                if (azimEl) azimEl.innerText = "182° S";
+                logDispatch("DEMO MODE: Generating synthetic camera feed & simulated actuator telemetry.");
+            } else {
+                if (btn) {
+                    btn.classList.remove("demo-active");
+                    btn.classList.add("demo-off");
+                }
+                if (label) label.innerText = "📡 Live RPi: ON";
+                if (currentEl) currentEl.innerText = "-- A";
+                if (azimEl) azimEl.innerText = "--°";
+                logDispatch("LIVE RPi MODE: Showing dashes until real telemetry broadcasts on agrisarthi/telemetry.");
+            }
+        }
+
+        // Initialize MQTT
+        mqttClient = RPiConfig.initMqtt({
+            onConnect: () => {
+                logDispatch(`MQTT connected to ${RPiConfig.getRoverIp()}:${RPiConfig.getMqttPort()}`);
+            },
+            onMessage: (topic, data) => {
+                if (data && !isDemoMode) {
+                    const currentEl = document.getElementById("motorCurrentVal");
+                    const azimEl = document.getElementById("hudAzimuth");
+                    if (currentEl && data.current !== undefined) currentEl.innerText = `${data.current} A`;
+                    if (azimEl && data.azimuth !== undefined) azimEl.innerText = `${data.azimuth}°`;
+                }
+            }
+        });
+
+        // Motion Commands
+        function sendMotion(direction) {
+            const payload = {
+                command: direction,
+                speed: currentThrottle,
+                timestamp: Date.now()
+            };
+
+            const badge = document.getElementById("driveStateBadge");
+            if (badge) {
+                if (direction === 'stop') {
+                    badge.innerText = "WASD / STANDBY";
+                    badge.className = "box-badge badge-cyan";
+                } else {
+                    badge.innerText = `DRIVE: ${direction.toUpperCase()} (${currentThrottle}%)`;
+                    badge.className = "box-badge badge-green";
+                }
+            }
+
+            logDispatch(`MOTION: ${JSON.stringify(payload)}`);
+            RPiConfig.dispatchMotionCommand(mqttClient, payload);
+        }
+
+        function updateThrottle(val) {
+            currentThrottle = parseInt(val);
+            const valEl = document.getElementById("throttleVal");
+            if (valEl) valEl.innerText = `${currentThrottle}%`;
+        }
+
+        // Emergency Stop
+        function triggerEmergencyStop() {
+            sendMotion('stop');
+            if (isPumpActive) togglePump();
+            if (isCutterActive) toggleCutterPower();
+            if (isRollerActive) toggleRollerDrive();
+
+            const badge = document.getElementById("driveStateBadge");
+            if (badge) {
+                badge.innerText = "EMERGENCY STOPPED";
+                badge.className = "box-badge badge-red";
+            }
+            logDispatch("🚨 EMERGENCY STOP TRIGGERED: All drives, cutter, and pump halted!");
+        }
+
+        // Probe Depth Control
+        function setProbeDepth(depth) {
+            const valEl = document.getElementById("probeDepthVal");
+            const slider = document.getElementById("probeSlider");
+            const badge = document.getElementById("probeDepthBadge");
+
+            if (valEl) valEl.innerText = `${depth} cm`;
+            if (slider) slider.value = depth;
+            if (badge) {
+                if (depth == 0) badge.innerText = "0cm STOWED";
+                else if (depth <= 10) badge.innerText = `${depth}cm SURFACE`;
+                else if (depth <= 20) badge.innerText = `${depth}cm ROOT ZONE`;
+                else badge.innerText = `${depth}cm SUBSOIL`;
+            }
+
+            // Update step buttons
+            const steps = document.querySelectorAll(".btn-probe-step");
+            steps.forEach(s => s.classList.remove("active"));
+
+            logDispatch(`PROBE_SERVO: Depth set to ${depth}cm`);
+            RPiConfig.dispatchActuatorCommand(mqttClient, { target: "probe_depth", depth_cm: depth });
+        }
+
+        function runAutoSamplingRoutine() {
+            logDispatch("PROBE_ROUTINE: Lowering probe to 15cm root horizon...");
+            setProbeDepth(15);
+            setTimeout(() => {
+                logDispatch("PROBE_ROUTINE: Capacitive stabilization locked. Reading VWC & EC...");
+                setTimeout(() => {
+                    logDispatch("PROBE_ROUTINE: Data packet recorded. Retracting probe to 0cm stowed position.");
+                    setProbeDepth(0);
+                }, 2000);
+            }, 2000);
+        }
+
+        // Rotary Cutter Control
+        function toggleCutterPower() {
+            isCutterActive = !isCutterActive;
+            const btn = document.getElementById("btnCutterPower");
+            const badge = document.getElementById("cutterBadge");
+            const rpmSlider = document.getElementById("cutterRpmSlider");
+
+            if (isCutterActive) {
+                btn.classList.add("active");
+                btn.innerText = "ENGAGED";
+                setCutterRpm(rpmSlider.value > 0 ? rpmSlider.value : 1800);
+            } else {
+                btn.classList.remove("active");
+                btn.innerText = "DISENGAGED";
+                if (badge) badge.innerText = "IDLE (0 RPM)";
+                const valEl = document.getElementById("cutterRpmVal");
+                if (valEl) valEl.innerText = "0 RPM";
+            }
+
+            logDispatch(`CUTTER: Power ${isCutterActive ? 'ENGAGED' : 'DISENGAGED'}`);
+            RPiConfig.dispatchActuatorCommand(mqttClient, { target: "cutter", active: isCutterActive });
+        }
+
+        function setCutterRpm(val) {
+            const valEl = document.getElementById("cutterRpmVal");
+            const badge = document.getElementById("cutterBadge");
+            if (valEl) valEl.innerText = `${val} RPM`;
+            if (badge && isCutterActive) badge.innerText = `ACTIVE (${val} RPM)`;
+            logDispatch(`CUTTER: Speed set to ${val} RPM`);
+        }
+
+        function setCutterHeight(val) {
+            const valEl = document.getElementById("cutterHeightVal");
+            if (valEl) valEl.innerText = `${val > 0 ? '+' : ''}${val} mm`;
+            logDispatch(`CUTTER: Height adjusted to ${val} mm`);
+        }
+
+        // Irrigation Pump and Zones
+        function togglePump() {
+            isPumpActive = !isPumpActive;
+            const btn = document.getElementById("btnMainPump");
+            const badge = document.getElementById("pumpBadge");
+
+            if (isPumpActive) {
+                btn.classList.add("active");
+                btn.innerText = "PUMP ON";
+                if (badge) {
+                    badge.innerText = "PUMP ACTIVE";
+                    badge.className = "box-badge badge-green";
+                }
+            } else {
+                btn.classList.remove("active");
+                btn.innerText = "PUMP OFF";
+                if (badge) {
+                    badge.innerText = "PUMP OFF";
+                    badge.className = "box-badge badge-cyan";
+                }
+            }
+
+            logDispatch(`IRRIGATION_PUMP: Main 12V pump ${isPumpActive ? 'STARTED' : 'STOPPED'}`);
+            RPiConfig.dispatchActuatorCommand(mqttClient, { target: "pump", state: isPumpActive ? 1 : 0 });
+        }
+
+        function toggleZone(num) {
+            activeZones[num] = !activeZones[num];
+            const chip = document.getElementById(`zone-${num}`);
+            if (chip) {
+                if (activeZones[num]) {
+                    chip.classList.add("active");
+                    chip.querySelector("span:last-child").innerText = "✓";
+                } else {
+                    chip.classList.remove("active");
+                    chip.querySelector("span:last-child").innerText = "OFF";
+                }
+            }
+            logDispatch(`SOLENOID_MATRIX: Zone ${num} toggled ${activeZones[num] ? 'OPEN' : 'CLOSED'}`);
+        }
+
+        // Sowing Roller
+        function toggleRollerDrive() {
+            isRollerActive = !isRollerActive;
+            const btn = document.getElementById("btnRollerDrive");
+            const badge = document.getElementById("rollerBadge");
+            if (isRollerActive) {
+                btn.classList.add("active");
+                btn.innerText = "ROLLING";
+                if (badge) badge.innerText = "ACTIVE ROLLING";
+            } else {
+                btn.classList.remove("active");
+                btn.innerText = "IDLE";
+                if (badge) badge.innerText = "STANDBY";
+            }
+            logDispatch(`ROLLER_DRIVE: ${isRollerActive ? 'ENGAGED' : 'IDLE'}`);
+        }
+
+        function toggleSeedAgitator() {
+            isSeedAgitatorActive = !isSeedAgitatorActive;
+            const btn = document.getElementById("btnSeedAgitator");
+            if (isSeedAgitatorActive) {
+                btn.classList.add("active");
+                btn.innerText = "ACTIVE";
+            } else {
+                btn.classList.remove("active");
+                btn.innerText = "DISABLED";
+            }
+            logDispatch(`SEED_HOPPER: Agitator ${isSeedAgitatorActive ? 'ACTIVE' : 'DISABLED'}`);
+        }
+
+        // Worklights & Radar
+        function toggleLights() {
+            isLightsActive = !isLightsActive;
+            const btn = document.getElementById("btnLights");
+            if (isLightsActive) {
+                btn.classList.add("active");
+                btn.innerText = "100% BEAM";
+            } else {
+                btn.classList.remove("active");
+                btn.innerText = "OFF";
+            }
+            logDispatch(`WORKLIGHTS: Set to ${isLightsActive ? '100% ON' : 'OFF'}`);
+        }
+
+        function toggleRadar() {
+            isRadarActive = !isRadarActive;
+            const btn = document.getElementById("btnRadar");
+            if (isRadarActive) {
+                btn.classList.add("active");
+                btn.innerText = "ACTIVE";
+            } else {
+                btn.classList.remove("active");
+                btn.innerText = "BYPASS";
+            }
+            logDispatch(`OBSTACLE_RADAR: ${isRadarActive ? 'ACTIVE' : 'BYPASS'}`);
+        }
+
+        function chirpHorn() {
+            logDispatch("BEACON: Safety acoustic warning chirped [105dB].");
+        }
+
+        // Camera feed rendering canvas
+        const camCanvas = document.getElementById("cameraFeedCanvas");
+        const ctx = camCanvas.getContext("2d");
+        let camTick = 0;
+
+        function resizeCamCanvas() {
+            camCanvas.width = camCanvas.parentElement.clientWidth;
+            camCanvas.height = camCanvas.parentElement.clientHeight;
+        }
+        window.addEventListener('resize', resizeCamCanvas);
+        resizeCamCanvas();
+
+        function renderCameraFeed() {
+            camTick++;
+            const w = camCanvas.width;
+            const h = camCanvas.height;
+
+            // Draw background field scene
+            const grad = ctx.createLinearGradient(0, 0, 0, h);
+            if (isNightVisionActive) {
+                grad.addColorStop(0, '#021008');
+                grad.addColorStop(0.5, '#062615');
+                grad.addColorStop(1, '#021008');
+            } else {
+                grad.addColorStop(0, '#0a1d2e');
+                grad.addColorStop(0.5, '#123023');
+                grad.addColorStop(1, '#1b3b1e');
+            }
+            ctx.fillStyle = grad;
+            ctx.fillRect(0, 0, w, h);
+
+            // Draw furrow guidelines
+            ctx.strokeStyle = isNightVisionActive ? 'rgba(0, 255, 128, 0.25)' : 'rgba(0, 229, 153, 0.25)';
+            ctx.lineWidth = 1.5;
+            for (let i = -3; i <= 3; i++) {
+                ctx.beginPath();
+                ctx.moveTo(w / 2 + i * 40, h * 0.45);
+                ctx.lineTo(w / 2 + i * 160, h);
+                ctx.stroke();
+            }
+
+            // Draw simulated crop foliage patches
+            for (let j = 0; j < 5; j++) {
+                const px = (w * 0.2) + j * (w * 0.15) + Math.sin(camTick * 0.05 + j) * 4;
+                const py = h * 0.65 + (j % 2) * 30;
+                ctx.fillStyle = isNightVisionActive ? '#22c55e' : '#10b981';
+                ctx.beginPath();
+                ctx.arc(px, py, 18, 0, Math.PI * 2);
+                ctx.fill();
+
+                // YOLO bounding boxes
+                if (showBboxes && (j === 1 || j === 3)) {
+                    ctx.strokeStyle = j === 1 ? '#00e599' : '#f59e0b';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(px - 26, py - 26, 52, 52);
+                    ctx.fillStyle = j === 1 ? '#00e599' : '#f59e0b';
+                    ctx.font = "10px JetBrains Mono";
+                    ctx.fillText(j === 1 ? "Crop: Healthy 98%" : "Weed: Target 89%", px - 26, py - 30);
+                }
+            }
+
+            requestAnimationFrame(renderCameraFeed);
+        }
+        requestAnimationFrame(renderCameraFeed);
+
+        // Camera Tool Button Handlers
+        function switchCamMode(mode) {
+            currentCamMode = mode;
+            document.getElementById("btnCamMacro").classList.toggle("active", mode === 'macro');
+            document.getElementById("btnCamWide").classList.toggle("active", mode === 'wide');
+            document.getElementById("hudCamLens").innerText = mode === 'macro' ? "MACRO 60mm" : "WIDE 18mm NAV";
+            logDispatch(`CAMERA: Switched optical lens to ${mode.toUpperCase()}`);
+        }
+
+        function toggleNightVision() {
+            isNightVisionActive = !isNightVisionActive;
+            document.getElementById("btnCamNight").classList.toggle("active", isNightVisionActive);
+            logDispatch(`CAMERA: IR Night-Vision ${isNightVisionActive ? 'ENABLED' : 'DISABLED'}`);
+        }
+
+        function toggleBboxes() {
+            showBboxes = !showBboxes;
+            document.getElementById("btnBbox").classList.toggle("active", showBboxes);
+        }
+
+        function takeSnapshot() {
+            logDispatch("CAMERA: High-resolution frame captured & saved to /telemetry/snapshots/");
+        }
+
+        // Keyboard WASD Listeners
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const key = e.key.toLowerCase();
+            if (key === 'w' || key === 'arrowup') {
+                document.getElementById("btn-forward").classList.add("key-pressed");
+                sendMotion('forward');
+            } else if (key === 's' || key === 'arrowdown') {
+                document.getElementById("btn-backward").classList.add("key-pressed");
+                sendMotion('backward');
+            } else if (key === 'a' || key === 'arrowleft') {
+                document.getElementById("btn-pivot-left").classList.add("key-pressed");
+                sendMotion('pivot_left');
+            } else if (key === 'd' || key === 'arrowright') {
+                document.getElementById("btn-pivot-right").classList.add("key-pressed");
+                sendMotion('pivot_right');
+            } else if (key === 'q') {
+                document.getElementById("btn-turn-left").classList.add("key-pressed");
+                sendMotion('turn_left');
+            } else if (key === 'e') {
+                document.getElementById("btn-turn-right").classList.add("key-pressed");
+                sendMotion('turn_right');
+            } else if (key === ' ') {
+                e.preventDefault();
+                document.getElementById("btn-stop").classList.add("key-pressed");
+                sendMotion('stop');
+            }
+        });
+
+        window.addEventListener('keyup', (e) => {
+            const key = e.key.toLowerCase();
+            const btnIds = {
+                'w': 'btn-forward', 'arrowup': 'btn-forward',
+                's': 'btn-backward', 'arrowdown': 'btn-backward',
+                'a': 'btn-pivot-left', 'arrowleft': 'btn-pivot-left',
+                'd': 'btn-pivot-right', 'arrowright': 'btn-pivot-right',
+                'q': 'btn-turn-left',
+                'e': 'btn-turn-right',
+                ' ': 'btn-stop'
+            };
+            if (btnIds[key]) {
+                const btn = document.getElementById(btnIds[key]);
+                if (btn) btn.classList.remove("key-pressed");
+                if (key !== ' ') sendMotion('stop');
+            }
+        });
+
+        // Startup
+        applyDemoModeUI();
+    </script>
+</body>
+</html>

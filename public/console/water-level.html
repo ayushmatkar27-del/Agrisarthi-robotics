@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>AgriSarthi - Water Tank Level & Irrigation Matrix Console</title>
+    <title>AgriSarthi - Water Tank Reservoir & Rover Power Telemetry</title>
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <!-- Chart.js -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <!-- MQTT.js -->
@@ -26,6 +26,7 @@
             --accent-green: #00e599;
             --accent-teal: #2dd4bf;
             --accent-amber: #fbbf24;
+            --accent-purple: #c084fc;
             --text-main: #f3f4f6;
             --text-muted: #94a3b8;
             --text-dim: #64748b;
@@ -68,7 +69,6 @@
             inset: 0;
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
             opacity: 0;
             transform: scale(1.08);
             transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
@@ -83,14 +83,13 @@
             position: absolute;
             inset: 0;
             background: 
-                linear-gradient(to bottom, rgba(7, 13, 24, 0.84) 0%, rgba(7, 13, 24, 0.76) 45%, rgba(7, 13, 24, 0.92) 100%),
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.84) 0%, rgba(7, 13, 24, 0.78) 45%, rgba(7, 13, 24, 0.94) 100%),
                 linear-gradient(to right, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
                 linear-gradient(to bottom, rgba(56, 189, 248, 0.03) 1px, transparent 1px),
                 radial-gradient(circle at 20% 25%, rgba(56, 189, 248, 0.10) 0%, transparent 60%),
-                radial-gradient(circle at 80% 75%, rgba(0, 229, 153, 0.08) 0%, transparent 50%);
+                radial-gradient(circle at 80% 75%, rgba(251, 191, 36, 0.08) 0%, transparent 50%);
             background-size: 100% 100%, 36px 36px, 36px 36px, 100% 100%, 100% 100%;
             backdrop-filter: blur(6px);
-            -webkit-backdrop-filter: blur(6px);
         }
 
         /* Top Navigation Header */
@@ -122,7 +121,7 @@
             align-items: center;
             justify-content: center;
             color: var(--primary);
-            box-shadow: 0 0 16px var(--primary-glow);
+            box-shadow: 0 0 16px rgba(56, 189, 248, 0.35);
         }
 
         .brand-text-col {
@@ -171,7 +170,7 @@
             font-weight: 500;
         }
 
-        .nav-right-pills {
+        .nav-right-cluster {
             display: flex;
             align-items: center;
             gap: 12px;
@@ -179,34 +178,69 @@
             font-size: 11px;
         }
 
-        .nav-pill {
-            background: rgba(13, 22, 38, 0.9);
-            border: 1px solid var(--border-card);
-            padding: 7px 14px;
-            border-radius: 20px;
-            color: var(--text-muted);
-            display: flex;
+        .btn-demo-pill {
+            display: inline-flex;
             align-items: center;
-            gap: 6px;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(13, 22, 38, 0.9);
+            color: #ffffff;
         }
 
-        .status-dot-green {
+        .btn-demo-pill.demo-active {
+            background: rgba(251, 191, 36, 0.18);
+            border-color: rgba(251, 191, 36, 0.6);
+            color: #fbbf24;
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+        }
+
+        .btn-demo-pill.demo-off {
+            background: rgba(0, 229, 153, 0.15);
+            border-color: rgba(0, 229, 153, 0.5);
+            color: #00e599;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.35);
+        }
+
+        .demo-status-dot {
             width: 7px;
             height: 7px;
             border-radius: 50%;
-            background-color: var(--accent-green);
-            box-shadow: 0 0 8px var(--accent-green);
-            animation: pulseDot 2s infinite ease-in-out;
+            background: currentColor;
+            display: inline-block;
         }
 
-        @keyframes pulseDot {
-            0%, 100% { opacity: 1; transform: scale(1); }
-            50% { opacity: 0.4; transform: scale(0.85); }
+        .btn-rpi-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-rpi-pill:hover {
+            background: #38bdf8;
+            color: #051410;
         }
 
         .btn-dashboard-back {
-            background: rgba(255, 255, 255, 0.06);
-            border: 1px solid rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
             color: #ffffff;
             padding: 7px 16px;
             border-radius: 20px;
@@ -227,25 +261,37 @@
             transform: translateY(-1px);
         }
 
-        /* Main Container */
+        /* Container */
         .main-container {
             flex: 1;
-            max-width: 1400px;
+            max-width: 1440px;
             width: 100%;
             margin: 0 auto;
-            padding: 28px 30px;
+            padding: 24px 30px;
             display: flex;
             flex-direction: column;
-            gap: 24px;
+            gap: 22px;
             position: relative;
             z-index: 10;
         }
 
-        /* 4 Top Water Telemetry Tiles */
+        /* 4 Top Telemetry Tiles */
         .metrics-quad-grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
             gap: 18px;
+        }
+
+        @media (max-width: 1100px) {
+            .metrics-quad-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .metrics-quad-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
         .metric-tile {
@@ -257,7 +303,7 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
-            gap: 16px;
+            gap: 14px;
             transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
             position: relative;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
@@ -292,15 +338,15 @@
             font-weight: 700;
             padding: 3px 8px;
             border-radius: 6px;
-            letter-spacing: 0.5px;
         }
 
-        .badge-optimal { background: rgba(0, 229, 153, 0.12); color: var(--accent-green); border: 1px solid rgba(0, 229, 153, 0.3); }
-        .badge-tank { background: rgba(56, 189, 248, 0.12); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.3); }
-        .badge-flow { background: rgba(45, 212, 191, 0.12); color: var(--accent-teal); border: 1px solid rgba(45, 212, 191, 0.3); }
+        .badge-cyan { background: rgba(56, 189, 248, 0.15); color: var(--primary); border: 1px solid rgba(56, 189, 248, 0.3); }
+        .badge-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.3); }
+        .badge-green { background: rgba(0, 229, 153, 0.15); color: var(--accent-green); border: 1px solid rgba(0, 229, 153, 0.3); }
+        .badge-teal { background: rgba(45, 212, 191, 0.15); color: var(--accent-teal); border: 1px solid rgba(45, 212, 191, 0.3); }
 
         .metric-tile-val {
-            font-size: 46px;
+            font-size: 42px;
             font-weight: 800;
             line-height: 1;
             letter-spacing: -1px;
@@ -311,10 +357,14 @@
         }
 
         .metric-tile-val .unit {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             color: var(--primary);
         }
+
+        .metric-tile-val.amber .unit { color: var(--accent-amber); }
+        .metric-tile-val.green .unit { color: var(--accent-green); }
+        .metric-tile-val.teal .unit { color: var(--accent-teal); }
 
         .metric-tile-sub-grid {
             display: flex;
@@ -330,28 +380,24 @@
             color: var(--text-main);
         }
 
-        .metric-tile-footer {
-            display: flex;
-            align-items: center;
-            gap: 6px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            color: var(--primary);
-            font-weight: 600;
+        /* 2-Column Split: Water Tank Visualizer & Power / BMS Cockpit */
+        .split-grid-two {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        /* Middle 2-Column: Dynamic Water Tank Visualizer + Hydro Matrix & Valves */
-        .middle-two-col {
-            display: grid;
-            grid-template-columns: 0.95fr 1.05fr;
-            gap: 18px;
+        @media (max-width: 1024px) {
+            .split-grid-two {
+                grid-template-columns: 1fr;
+            }
         }
 
         .card-panel {
             background: var(--bg-card);
             backdrop-filter: blur(20px);
             border: 1px solid var(--border-card);
-            border-radius: 24px;
+            border-radius: 22px;
             padding: 24px;
             display: flex;
             flex-direction: column;
@@ -363,6 +409,8 @@
             display: flex;
             justify-content: space-between;
             align-items: flex-start;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 12px;
         }
 
         .panel-titles {
@@ -395,8 +443,8 @@
 
         .tank-cylinder-frame {
             position: relative;
-            width: 140px;
-            height: 220px;
+            width: 150px;
+            height: 230px;
             background: rgba(9, 17, 30, 0.85);
             border: 3px solid rgba(56, 189, 248, 0.4);
             border-radius: 24px;
@@ -438,7 +486,7 @@
             left: 50%;
             transform: translate(-50%, -50%);
             font-family: 'JetBrains Mono', monospace;
-            font-size: 32px;
+            font-size: 34px;
             font-weight: 800;
             color: #ffffff;
             text-shadow: 0 2px 10px rgba(0, 0, 0, 0.8);
@@ -446,352 +494,92 @@
             pointer-events: none;
         }
 
-        .tank-metrics-col {
+        .detail-row-grid {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 10px;
             flex: 1;
         }
 
-        .tank-detail-card {
+        .detail-chip {
             background: rgba(9, 17, 30, 0.7);
             border: 1px solid var(--border-card);
             border-radius: 12px;
-            padding: 12px 16px;
+            padding: 10px 14px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             font-family: 'JetBrains Mono', monospace;
-        }
-
-        .tank-detail-card .lbl {
             font-size: 11px;
-            color: var(--text-dim);
-            font-weight: 700;
         }
 
-        .tank-detail-card .val {
-            font-size: 14px;
-            font-weight: 800;
-            color: #ffffff;
-        }
+        .detail-chip .lbl { color: var(--text-dim); }
+        .detail-chip .val { font-weight: 800; color: #ffffff; }
 
-        /* Valve & Hydro Actuator Controls */
-        .valve-grid-row {
+        /* Battery Cell Voltage Matrix */
+        .cells-grid {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 10px;
-        }
-
-        .valve-tile-btn {
-            background: rgba(9, 17, 30, 0.7);
-            border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 14px 10px;
-            text-align: center;
-            cursor: pointer;
-            transition: all 0.2s;
-            display: flex;
-            flex-direction: column;
-            gap: 4px;
-            align-items: center;
-        }
-
-        .valve-tile-btn:hover {
-            border-color: var(--border-accent);
-            transform: translateY(-2px);
-        }
-
-        .valve-tile-btn.active {
-            background: rgba(56, 189, 248, 0.15);
-            border-color: var(--primary);
-            box-shadow: 0 0 15px rgba(56, 189, 248, 0.25);
-        }
-
-        .valve-title {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        .valve-tile-btn.active .valve-title {
-            color: var(--primary);
-        }
-
-        .valve-sub {
-            font-size: 10px;
-            color: var(--text-dim);
-        }
-
-        /* Pump Master Control Box */
-        .master-pump-card {
-            background: rgba(9, 17, 30, 0.85);
-            border: 1px solid var(--border-card);
-            border-radius: 16px;
-            padding: 16px 20px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .pump-toggle-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .switch-custom {
-            position: relative;
-            display: inline-block;
-            width: 52px;
-            height: 28px;
-        }
-
-        .switch-custom input { opacity: 0; width: 0; height: 0; }
-
-        .slider-custom {
-            position: absolute;
-            cursor: pointer;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background-color: #1e293b;
-            transition: .3s;
-            border-radius: 34px;
-            border: 1px solid rgba(255, 255, 255, 0.15);
-        }
-
-        .slider-custom:before {
-            position: absolute;
-            content: "";
-            height: 20px;
-            width: 20px;
-            left: 3px;
-            bottom: 3px;
-            background-color: white;
-            transition: .3s;
-            border-radius: 50%;
-        }
-
-        input:checked + .slider-custom {
-            background-color: #38bdf8;
-            box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
-        }
-
-        input:checked + .slider-custom:before {
-            transform: translateX(24px);
-            background-color: #070d18;
-        }
-
-        .btn-flush-matrix {
-            background: linear-gradient(135deg, #38bdf8 0%, #0284c7 100%);
-            color: #051410;
-            border: none;
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 800;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-flush-matrix:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(56, 189, 248, 0.4);
-        }
-
-        /* Chart card */
-        .chart-canvas-wrap {
-            width: 100%;
-            height: 200px;
-            position: relative;
-        }
-
-        /* Bottom Section: MQTT & Telemetry Broker Console */
-        .broker-panel {
-            background: var(--bg-card);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border-card);
-            border-radius: 24px;
-            padding: 26px;
-            display: flex;
-            flex-direction: column;
-            gap: 18px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
-        }
-
-        .broker-header-row {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .broker-left {
-            display: flex;
-            align-items: center;
-            gap: 14px;
-        }
-
-        .broker-icon-btn {
-            width: 40px;
-            height: 40px;
-            background: rgba(56, 189, 248, 0.12);
-            border: 1px solid var(--primary);
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: var(--primary);
-        }
-
-        .broker-h2 {
-            font-size: 15px;
-            font-weight: 800;
-            color: #ffffff;
-            letter-spacing: 0.2px;
-        }
-
-        .broker-desc {
-            font-size: 12px;
-            color: var(--text-dim);
-        }
-
-        .broker-stream-pill {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            font-weight: 700;
-            color: var(--primary);
-            background: rgba(56, 189, 248, 0.1);
-            border: 1px solid rgba(56, 189, 248, 0.3);
-            padding: 6px 14px;
-            border-radius: 20px;
-            display: flex;
-            align-items: center;
+            grid-template-columns: repeat(4, 1fr);
             gap: 8px;
         }
 
-        .broker-param-strip {
-            background: rgba(9, 17, 30, 0.85);
+        .cell-box {
+            background: rgba(9, 17, 30, 0.8);
             border: 1px solid var(--border-card);
             border-radius: 10px;
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            padding: 8px 10px;
+            text-align: center;
             font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
-            flex-wrap: wrap;
-            gap: 10px;
         }
 
-        .param-item { color: var(--text-dim); }
-        .param-item span.cyan { color: var(--primary); }
-        .param-item span.green { color: var(--accent-green); }
-        .param-item span.amber { color: var(--accent-amber); }
+        .cell-box .cell-name { font-size: 10px; color: var(--text-dim); }
+        .cell-box .cell-volt { font-size: 13px; font-weight: 800; color: #fbbf24; margin-top: 2px; }
 
-        /* Terminal Console Box */
-        .terminal-console {
-            background: var(--terminal-bg);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 14px;
-            overflow: hidden;
-            box-shadow: inset 0 0 30px rgba(0, 0, 0, 0.8);
+        /* Charts Row */
+        .charts-duo-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
         }
 
-        .terminal-top-bar {
-            background: rgba(13, 22, 38, 0.95);
-            padding: 10px 16px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 11px;
+        @media (max-width: 992px) {
+            .charts-duo-grid {
+                grid-template-columns: 1fr;
+            }
         }
 
-        .terminal-dots { display: flex; gap: 6px; }
-        .t-dot { width: 10px; height: 10px; border-radius: 50%; }
-        .t-red { background: #ef4444; }
-        .t-yellow { background: #eab308; }
-        .t-green { background: #22c55e; }
-
-        .terminal-title {
-            color: var(--text-muted);
-            font-weight: 600;
-            letter-spacing: 0.5px;
+        .chart-canvas-wrap {
+            width: 100%;
+            height: 230px;
+            position: relative;
         }
 
-        .terminal-body {
-            padding: 16px;
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 12px;
-            line-height: 1.6;
-            height: 130px;
-            overflow-y: auto;
-            color: #e2e8f0;
-        }
-
-        .t-log-line {
-            margin-bottom: 4px;
-            white-space: pre-wrap;
-            word-break: break-all;
-        }
-
-        .t-time { color: var(--text-dim); }
-        .t-tag-tank { color: var(--primary); font-weight: 700; }
-        .t-tag-pump { color: var(--accent-green); font-weight: 700; }
-        .t-tag-valve { color: var(--accent-teal); font-weight: 700; }
-
-        /* Bottom Status Footer */
+        /* Status Footer */
         .status-footer {
+            padding: 14px 40px;
+            background: rgba(5, 10, 19, 0.95);
+            border-top: 1px solid var(--border-card);
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 40px;
-            background: rgba(7, 13, 24, 0.85);
-            backdrop-filter: blur(16px);
-            border-top: 1px solid var(--border-card);
             font-family: 'JetBrains Mono', monospace;
             font-size: 11px;
             color: var(--text-dim);
             position: relative;
             z-index: 20;
         }
-
-        .footer-highlight { color: var(--primary); font-weight: 600; }
-
-        /* Responsive */
-        @media (max-width: 1200px) {
-            .metrics-quad-grid { grid-template-columns: repeat(2, 1fr); }
-            .middle-two-col { grid-template-columns: 1fr; }
-        }
-
-        @media (max-width: 768px) {
-            .top-navbar {
-                padding: 12px 18px;
-                flex-direction: column;
-                gap: 12px;
-                align-items: flex-start;
-            }
-            .nav-right-pills { width: 100%; justify-content: space-between; flex-wrap: wrap; }
-            .metrics-quad-grid { grid-template-columns: 1fr; }
-            .tank-visualizer-wrap { flex-direction: column; }
-            .main-container { padding: 18px 14px; }
-            .broker-param-strip { flex-direction: column; align-items: flex-start; }
-            .status-footer { padding: 12px 18px; flex-direction: column; gap: 8px; text-align: center; }
-        }
     </style>
 </head>
 <body>
 
-    <!-- Fullscreen Slideshow Layer -->
+    <!-- Animated Backdrop Slideshow -->
     <div class="slideshow-backdrop" id="slideshowBackdrop">
         <div class="slideshow-overlay"></div>
     </div>
 
     <!-- Top Navigation Header -->
     <header class="top-navbar">
-        <a class="brand-section" href="/" onclick="event.preventDefault(); window.top.location.href='/'" title="Return to AgriSarthi Website" style="text-decoration:none;cursor:pointer;">
+        <a class="brand-section" href="dashboard.html" style="text-decoration:none;">
             <div class="brand-icon-box">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
@@ -800,26 +588,23 @@
             <div class="brand-text-col">
                 <div class="brand-title-line">
                     <span class="brand-h1">AgriSarthi</span>
-                    <span class="badge-farm">Water Matrix</span>
+                    <span class="badge-farm">Water &amp; Power</span>
                     <span class="badge-unit">ROVER-04</span>
                 </div>
-                <span class="brand-sub">Real-Time Reservoir Level, Irrigation Actuators &amp; Hydraulic Valve Matrix</span>
+                <span class="brand-sub">Block 03 // 500L Reservoir &amp; 24.8V BMS Battery Diagnostics</span>
             </div>
         </a>
 
-        <div class="nav-right-pills">
-            <div class="nav-pill">
-                <span class="status-dot-green"></span>
-                <span>RTK: <strong style="color: var(--accent-green);">Locked (1.2cm)</strong></span>
-            </div>
-            <div class="nav-pill">
-                <span>Mesh: <strong>14ms latency</strong></span>
-            </div>
-            <div class="nav-pill">
-                <span>🚰 Main Tank: <strong style="color: var(--primary);" id="headerTankLevel">78% Full</strong></span>
-            </div>
+        <div class="nav-right-cluster">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+                <span id="demoDot" class="demo-status-dot"></span>
+                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+            </button>
+            <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
+                <span>⚙️</span><span>RPi Connect</span>
+            </button>
             <a href="dashboard.html" class="btn-dashboard-back">
-                <span>&larr; Dashboard</span>
+                <span>&larr;</span><span>Mission Dashboard</span>
             </a>
         </div>
     </header>
@@ -827,279 +612,212 @@
     <!-- Main Container -->
     <main class="main-container">
 
-        <!-- 4 Top Water Telemetry Tiles -->
+        <!-- 4 Top Water & Power Tiles -->
         <section class="metrics-quad-grid">
+            
             <!-- Tile 1: Water Tank Level -->
             <div class="metric-tile">
                 <div class="metric-tile-header">
                     <div class="metric-tile-title-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--primary);">
-                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-                        </svg>
-                        <span>TANK LEVEL</span>
+                        <span>🚰</span>
+                        <span>WATER RESERVOIR</span>
                     </div>
-                    <span class="status-badge-pill badge-tank">NOMINAL</span>
+                    <span class="status-badge-pill badge-cyan">NOMINAL</span>
                 </div>
-
                 <div class="metric-tile-val">
-                    <span id="disp-tank-pct">78</span>
-                    <span class="unit">%</span>
+                    <span id="card-tank-pct">78</span><span class="unit">%</span>
                 </div>
-
                 <div class="metric-tile-sub-grid">
-                    <span>Volume: <strong>390 / 500 L</strong></span>
-                    <span>Status: <strong style="color:var(--accent-green);">Optimal</strong></span>
-                </div>
-
-                <div class="metric-tile-footer">
-                    <span class="status-dot-green" style="background-color: var(--primary); box-shadow: 0 0 8px var(--primary);"></span>
-                    <span>Ultrasonic echo sensor active</span>
+                    <span>Liters: <strong id="card-tank-liters">390 / 500 L</strong></span>
+                    <span>Reserve: <strong style="color:var(--primary);">110 L Buffer</strong></span>
                 </div>
             </div>
 
-            <!-- Tile 2: Flow Rate -->
+            <!-- Tile 2: Rover Battery BMS -->
             <div class="metric-tile">
                 <div class="metric-tile-header">
                     <div class="metric-tile-title-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-teal);">
-                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"></path>
-                        </svg>
-                        <span>FLOW RATE</span>
+                        <span>🔋</span>
+                        <span>ROVER BATTERY BMS</span>
                     </div>
-                    <span class="status-badge-pill badge-flow">ACTIVE PUMP</span>
+                    <span class="status-badge-pill badge-amber">HEALTHY</span>
                 </div>
-
-                <div class="metric-tile-val" style="color: var(--accent-teal);">
-                    <span id="disp-flow-rate">4.8</span>
-                    <span class="unit" style="color: var(--accent-teal);">L/m</span>
+                <div class="metric-tile-val amber">
+                    <span id="card-battery-pct">86</span><span class="unit">%</span>
                 </div>
-
                 <div class="metric-tile-sub-grid">
-                    <span>Pressure: <strong>2.4 bar</strong></span>
-                    <span>Daily Total: <strong>142 L</strong></span>
-                </div>
-
-                <div class="metric-tile-footer" style="color: var(--accent-teal);">
-                    <span class="status-dot-green" style="background-color: var(--accent-teal); box-shadow: 0 0 8px var(--accent-teal);"></span>
-                    <span>Hall-effect flow meter</span>
+                    <span>Pack Voltage: <strong id="card-pack-volt">25.6 V</strong></span>
+                    <span>Current Draw: <strong style="color:var(--accent-amber);" id="card-curr-draw">3.8 A</strong></span>
                 </div>
             </div>
 
-            <!-- Tile 3: Water Quality -->
+            <!-- Tile 3: Solar MPPT Generation -->
             <div class="metric-tile">
                 <div class="metric-tile-header">
                     <div class="metric-tile-title-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-green);">
-                            <circle cx="12" cy="12" r="10"></circle>
-                            <path d="m4.93 4.93 4.24 4.24"></path>
-                        </svg>
-                        <span>WATER PURITY / TDS</span>
+                        <span>☀️</span>
+                        <span>SOLAR MPPT ARRAY</span>
                     </div>
-                    <span class="status-badge-pill badge-optimal">CLEAR</span>
+                    <span class="status-badge-pill badge-green">HARVESTING</span>
                 </div>
-
-                <div class="metric-tile-val" style="color: var(--accent-green);">
-                    <span>184</span>
-                    <span class="unit" style="color: var(--accent-green); font-size:18px;">ppm</span>
+                <div class="metric-tile-val green">
+                    <span id="card-solar-watts">320</span><span class="unit">W</span>
                 </div>
-
                 <div class="metric-tile-sub-grid">
-                    <span>Salinity: <strong>0.18 g/L</strong></span>
-                    <span>Temp: <strong>21.2°C</strong></span>
-                </div>
-
-                <div class="metric-tile-footer" style="color: var(--accent-green);">
-                    <span class="status-dot-green"></span>
-                    <span>Low mineral deposit risk</span>
+                    <span>Daily Yield: <strong>1.84 kWh</strong></span>
+                    <span>Efficiency: <strong style="color:var(--accent-green);">98.2%</strong></span>
                 </div>
             </div>
 
-            <!-- Tile 4: Pump Actuator Line -->
+            <!-- Tile 4: Motor & Inverter Thermals -->
             <div class="metric-tile">
                 <div class="metric-tile-header">
                     <div class="metric-tile-title-wrap">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--accent-amber);">
-                            <path d="M18.36 6.64a9 9 0 1 1-12.73 0"></path>
-                            <line x1="12" y1="2" x2="12" y2="12"></line>
-                        </svg>
-                        <span>IRRIGATION PUMP</span>
+                        <span>🌡️</span>
+                        <span>DRIVE &amp; ESC THERMALS</span>
                     </div>
-                    <span class="status-badge-pill badge-optimal" id="pumpBadgeState">PUMP STANDBY</span>
+                    <span class="status-badge-pill badge-teal">COOL</span>
                 </div>
-
-                <div class="metric-tile-val" style="color: var(--accent-amber);">
-                    <span id="disp-pump-state" style="font-size:32px;">STANDBY</span>
+                <div class="metric-tile-val teal">
+                    <span id="card-inv-temp">38.4</span><span class="unit">°C</span>
                 </div>
-
                 <div class="metric-tile-sub-grid">
-                    <span>Power: <strong>12V / 3.2A</strong></span>
-                    <span>Relay: <strong>GPIO 18</strong></span>
-                </div>
-
-                <div class="metric-tile-footer" style="color: var(--accent-amber);">
-                    <span class="status-dot-green" style="background-color: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber);"></span>
-                    <span>Auto-cutoff protection OK</span>
+                    <span>Left Motor: <strong>41.2°C</strong></span>
+                    <span>Right Motor: <strong>40.8°C</strong></span>
                 </div>
             </div>
+
         </section>
 
-        <!-- Middle 2-Column: Reservoir Simulation + Valves Matrix -->
-        <section class="middle-two-col">
-            <!-- Left: Dynamic Water Tank Visualizer -->
+        <!-- Middle 2-Column: Reservoir Visualizer vs Rover BMS Battery Deep Diagnostics -->
+        <section class="split-grid-two">
+            
+            <!-- Left: Animated Water Tank Reservoir -->
             <div class="card-panel">
                 <div class="panel-header-row">
                     <div class="panel-titles">
-                        <span class="panel-main-title">ROVER RESERVOIR LEVEL SIMULATION</span>
-                        <span class="panel-sub-title">Ultrasonic hydro-acoustic level profile</span>
+                        <span class="panel-main-title">500-LITER WATER RESERVOIR PROFILE</span>
+                        <span class="panel-sub-title">Ultrasonic hydro-acoustic level profile &amp; flow sensor</span>
                     </div>
-                    <span class="status-badge-pill badge-tank">CAPACITY: 500L</span>
+                    <span class="status-badge-pill badge-cyan">CAPACITY: 500L</span>
                 </div>
 
                 <div class="tank-visualizer-wrap">
                     <div class="tank-cylinder-frame">
-                        <div class="tank-percentage-overlay" id="tankPctDisplay">78%</div>
-                        <div class="tank-water-fluid" id="tankWaterFluid" style="height: 78%;">
+                        <div class="tank-percentage-overlay" id="tankOverlayVal">78%</div>
+                        <div class="tank-water-fluid" id="tankFluidEl" style="height: 78%;">
                             <div class="water-wave-anim"></div>
                         </div>
                     </div>
 
-                    <div class="tank-metrics-col">
-                        <div class="tank-detail-card">
-                            <span class="lbl">RESERVOIR DEPTH</span>
-                            <span class="val">85.4 cm</span>
+                    <div class="detail-row-grid">
+                        <div class="detail-chip">
+                            <span class="lbl">TOTAL CAPACITY</span>
+                            <span class="val">500.0 Liters</span>
                         </div>
-                        <div class="tank-detail-card">
-                            <span class="lbl">DRAINAGE RESERVE</span>
-                            <span class="val" style="color:var(--primary);">110 Liters</span>
+                        <div class="detail-chip">
+                            <span class="lbl">WATER REMAINING</span>
+                            <span class="val" style="color:var(--primary);" id="detailWaterRem">390 Liters</span>
                         </div>
-                        <div class="tank-detail-card">
-                            <span class="lbl">EST. IRRIGATION TIME</span>
-                            <span class="val" style="color:var(--accent-green);">1h 22m</span>
+                        <div class="detail-chip">
+                            <span class="lbl">FLOW SENSOR</span>
+                            <span class="val" id="detailFlowRate">0.0 L/min (Pump Off)</span>
                         </div>
-                        <div class="tank-detail-card">
-                            <span class="lbl">REFILL VALVE</span>
-                            <span class="val" style="color:var(--accent-amber);">CLOSED</span>
+                        <div class="detail-chip">
+                            <span class="lbl">IRRIGATION RUNTIME</span>
+                            <span class="val" style="color:var(--accent-green);">2h 45m Remaining</span>
+                        </div>
+                        <div class="detail-chip">
+                            <span class="lbl">RESERVOIR WATER TEMP</span>
+                            <span class="val">21.4°C</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Right: Hydraulic Valve Matrix & Actuators -->
+            <!-- Right: Rover Power & BMS Battery Array -->
             <div class="card-panel">
                 <div class="panel-header-row">
                     <div class="panel-titles">
-                        <span class="panel-main-title">HYDRAULIC VALVE &amp; PUMP MATRIX</span>
-                        <span class="panel-sub-title">Solenoid manifold dispatch &amp; primary pump switch</span>
+                        <span class="panel-main-title">24.8V LiFePO4 BMS BATTERY &amp; SOLAR ARRAY</span>
+                        <span class="panel-sub-title">8S Smart BMS individual cell voltages &amp; MPPT tracker</span>
                     </div>
-                    <span class="status-badge-pill badge-optimal">VALVES READY</span>
+                    <span class="status-badge-pill badge-amber">8S BALANCED</span>
                 </div>
 
-                <!-- Master Pump Switch -->
-                <div class="master-pump-card">
-                    <div class="pump-toggle-left">
-                        <label class="switch-custom">
-                            <input type="checkbox" id="masterPumpToggle" onchange="togglePump(this.checked)">
-                            <span class="slider-custom"></span>
-                        </label>
-                        <div>
-                            <div style="font-family:'JetBrains Mono', monospace; font-size:13px; font-weight:800;" id="masterPumpText">PRIMARY PUMP: OFF</div>
-                            <div style="font-size:11px; color:var(--text-dim);">Line: ThingSpeak Field 5 Actuator</div>
+                <div style="display:flex; flex-direction:column; gap:14px;">
+                    <div class="detail-row-grid">
+                        <div class="detail-chip">
+                            <span class="lbl">BMS CHARGE LEVEL</span>
+                            <span class="val" style="color:var(--accent-amber);" id="detailBatSoc">86% (25.6V)</span>
+                        </div>
+                        <div class="detail-chip">
+                            <span class="lbl">ESTIMATED RUNTIME</span>
+                            <span class="val" style="color:var(--accent-green);">5h 18m Autonomous</span>
+                        </div>
+                        <div class="detail-chip">
+                            <span class="lbl">MPPT SOLAR HARVEST</span>
+                            <span class="val" style="color:#2dd4bf;" id="detailSolarWatts">320 W (Charging)</span>
                         </div>
                     </div>
-                    <button class="btn-flush-matrix" onclick="flushCycle()">⚡ Flush Cycle (15s)</button>
-                </div>
 
-                <!-- 3 Solenoid Valve Buttons -->
-                <div class="valve-grid-row">
-                    <div class="valve-tile-btn active" onclick="toggleValve(1, this)">
-                        <span style="font-size:20px;">💧</span>
-                        <span class="valve-title">VALVE 1: FURROW A</span>
-                        <span class="valve-sub">Status: OPEN</span>
+                    <div style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim); margin-top:4px;">
+                        INDIVIDUAL CELL BALANCES (8S LiFePO4):
                     </div>
-
-                    <div class="valve-tile-btn" onclick="toggleValve(2, this)">
-                        <span style="font-size:20px;">🌱</span>
-                        <span class="valve-title">VALVE 2: DRIP ZONE</span>
-                        <span class="valve-sub">Status: CLOSED</span>
+                    <div class="cells-grid">
+                        <div class="cell-box"><div class="cell-name">CELL 1</div><div class="cell-volt">3.20V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 2</div><div class="cell-volt">3.21V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 3</div><div class="cell-volt">3.20V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 4</div><div class="cell-volt">3.22V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 5</div><div class="cell-volt">3.21V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 6</div><div class="cell-volt">3.20V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 7</div><div class="cell-volt">3.21V</div></div>
+                        <div class="cell-box"><div class="cell-name">CELL 8</div><div class="cell-volt">3.20V</div></div>
                     </div>
-
-                    <div class="valve-tile-btn" onclick="toggleValve(3, this)">
-                        <span style="font-size:20px;">☁️</span>
-                        <span class="valve-title">VALVE 3: MIST SPRAY</span>
-                        <span class="valve-sub">Status: CLOSED</span>
-                    </div>
-                </div>
-
-                <!-- Real-time Level Trend Mini-Chart -->
-                <div class="chart-canvas-wrap">
-                    <canvas id="waterTrendChart"></canvas>
                 </div>
             </div>
+
         </section>
 
-        <!-- Bottom Section: MQTT & Telemetry Broker Console -->
-        <section class="broker-panel">
-            <div class="broker-header-row">
-                <div class="broker-left">
-                    <div class="broker-icon-btn">
-                        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2">
-                            <path d="M5 12.55a11 11 0 0 1 14.08 0"></path>
-                            <path d="M1.42 9a16 16 0 0 1 21.16 0"></path>
-                            <path d="M8.53 16.11a6 6 0 0 1 6.95 0"></path>
-                            <circle cx="12" cy="20" r="1"></circle>
-                        </svg>
+        <!-- Charts: Water Consumption & Battery / Solar Curves -->
+        <section class="charts-duo-grid">
+            
+            <!-- Chart 1: Water Level History -->
+            <div class="card-panel">
+                <div class="panel-header-row">
+                    <div class="panel-titles">
+                        <span class="panel-main-title">WATER RESERVOIR CONSUMPTION HISTORY</span>
+                        <span class="panel-sub-title">Tank level percentage &amp; irrigation pump discharge (L/min)</span>
                     </div>
-                    <div>
-                        <h2 class="broker-h2">HYDROLOGICAL TELEMETRY &amp; VALVE BUS STREAM</h2>
-                        <span class="broker-desc">Real-time tank level ultrasonic ping and solenoid status telemetry</span>
-                    </div>
+                    <span class="status-badge-pill badge-cyan">● Water Level %</span>
                 </div>
-                <div class="broker-stream-pill">
-                    <span class="status-dot-green"></span>
-                    <span>Status: Stream Synced (Active)</span>
+                <div class="chart-canvas-wrap">
+                    <canvas id="waterChart"></canvas>
                 </div>
             </div>
 
-            <!-- Parameters strip -->
-            <div class="broker-param-strip">
-                <div class="param-item">Broker: <span class="cyan">broker.hivemq.com:1883</span></div>
-                <div class="param-item">Tank Telemetry Topic: <span class="green">rpi/agrisarthi/sensors/water</span></div>
-                <div class="param-item">Actuator Topic: <span class="amber">rpi/agrisarthi/rover/pump</span></div>
-                <div class="param-item">Bus: <strong>Hydraulic Modbus RTU</strong></div>
-            </div>
-
-            <!-- Console debugger -->
-            <div class="terminal-console">
-                <div class="terminal-top-bar">
-                    <div class="terminal-dots">
-                        <span class="t-dot t-red"></span>
-                        <span class="t-dot t-yellow"></span>
-                        <span class="t-dot t-green"></span>
+            <!-- Chart 2: Battery BMS & Solar Curve -->
+            <div class="card-panel">
+                <div class="panel-header-row">
+                    <div class="panel-titles">
+                        <span class="panel-main-title">BATTERY STATE-OF-CHARGE &amp; SOLAR MPPT</span>
+                        <span class="panel-sub-title">Discharge curve vs Instantaneous solar harvesting (Watts)</span>
                     </div>
-                    <span class="terminal-title">ROVER-04 WATER TELEMETRY &amp; PUMP LOG</span>
-                    <span style="color:var(--text-dim);">QoS 1 Confirmed</span>
+                    <span class="status-badge-pill badge-amber">● Battery % / Solar W</span>
                 </div>
-
-                <div class="terminal-body" id="waterTerminalLog">
-                    <div class="t-log-line"><span class="t-time">[10:35:10 AM]</span> <span class="t-tag-tank">[TANK_PING]</span> Ultrasonic sensor level: 78% (390 L in reservoir)</div>
-                    <div class="t-log-line"><span class="t-time">[10:35:14 AM]</span> <span class="t-tag-valve">[VALVE_BUS]</span> Valve 1: Furrow A opened. Flow rate: 4.8 L/min</div>
-                    <div class="t-log-line"><span class="t-time">[10:35:18 AM]</span> <span class="t-tag-pump">[PUMP_STATUS]</span> Relay line GPIO18 standby. Auto-cutoff threshold set at 15%</div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="powerChart"></canvas>
                 </div>
             </div>
+
         </section>
 
     </main>
 
     <!-- Bottom Status Footer -->
     <footer class="status-footer">
-        <div>
-            <span>AgriSarthi Technologies</span> • <span>Autonomous Precision Rover Unit-04</span>
-        </div>
-        <div>
-            <span>Mesh Node: <strong>AP-SOUTH-01</strong></span> • 
-            <span>RTK Lock: <span class="footer-highlight">Centimetric Active</span></span> • 
-            <span>Firmware: <strong>v4.8.2-rt</strong></span>
-        </div>
+        <div><span>AgriSarthi Technologies</span> • <span>Precision Farm Monitoring Rover-04</span></div>
+        <div><span>BMS Firmware: <strong>v2.4.1-bms</strong></span> • <span>Flow Calibration: <strong>450 pulses/L</strong></span></div>
     </footer>
 
     <!-- Background Image Slideshow Script -->
@@ -1134,133 +852,262 @@
         setInterval(cycleSlide, 6000);
     </script>
 
-    <!-- Chart & Actuator Logic -->
+    <!-- Telemetry & Charts Script -->
     <script>
-        const timestamps = ["10:26 AM", "10:28 AM", "10:30 AM", "10:33 AM", "10:35 AM (NOW)"];
-        const levelData = [82, 81, 80, 79, 78];
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false';
+        let demoInterval = null;
+        let mqttClient = null;
 
-        const ctx = document.getElementById('waterTrendChart').getContext('2d');
-        const gradWater = ctx.createLinearGradient(0, 0, 0, 200);
-        gradWater.addColorStop(0, 'rgba(56, 189, 248, 0.35)');
-        gradWater.addColorStop(1, 'rgba(56, 189, 248, 0.0)');
+        function toggleDemoMode() {
+            isDemoMode = !isDemoMode;
+            localStorage.setItem('agrisarthi_demo_mode', isDemoMode ? 'true' : 'false');
+            applyDemoModeUI();
+        }
 
-        const waterChart = new Chart(ctx, {
+        function setWaterAndPowerDashes() {
+            const cardW = document.getElementById("card-tank-pct");
+            const cardLiters = document.getElementById("card-tank-liters");
+            const cardB = document.getElementById("card-battery-pct");
+            const cardSolar = document.getElementById("card-solar-watts");
+            const cardTemp = document.getElementById("card-inv-temp");
+            const tankOverlay = document.getElementById("tankOverlayVal");
+            const tankFluid = document.getElementById("tankFluidEl");
+            const detailRem = document.getElementById("detailWaterRem");
+            const detailSoc = document.getElementById("detailBatSoc");
+            const detailSolar = document.getElementById("detailSolarWatts");
+            const cellVolts = document.querySelectorAll(".cell-volt");
+
+            if (cardW) cardW.innerText = "--";
+            if (cardLiters) cardLiters.innerText = "-- / 500 L";
+            if (cardB) cardB.innerText = "--";
+            if (cardSolar) cardSolar.innerText = "--";
+            if (cardTemp) cardTemp.innerText = "--";
+            if (tankOverlay) tankOverlay.innerText = "--%";
+            if (tankFluid) tankFluid.style.height = "0%";
+            if (detailRem) detailRem.innerText = "-- Liters";
+            if (detailSoc) detailSoc.innerText = "-- (Awaiting BMS)";
+            if (detailSolar) detailSolar.innerText = "-- W";
+            cellVolts.forEach(c => c.innerText = "--V");
+
+            // Reset charts while awaiting telemetry
+            [waterChart, powerChart].forEach(chart => {
+                chart.data.datasets.forEach(ds => {
+                    ds.data = [null, null, null, null, null, null];
+                });
+                chart.update('none');
+            });
+        }
+
+        function applyDemoModeUI() {
+            const btn = document.getElementById("demoToggleBtn");
+            const label = document.getElementById("demoBtnLabel");
+            if (isDemoMode) {
+                if (btn) {
+                    btn.classList.add("demo-active");
+                    btn.classList.remove("demo-off");
+                }
+                if (label) label.innerText = "🧪 Demo Data: ON";
+                startDemoSimulation();
+            } else {
+                if (btn) {
+                    btn.classList.remove("demo-active");
+                    btn.classList.add("demo-off");
+                }
+                if (label) label.innerText = "📡 Live RPi: ON";
+                stopDemoSimulation();
+                setWaterAndPowerDashes();
+            }
+        }
+
+        // Charts
+        const timeLabels = ['-25m', '-20m', '-15m', '-10m', '-5m', 'NOW'];
+
+        // Water Chart
+        const ctxWater = document.getElementById('waterChart').getContext('2d');
+        const waterChart = new Chart(ctxWater, {
             type: 'line',
             data: {
-                labels: timestamps,
+                labels: [...timeLabels],
                 datasets: [{
-                    label: 'Reservoir Level (%)',
-                    data: levelData,
+                    label: 'Water Level (%)',
+                    data: [82, 81, 80, 79, 78, 78],
                     borderColor: '#38bdf8',
-                    borderWidth: 2.5,
-                    backgroundColor: gradWater,
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
                     fill: true,
-                    tension: 0.4,
-                    pointBackgroundColor: '#070d18',
-                    pointBorderColor: '#38bdf8',
-                    pointBorderWidth: 2,
-                    pointRadius: 4
+                    tension: 0.35,
+                    borderWidth: 2.5
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
-                plugins: {
-                    legend: { display: false },
-                    tooltip: {
-                        backgroundColor: 'rgba(13, 22, 38, 0.95)',
-                        borderColor: '#38bdf8',
-                        borderWidth: 1,
-                        titleFont: { family: 'JetBrains Mono', size: 11 },
-                        bodyFont: { family: 'JetBrains Mono', size: 11 },
-                        callbacks: {
-                            label: (ctx) => `${ctx.parsed.y}% (${Math.round(ctx.parsed.y * 5)} L)`
-                        }
-                    }
-                },
                 scales: {
-                    x: {
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
-                    },
-                    y: {
-                        min: 50,
-                        max: 100,
-                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
-                        ticks: {
-                            color: '#64748b',
-                            font: { family: 'JetBrains Mono', size: 10 },
-                            callback: (v) => v + '%'
-                        }
-                    }
-                }
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } } },
+                    y: { min: 50, max: 100, grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#38bdf8', font: { family: 'JetBrains Mono', size: 10 }, callback: v => `${v}%` } }
+                },
+                plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } } } }
             }
         });
 
-        // Terminal Log Helper
-        function appendWaterLog(tag, tagClass, text) {
-            const now = new Date().toLocaleTimeString('en-US', { hour12: true, hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const logBox = document.getElementById("waterTerminalLog");
-            const div = document.createElement("div");
-            div.className = "t-log-line";
-            div.innerHTML = `<span class="t-time">[${now}]</span> <span class="${tagClass}">[${tag}]</span> ${text}`;
-            logBox.appendChild(div);
-            logBox.scrollTop = logBox.scrollHeight;
+        // Power Chart
+        const ctxPower = document.getElementById('powerChart').getContext('2d');
+        const powerChart = new Chart(ctxPower, {
+            type: 'line',
+            data: {
+                labels: [...timeLabels],
+                datasets: [
+                    {
+                        label: 'Battery SOC (%)',
+                        data: [88, 87, 87, 86, 86, 86],
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.12)',
+                        fill: true,
+                        yAxisID: 'y',
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'Solar Harvest (W)',
+                        data: [305, 310, 318, 322, 320, 320],
+                        borderColor: '#00e599',
+                        backgroundColor: 'rgba(0, 229, 153, 0.08)',
+                        fill: true,
+                        yAxisID: 'y1',
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: { grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } } },
+                    y: { min: 70, max: 100, position: 'left', grid: { color: 'rgba(255, 255, 255, 0.05)' }, ticks: { color: '#fbbf24', font: { family: 'JetBrains Mono', size: 10 }, callback: v => `${v}%` } },
+                    y1: { min: 200, max: 400, position: 'right', grid: { drawOnChartArea: false }, ticks: { color: '#00e599', font: { family: 'JetBrains Mono', size: 10 }, callback: v => `${v}W` } }
+                },
+                plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } } } }
+            }
+        });
+
+        function pushDataPoint(chart, datasetIdx, val) {
+            const data = chart.data.datasets[datasetIdx].data;
+            data.shift();
+            data.push(val);
+            chart.update('none');
         }
 
-        // MQTT Client Setup for Water & Irrigation
-        let waterMqttClient = null;
+        // Update UI
+        function updateWaterAndPowerUI(waterPct, batPct, solarWatts, invTemp) {
+            const isValid = (v) => v !== undefined && v !== null && v !== '' && !isNaN(v);
 
-        function initWaterConnectivity() {
-            waterMqttClient = RPiConfig.initMqtt({
+            const hasW = isValid(waterPct);
+            const hasB = isValid(batPct);
+            const hasS = isValid(solarWatts);
+            const hasT = isValid(invTemp);
+
+            const wVal = hasW ? Math.round(waterPct) : null;
+            const bVal = hasB ? Math.round(batPct) : null;
+            const sVal = hasS ? Math.round(solarWatts) : null;
+            const tVal = hasT ? parseFloat(invTemp).toFixed(1) : null;
+
+            const cardW = document.getElementById("card-tank-pct");
+            const cardLiters = document.getElementById("card-tank-liters");
+            const cardB = document.getElementById("card-battery-pct");
+            const cardSolar = document.getElementById("card-solar-watts");
+            const cardTemp = document.getElementById("card-inv-temp");
+            const tankOverlay = document.getElementById("tankOverlayVal");
+            const tankFluid = document.getElementById("tankFluidEl");
+            const detailRem = document.getElementById("detailWaterRem");
+            const detailSoc = document.getElementById("detailBatSoc");
+            const detailSolar = document.getElementById("detailSolarWatts");
+            const cellVolts = document.querySelectorAll(".cell-volt");
+
+            if (cardW) cardW.innerText = hasW ? wVal : "--";
+            if (cardLiters) cardLiters.innerText = hasW ? `${Math.round(wVal * 5)} / 500 L` : "-- / 500 L";
+            if (cardB) cardB.innerText = hasB ? bVal : "--";
+            if (cardSolar) cardSolar.innerText = hasS ? sVal : "--";
+            if (cardTemp) cardTemp.innerText = hasT ? tVal : "--";
+            if (tankOverlay) tankOverlay.innerText = hasW ? `${wVal}%` : "--%";
+            if (tankFluid) tankFluid.style.height = hasW ? `${wVal}%` : "0%";
+            if (detailRem) detailRem.innerText = hasW ? `${Math.round(wVal * 5)} Liters` : "-- Liters";
+            if (detailSoc) detailSoc.innerText = hasB ? `${bVal}% (25.6V)` : "-- (Awaiting BMS)";
+            if (detailSolar) detailSolar.innerText = hasS ? `${sVal} W (Active)` : "-- W";
+
+            if (hasB) {
+                cellVolts.forEach((c, idx) => {
+                    const baseV = 3.20 + (idx % 3) * 0.01;
+                    c.innerText = `${baseV.toFixed(2)}V`;
+                });
+            }
+
+            // Push to charts if valid
+            if (hasW) pushDataPoint(waterChart, 0, wVal);
+            if (hasB) pushDataPoint(powerChart, 0, bVal);
+            if (hasS) pushDataPoint(powerChart, 1, sVal);
+        }
+
+        // Demo Simulation
+        function startDemoSimulation() {
+            if (demoInterval) clearInterval(demoInterval);
+            runDemoTick();
+            demoInterval = setInterval(runDemoTick, 2800);
+        }
+
+        function stopDemoSimulation() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+                demoInterval = null;
+            }
+        }
+
+        function runDemoTick() {
+            if (!isDemoMode) return;
+            const w = 77 + Math.random() * 2;
+            const b = 85 + Math.random() * 2;
+            const s = 315 + Math.random() * 15;
+            const t = 38.0 + Math.random() * 0.7;
+            updateWaterAndPowerUI(w, b, s, t);
+        }
+
+        // Real Telemetry Connection
+        function initRealTelemetry() {
+            mqttClient = RPiConfig.initMqtt({
                 onConnect: (client) => {
-                    appendWaterLog("MQTT", "t-tag-mqtt", `Connected to RPi Broker (${RPiConfig.getMqttBrokerUrl()}).`);
                     client.subscribe(RPiConfig.TOPICS.telemetry);
                 },
                 onMessage: (topic, data) => {
-                    if (data && (data.water !== undefined || data.tank !== undefined)) {
-                        const level = parseFloat(data.water !== undefined ? data.water : data.tank).toFixed(0);
-                        const disp = document.getElementById("disp-water-pct");
-                        if (disp) disp.innerText = `${level}%`;
-                        const mainVal = document.getElementById("disp-water-liters");
-                        if (mainVal) mainVal.innerText = `${Math.round(level * 5)}L`;
-                        appendWaterLog("LIVE_DATA", "t-tag-pump", `Reservoir level updated: ${level}%`);
+                    if (data) {
+                        if (isDemoMode) {
+                            isDemoMode = false;
+                            localStorage.setItem('agrisarthi_demo_mode', 'false');
+                            stopDemoSimulation();
+                            const btn = document.getElementById("demoToggleBtn");
+                            const label = document.getElementById("demoBtnLabel");
+                            if (btn) { btn.classList.remove("demo-active"); btn.classList.add("demo-off"); }
+                            if (label) label.innerText = "📡 Live RPi: ON";
+                        }
+                        updateWaterAndPowerUI(data.water, data.battery, data.solar, data.inv_temp);
                     }
                 }
             });
-        }
-        window.addEventListener('load', initWaterConnectivity);
 
-        // Pump & Valve Handlers
-        function togglePump(isOn) {
-            document.getElementById("masterPumpText").innerText = `PRIMARY PUMP: ${isOn ? 'RUNNING (ACTIVE)' : 'OFF (STANDBY)'}`;
-            document.getElementById("masterPumpText").style.color = isOn ? 'var(--primary)' : '#ffffff';
-            document.getElementById("disp-pump-state").innerText = isOn ? 'ACTIVE' : 'STANDBY';
-            document.getElementById("pumpBadgeState").innerText = isOn ? 'PUMP RUNNING' : 'PUMP STANDBY';
-            
-            appendWaterLog("PUMP_ACTUATOR", "t-tag-pump", `Pump state dispatched: ${isOn ? '1 (ACTIVE)' : '0 (OFF)'}`);
-            RPiConfig.dispatchActuatorCommand(waterMqttClient, { target: "pump", state: isOn ? 1 : 0 });
-        }
-
-        function toggleValve(num, el) {
-            const isActive = el.classList.toggle('active');
-            const sub = el.querySelector('.valve-sub');
-            if (sub) sub.innerText = `Status: ${isActive ? 'OPEN' : 'CLOSED'}`;
-            appendWaterLog(`VALVE_${num}`, "t-tag-valve", `Solenoid Valve ${num} switched to: ${isActive ? 'OPEN (FLOWING)' : 'CLOSED'}`);
-            RPiConfig.dispatchActuatorCommand(waterMqttClient, { target: "valve", valve_id: num, state: isActive ? 1 : 0 });
+            setInterval(async () => {
+                if (isDemoMode) return;
+                try {
+                    const res = await fetch(`${RPiConfig.getApiBaseUrl()}/api/telemetry`, { signal: AbortSignal.timeout(2500) });
+                    const data = await res.json();
+                    if (data && !isDemoMode) {
+                        updateWaterAndPowerUI(data.water, data.battery, data.solar, data.inv_temp);
+                    }
+                } catch (e) {
+                    // Ignore transient errors
+                }
+            }, 3000);
         }
 
-        function flushCycle() {
-            appendWaterLog("FLUSH_MACRO", "t-tag-pump", "Initiating 15s pressurized manifold purge cycle...");
-            const toggle = document.getElementById("masterPumpToggle");
-            toggle.checked = true;
-            togglePump(true);
-            setTimeout(() => {
-                toggle.checked = false;
-                togglePump(false);
-                appendWaterLog("FLUSH_MACRO", "t-tag-pump", "Purge cycle complete. Returning to standby.");
-            }, 5000);
-        }
+        applyDemoModeUI();
+        initRealTelemetry();
     </script>
 </body>
 </html>

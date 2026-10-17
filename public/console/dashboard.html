@@ -272,6 +272,65 @@
             transform: translateY(-1px);
         }
 
+        .btn-demo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 6px 14px;
+            height: 36px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            white-space: nowrap;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            outline: none;
+            text-decoration: none;
+        }
+
+        .btn-demo-pill.demo-active {
+            background: rgba(251, 191, 36, 0.16);
+            border: 1px solid rgba(251, 191, 36, 0.5);
+            color: #fef08a;
+            box-shadow: 0 0 12px rgba(251, 191, 36, 0.25);
+        }
+
+        .btn-demo-pill.demo-active:hover {
+            background: rgba(251, 191, 36, 0.28);
+            border-color: #fbbf24;
+            transform: translateY(-1px);
+        }
+
+        .btn-demo-pill.demo-inactive {
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid rgba(0, 229, 153, 0.4);
+            color: var(--primary);
+            box-shadow: 0 0 10px rgba(0, 229, 153, 0.2);
+        }
+
+        .btn-demo-pill.demo-inactive:hover {
+            background: rgba(0, 229, 153, 0.24);
+            border-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .demo-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background-color: var(--accent-amber);
+            box-shadow: 0 0 6px var(--accent-amber);
+            animation: pulseDot 2s infinite ease-in-out;
+        }
+
+        .btn-demo-pill.demo-inactive .demo-status-dot {
+            background-color: var(--primary);
+            box-shadow: 0 0 6px var(--primary);
+        }
+
         .user-welcome-tag {
             font-family: 'JetBrains Mono', monospace;
             font-size: 12px;
@@ -622,73 +681,192 @@
             color: var(--primary);
         }
 
-        /* Control & Mission Modules Hub */
-        .modules-hub-card {
+        /* 4 Master Mission Blocks Grid */
+        .blocks-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 22px;
+        }
+
+        .block-card {
             background: var(--bg-card);
             backdrop-filter: blur(20px);
             border: 1px solid var(--border-card);
             border-radius: 24px;
-            padding: 28px;
+            padding: 26px 28px;
             display: flex;
             flex-direction: column;
+            justify-content: space-between;
             gap: 20px;
             box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
 
-        .hub-header {
+        .block-card:hover {
+            transform: translateY(-4px);
+            border-color: var(--border-accent);
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(0, 229, 153, 0.08);
+        }
+
+        .block-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+        }
+
+        .block-card-1::before { background: linear-gradient(90deg, #00e599, #38bdf8); }
+        .block-card-2::before { background: linear-gradient(90deg, #38bdf8, #a855f7); }
+        .block-card-3::before { background: linear-gradient(90deg, #fbbf24, #00e599); }
+        .block-card-4::before { background: linear-gradient(90deg, #c084fc, #00e599); }
+        .block-card-5::before { background: linear-gradient(90deg, #2dd4bf, #00e599, #38bdf8); }
+
+        .block-card-span-2 {
+            grid-column: span 2;
+        }
+
+        .block-header {
             display: flex;
             justify-content: space-between;
-            align-items: center;
+            align-items: flex-start;
+            gap: 12px;
         }
 
-        .hub-title {
-            font-family: 'JetBrains Mono', monospace;
-            font-size: 13px;
-            font-weight: 800;
-            letter-spacing: 0.5px;
-            color: #ffffff;
-        }
-
-        .hub-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 16px;
-        }
-
-        .hub-btn {
-            background: rgba(9, 17, 30, 0.7);
-            border: 1px solid var(--border-card);
-            border-radius: 16px;
-            padding: 20px;
-            text-decoration: none;
-            color: #ffffff;
+        .block-title-group {
             display: flex;
             flex-direction: column;
+            gap: 4px;
+        }
+
+        .block-kicker {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-dim);
+            letter-spacing: 1px;
+        }
+
+        .block-h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+            display: flex;
             align-items: center;
+            gap: 8px;
+        }
+
+        .block-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 4px 10px;
+            border-radius: 20px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+        }
+
+        .badge-green { background: rgba(0, 229, 153, 0.15); color: var(--primary); border: 1px solid rgba(0, 229, 153, 0.35); }
+        .badge-purple { background: rgba(192, 132, 252, 0.15); color: var(--accent-purple); border: 1px solid rgba(192, 132, 252, 0.35); }
+        .badge-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.35); }
+        .badge-cyan { background: rgba(56, 189, 248, 0.15); color: var(--accent-cyan); border: 1px solid rgba(56, 189, 248, 0.35); }
+        .badge-teal { background: rgba(45, 212, 191, 0.15); color: #2dd4bf; border: 1px solid rgba(45, 212, 191, 0.35); }
+
+        .block-desc {
+            font-size: 13px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        .block-pills-row {
+            display: flex;
+            flex-wrap: wrap;
             gap: 10px;
-            text-align: center;
-            transition: all 0.25s;
         }
 
-        .hub-btn:hover {
-            background: rgba(13, 26, 45, 0.95);
-            border-color: var(--border-accent);
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        .block-metric-pill {
+            background: rgba(9, 17, 30, 0.7);
+            border: 1px solid var(--border-card);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            display: flex;
+            align-items: center;
+            gap: 6px;
         }
 
-        .hub-btn-icon {
-            font-size: 32px;
-        }
-
-        .hub-btn-title {
-            font-size: 14px;
+        .block-metric-pill strong {
+            color: #ffffff;
             font-weight: 700;
         }
 
-        .hub-btn-desc {
-            font-size: 11px;
-            color: var(--text-dim);
+        .block-action-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 14px 20px;
+            border-radius: 14px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #ffffff;
+            text-decoration: none;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+            transition: all 0.25s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+
+        .block-action-btn:hover {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 20px var(--primary-glow);
+            transform: translateX(3px);
+        }
+
+        .block-card-2 .block-action-btn:hover {
+            background: var(--accent-cyan);
+            border-color: var(--accent-cyan);
+            color: #051410;
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.4);
+        }
+
+        .block-card-3 .block-action-btn:hover {
+            background: var(--accent-amber);
+            border-color: var(--accent-amber);
+            color: #051410;
+            box-shadow: 0 0 20px rgba(251, 191, 36, 0.4);
+        }
+
+        .block-card-4 .block-action-btn:hover {
+            background: var(--accent-purple);
+            border-color: var(--accent-purple);
+            color: #ffffff;
+            box-shadow: 0 0 20px rgba(192, 132, 252, 0.4);
+        }
+
+        .block-card-5 .block-action-btn:hover {
+            background: #2dd4bf;
+            border-color: #2dd4bf;
+            color: #051410;
+            box-shadow: 0 0 20px rgba(45, 212, 191, 0.4);
+        }
+
+        @media (max-width: 1024px) {
+            .blocks-grid {
+                grid-template-columns: 1fr;
+            }
+            .block-card-span-2 {
+                grid-column: span 1;
+            }
         }
 
         /* Live Telemetry Log Strip */
@@ -847,7 +1025,8 @@
 
     <!-- Top Navigation Bar -->
     <header class="top-navbar">
-        <a class="brand-section" href="/" onclick="event.preventDefault(); window.top.location.href='/'" title="Return to AgriSarthi Website" style="text-decoration:none;cursor:pointer;">
+        <a class="brand-section" href="/" onclick="event.preventDefault(); window.top.location.href='/'"
+            title="Return to AgriSarthi Website" style="text-decoration:none;cursor:pointer;">
             <div class="brand-icon-box">
                 <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
                     <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12a10 10 0 0 1 10-10z"></path>
@@ -873,6 +1052,10 @@
             <div class="telemetry-pill">
                 <span>🔋 Battery: <strong style="color: var(--accent-amber);" id="headerBatVal">86%</strong></span>
             </div>
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+                <span id="demoDot" class="demo-status-dot"></span>
+                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+            </button>
             <a href="notifications.html" class="btn-icon-nav" title="Alerts & Notifications">🔔</a>
             <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
                 <span>⚙️</span><span>RPi Connect</span>
@@ -926,152 +1109,149 @@
             </div>
         </section>
 
-        <!-- 4 Interactive Telemetry Sensor Cards -->
-        <section class="sensor-grid-quad" id="statsContainer">
-            <!-- Card 1: Microclimate -->
-            <a href="temperature.html" class="sensor-card-link">
-                <div class="sensor-tile">
-                    <div class="sensor-tile-header">
-                        <div class="sensor-tag">
-                            <span>🌡️|☁️</span>
-                            <span>TEMPERATURE/HUMIDITY</span>
+        <!-- 4 Master Mission Blocks Grid -->
+        <section class="blocks-grid" id="statsContainer">
+            <!-- Block 1: Sensors & Graphs -->
+            <div class="block-card block-card-1">
+                <div>
+                    <div class="block-header">
+                        <div class="block-title-group">
+                            <span class="block-kicker">BLOCK 01 // TELEMETRY &amp; ANALYTICS</span>
+                            <h2 class="block-h2">🌡️ All Sensors &amp; Charts</h2>
                         </div>
-                        <span class="status-badge badge-optimal">OPTIMAL</span>
+                        <span class="block-badge badge-green" id="block1Status">● LIVE STREAMING</span>
                     </div>
-
-                    <div class="sensor-val-main">
-                        <span id="disp-t">27.8</span><span class="unit">°C</span>
-                        <span style="color: var(--text-dim); font-size: 24px; font-weight: 400; margin: 0 4px;">|</span>
-                        <span id="disp-h" style="color: var(--accent-cyan);">64.2</span><span class="unit"
-                            style="color: var(--accent-cyan);">%</span>
-                    </div>
-
-                    <div class="sensor-sub-line">
-                        <span>Dew Pt: <strong>18.4°C</strong></span>
-                        <span>VPD: <strong>1.15 kPa</strong></span>
-                    </div>
-
-                    <div class="sensor-footer-arrow">
-                        <span>Atmospheric Telemetry</span>
-                        <span>&rarr;</span>
-                    </div>
+                    <p class="block-desc" style="margin-top: 10px;">
+                        Complete multi-depth soil moisture (15cm &amp; 30cm), atmospheric air temperature, relative humidity, VPD, EC salinity, and interactive multi-hour Chart.js graphs.
+                    </p>
                 </div>
-            </a>
 
-            <!-- Card 2: Soil Moisture -->
-            <a href="soil-moisture.html" class="sensor-card-link">
-                <div class="sensor-tile">
-                    <div class="sensor-tile-header">
-                        <div class="sensor-tag">
-                            <span>🌱</span>
-                            <span>SOIL MOISTURE</span>
-                        </div>
-                        <span class="status-badge badge-adequate">ADEQUATE</span>
-                    </div>
-
-                    <div class="sensor-val-main" style="color: #2dd4bf;">
-                        <span id="disp-s">34.8</span><span class="unit" style="color: #2dd4bf;">%</span>
-                    </div>
-
-                    <div class="sensor-sub-line">
-                        <span>Root Depth: <strong>15cm</strong></span>
-                        <span>EC: <strong>1.4 mS/cm</strong></span>
-                    </div>
-
-                    <div class="sensor-footer-arrow" style="color: #2dd4bf;">
-                        <span>Probe Mesh Matrix</span>
-                        <span>&rarr;</span>
-                    </div>
+                <div class="block-pills-row">
+                    <div class="block-metric-pill"><span>AIR TEMP:</span> <strong id="disp-t">27.8</strong>°C</div>
+                    <div class="block-metric-pill"><span>HUMIDITY:</span> <strong id="disp-h">64.2</strong>%</div>
+                    <div class="block-metric-pill"><span>SOIL (15cm):</span> <strong id="disp-s" style="color: #2dd4bf;">34.8</strong>%</div>
+                    <div class="block-metric-pill"><span>SOIL (30cm):</span> <strong id="disp-s30" style="color: #38bdf8;">41.2</strong>%</div>
+                    <div class="block-metric-pill"><span>VPD:</span> <strong id="disp-vpd">1.15</strong> kPa</div>
+                    <div class="block-metric-pill"><span>EC:</span> <strong id="disp-ec">1.40</strong> mS/cm</div>
                 </div>
-            </a>
 
-            <!-- Card 3: Water Tank -->
-            <a href="water-level.html" class="sensor-card-link">
-                <div class="sensor-tile">
-                    <div class="sensor-tile-header">
-                        <div class="sensor-tag">
-                            <span>🚰</span>
-                            <span>WATER LEVEL</span>
-                        </div>
-                        <span class="status-badge badge-tank">NOMINAL</span>
-                    </div>
-
-                    <div class="sensor-val-main" style="color: var(--accent-cyan);">
-                        <span id="disp-w">78</span><span class="unit" style="color: var(--accent-cyan);">%</span>
-                    </div>
-
-                    <div class="sensor-sub-line">
-                        <span>Capacity: <strong>500 Liters</strong></span>
-                        <span>Flow: <strong>0.0 L/m</strong></span>
-                    </div>
-
-                    <div class="sensor-footer-arrow" style="color: var(--accent-cyan);">
-                        <span>Tank Telemetry</span>
-                        <span>&rarr;</span>
-                    </div>
-                </div>
-            </a>
-
-            <!-- Card 4: Plant Health AI -->
-            <a href="planthealth.html" class="sensor-card-link">
-                <div class="sensor-tile">
-                    <div class="sensor-tile-header">
-                        <div class="sensor-tag">
-                            <span>🤖</span>
-                            <span>PLANT HEALTH</span>
-                        </div>
-                        <span class="status-badge badge-ai">VISION AI</span>
-                    </div>
-
-                    <div class="sensor-val-main" style="color: var(--accent-purple);">
-                        <span>98.4</span><span class="unit" style="color: var(--accent-purple);">%</span>
-                    </div>
-
-                    <div class="sensor-sub-line">
-                        <span>YOLOv8: <strong>Active</strong></span>
-                        <span>Weeds: <strong>0 Detected</strong></span>
-                    </div>
-
-                    <div class="sensor-footer-arrow" style="color: var(--accent-purple);">
-                        <span>Launch Camera Stream</span>
-                        <span>&rarr;</span>
-                    </div>
-                </div>
-            </a>
-        </section>
-
-        <!-- Mission Dispatch Modules Hub -->
-        <!-- <section class="modules-hub-card">
-            <div class="hub-header">
-                <span class="hub-title">ROVER MISSION MODULES &amp; ACTUATORS</span>
-                <span
-                    style="font-family:'JetBrains Mono', monospace; font-size:11px; color:var(--primary); font-weight:700;">6
-                    Modules Ready</span>
+                <a href="sensors.html" class="block-action-btn">
+                    <span>OPEN SENSORS &amp; CHARTS CONSOLE</span>
+                    <span>&rarr;</span>
+                </a>
             </div>
 
-            <div class="hub-grid">
-                <a href="temperature.html" class="hub-btn">
-                    <span class="hub-btn-icon">🌡️</span>
-                    <span class="hub-btn-title">Temperature &amp; Humidity</span>
-                    <span class="hub-btn-desc">Real-time microclimate charts &amp; MQTT debugger</span>
-                </a>
+            <!-- Block 2: Rover Robotics & Actuators -->
+            <div class="block-card block-card-2">
+                <div>
+                    <div class="block-header">
+                        <div class="block-title-group">
+                            <span class="block-kicker">BLOCK 02 // ROBOTICS &amp; ACTUATORS</span>
+                            <h2 class="block-h2">🎮 Rover &amp; Tool Controls</h2>
+                        </div>
+                        <span class="block-badge badge-cyan" id="block2Status">● ACTUATORS READY</span>
+                    </div>
+                    <p class="block-desc" style="margin-top: 10px;">
+                        Master robotics cockpit: Live camera PTZ feed, WASD rover motion drive, servo soil moisture depth lever, rotary weeder/cutter blade, 4-zone irrigation matrix &amp; E-STOP.
+                    </p>
+                </div>
 
-                <a href="soil-moisture.html" class="hub-btn">
-                    <span class="hub-btn-icon">🌱</span>
-                    <span class="hub-btn-title">Soil Moisture Matrix</span>
-                    <span class="hub-btn-desc">Subsurface VWC probe readings &amp; irrigation cues</span>
-                </a>
+                <div class="block-pills-row">
+                    <div class="block-metric-pill"><span>CAMERA:</span> <strong id="hudCamMode">Macro / Wide PTZ</strong></div>
+                    <div class="block-metric-pill"><span>MOTION:</span> <strong id="hudDriveState">WASD + D-Pad</strong></div>
+                    <div class="block-metric-pill"><span>PROBE LEVER:</span> <strong id="hudProbeDepth">0 - 30cm Servo</strong></div>
+                    <div class="block-metric-pill"><span>CUTTER:</span> <strong id="hudCutterState">0 - 3200 RPM</strong></div>
+                    <div class="block-metric-pill"><span>IRRIGATION:</span> <strong id="hudPumpState">4-Zone Solenoid</strong></div>
+                    <div class="block-metric-pill"><span>SAFETY:</span> <strong style="color: #00e599;">E-STOP Armed</strong></div>
+                </div>
 
-                <a href="roller.html" class="hub-btn">
-                    <span class="hub-btn-icon">🚜</span>
-                    <span class="hub-btn-title">Roller &amp; Sowing Control</span>
-                    <span class="hub-btn-desc">Rover speed, furrow alignment &amp; motor actuators</span>
+                <a href="controls.html" class="block-action-btn">
+                    <span>OPEN FULL ROBOTICS COCKPIT</span>
+                    <span>&rarr;</span>
                 </a>
+            </div>
 
-                <a href="planthealth.html" class="hub-btn">
-                    <span class="hub-btn-icon">🤖</span>
-                    <span class="hub-btn-title">Plant Health &amp; Vision AI</span>
-                    <span class="hub-btn-desc">YOLOv8 pest, leaf disease &amp; weed identification</span>
+            <!-- Block 3: Water Tank & Power Telemetry -->
+            <div class="block-card block-card-3">
+                <div>
+                    <div class="block-header">
+                        <div class="block-title-group">
+                            <span class="block-kicker">BLOCK 03 // POWER &amp; CONSUMABLES</span>
+                            <h2 class="block-h2">🚰 Water Tank &amp; Battery</h2>
+                        </div>
+                        <span class="block-badge badge-amber" id="block3Status">● NOMINAL</span>
+                    </div>
+                    <p class="block-desc" style="margin-top: 10px;">
+                        Rover consumables and power diagnostics: 500-liter water reservoir level, 24.8V LiFePO4 BMS battery health, solar MPPT harvest watts, and motor inverter thermals.
+                    </p>
+                </div>
+
+                <div class="block-pills-row">
+                    <div class="block-metric-pill"><span>WATER TANK:</span> <strong id="disp-w" style="color: #38bdf8;">78</strong>% (<span id="disp-w-liters">390L</span>)</div>
+                    <div class="block-metric-pill"><span>BATTERY BMS:</span> <strong id="disp-b" style="color: #fbbf24;">86</strong>% (24.8V)</div>
+                    <div class="block-metric-pill"><span>SOLAR MPPT:</span> <strong id="disp-solar" style="color: #2dd4bf;">320W</strong> Active</div>
+                    <div class="block-metric-pill"><span>MOTOR TEMP:</span> <strong id="disp-temp-inv">38.4°C</strong></div>
+                </div>
+
+                <a href="water-level.html" class="block-action-btn">
+                    <span>OPEN WATER &amp; POWER TELEMETRY</span>
+                    <span>&rarr;</span>
+                </a>
+            </div>
+
+            <!-- Block 4: Plant Health & Vision AI -->
+            <div class="block-card block-card-4">
+                <div>
+                    <div class="block-header">
+                        <div class="block-title-group">
+                            <span class="block-kicker">BLOCK 04 // COMPUTER VISION</span>
+                            <h2 class="block-h2">🤖 Plant Health &amp; Vision AI</h2>
+                        </div>
+                        <span class="block-badge badge-purple" id="block4Status">● YOLOv8 ACTIVE</span>
+                    </div>
+                    <p class="block-desc" style="margin-top: 10px;">
+                        Autonomous foliage health inspection: Real-time leaf disease classification, canopy nitrogen index, weed infestation detection, and selective spot spray triggers.
+                    </p>
+                </div>
+
+                <div class="block-pills-row">
+                    <div class="block-metric-pill"><span>HEALTH INDEX:</span> <strong style="color: #c084fc;">98.4%</strong> Optimal</div>
+                    <div class="block-metric-pill"><span>YOLOv8 MODEL:</span> <strong>Active (ONNX)</strong></div>
+                    <div class="block-metric-pill"><span>WEEDS FOUND:</span> <strong style="color: #00e599;">0 Detected</strong></div>
+                    <div class="block-metric-pill"><span>CANOPY NDVI:</span> <strong>0.82 High</strong></div>
+                </div>
+
+                <a href="planthealth.html" class="block-action-btn">
+                    <span>OPEN PLANT HEALTH &amp; VISION AI</span>
+                    <span>&rarr;</span>
+                </a>
+            </div>
+
+            <!-- Block 5: Precision Field Sectors & Odometry Mapping (Spans 2 cols) -->
+            <div class="block-card block-card-5 block-card-span-2">
+                <div>
+                    <div class="block-header">
+                        <div class="block-title-group">
+                            <span class="block-kicker">BLOCK 05 // FIELD PLANNING &amp; ODOMETRY</span>
+                            <h2 class="block-h2">🗺️ Precision Field Sectors &amp; Wheel Odometry</h2>
+                        </div>
+                        <span class="block-badge badge-teal" id="block5Status">● 12 SECTORS ACTIVE</span>
+                    </div>
+                    <p class="block-desc" style="margin-top: 10px;">
+                        Autonomous field zoning with dead reckoning wheel odometry algorithm. Divides your field into interactive sectors with translucent color-coded hydration (red=dry, green=optimal, blue=over-watered), sector telemetry, and targeted selective treatment to save resources.
+                    </p>
+                </div>
+
+                <div class="block-pills-row">
+                    <div class="block-metric-pill"><span>ODOMETRY DISTANCE:</span> <strong id="disp-odo-dist" style="color: #2dd4bf;">1,420 m</strong></div>
+                    <div class="block-metric-pill"><span>WHEEL CALIBRATION:</span> <strong>260mm Track Drive</strong></div>
+                    <div class="block-metric-pill"><span>ZONING:</span> <strong>12 Grid Sectors</strong> (<span style="color:#00e599;">7 Optimal</span>, <span style="color:#ef4444;">3 Dry</span>, <span style="color:#38bdf8;">2 Saturated</span>)</div>
+                    <div class="block-metric-pill"><span>RESOURCE SAVINGS:</span> <strong style="color: #00e599;">42% Water &amp; Chemical Saved</strong></div>
+                </div>
+
+                <a href="field-sectors.html" class="block-action-btn">
+                    <span>OPEN FIELD SECTOR PLANNER &amp; ODOMETRY</span>
+                    <span>&rarr;</span>
                 </a>
             </div>
         </section>
@@ -1165,7 +1345,7 @@
             console.log("🚜 Initializing Direct Offline Rover Mode via RPi...");
             const welcomeEl = document.getElementById("welcomeText");
             if (welcomeEl) welcomeEl.innerText = `Field Mode (${RPiConfig.getRoverIp()})`;
-            
+
             const loader = document.getElementById("loader");
             if (loader) loader.style.display = 'none';
 
@@ -1177,150 +1357,376 @@
                 },
                 onMessage: (topic, data, raw) => {
                     if (data) {
-                        updateUI(data.temp, data.hum, data.soil, data.water, data.pump, data.battery);
+                        // Immediately shut down demo mode when live hardware sensors broadcast
+                        if (isDemoMode) {
+                            isDemoMode = false;
+                            localStorage.setItem('agrisarthi_demo_mode', 'false');
+                            stopDemoSimulation();
+                            const btn = document.getElementById("demoToggleBtn");
+                            const label = document.getElementById("demoBtnLabel");
+                            if (btn) { btn.classList.remove("demo-active"); btn.classList.add("demo-off"); }
+                            if (label) label.innerText = "📡 Live RPi: ON";
+                        }
+                        updateUI(data.temp, data.hum, data.soil, data.water, data.pump, data.battery, {
+                            s30: data.soil_30,
+                            vpd: data.vpd,
+                            ec: data.ec,
+                            solar: data.solar,
+                            invTemp: data.inv_temp,
+                            odometry: data.odometry || data.total_distance_m
+                        });
+                        const ticker = document.getElementById("liveTickerText");
+                        if (ticker) {
+                            ticker.innerText = `[📡 REAL HARDWARE SENSORS] Soil: ${data.soil !== undefined ? data.soil + '%' : '--'} | Temp: ${data.temp !== undefined ? data.temp + '°C' : '--'} | Hum: ${data.hum !== undefined ? data.hum + '%' : '--'} | Water: ${data.water !== undefined ? data.water + '%' : '--'} | ESP32: ${data.link_status || 'CONNECTED'}`;
+                        }
                     }
                 }
             });
 
-            // Local RPi REST Polling Fallback
-            setInterval(async () => {
+        // --- DEMO MODE & REAL MQTT ENGINE ---
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false'; // default to true for interactive demo
+        let demoInterval = null;
+
+        window.toggleDemoMode = function() {
+            isDemoMode = !isDemoMode;
+            localStorage.setItem('agrisarthi_demo_mode', isDemoMode ? 'true' : 'false');
+            applyDemoModeUI();
+        };
+
+        function setDashesUI() {
+            const dispT = document.getElementById("disp-t");
+            const dispH = document.getElementById("disp-h");
+            const dispS = document.getElementById("disp-s");
+            const dispS30 = document.getElementById("disp-s30");
+            const dispVpd = document.getElementById("disp-vpd");
+            const dispEc = document.getElementById("disp-ec");
+            const dispW = document.getElementById("disp-w");
+            const dispWLiters = document.getElementById("disp-w-liters");
+            const dispB = document.getElementById("disp-b");
+            const dispSolar = document.getElementById("disp-solar");
+            const dispTempInv = document.getElementById("disp-temp-inv");
+            const heroTank = document.getElementById("heroTankVal");
+            const headerBat = document.getElementById("headerBatVal");
+            const b1Badge = document.getElementById("block1Status");
+            const b3Badge = document.getElementById("block3Status");
+
+            if (dispT) dispT.innerText = "--";
+            if (dispH) dispH.innerText = "--";
+            if (dispS) dispS.innerText = "--";
+            if (dispS30) dispS30.innerText = "--";
+            if (dispVpd) dispVpd.innerText = "--";
+            if (dispEc) dispEc.innerText = "--";
+            if (dispW) dispW.innerText = "--";
+            if (dispWLiters) dispWLiters.innerText = "--L";
+            if (dispB) dispB.innerText = "--";
+            if (dispSolar) dispSolar.innerText = "--W";
+            if (dispTempInv) dispTempInv.innerText = "--°C";
+            if (heroTank) heroTank.innerText = "--%";
+            if (headerBat) headerBat.innerText = "--%";
+            const dispOdo = document.getElementById("disp-odo-dist");
+            if (dispOdo) dispOdo.innerText = "-- m";
+
+            if (b1Badge) {
+                b1Badge.innerText = "○ AWAITING SENSORS";
+                b1Badge.className = "block-badge badge-amber";
+            }
+            if (b3Badge) {
+                b3Badge.innerText = "○ AWAITING POWER DATA";
+                b3Badge.className = "block-badge badge-amber";
+            }
+            const b5Badge = document.getElementById("block5Status");
+            if (b5Badge) {
+                b5Badge.innerText = "○ AWAITING ODOMETRY";
+                b5Badge.className = "block-badge badge-amber";
+            }
+        }
+
+        function applyDemoModeUI() {
+            const btn = document.getElementById("demoToggleBtn");
+            const label = document.getElementById("demoBtnLabel");
+
+            if (isDemoMode) {
+                if (btn) {
+                    btn.classList.add("demo-active");
+                    btn.classList.remove("demo-off");
+                }
+                if (label) label.innerText = "🧪 Demo Data: ON";
+                const b1Badge = document.getElementById("block1Status");
+                if (b1Badge) {
+                    b1Badge.innerText = "● LIVE STREAMING";
+                    b1Badge.className = "block-badge badge-green";
+                }
+                const b3Badge = document.getElementById("block3Status");
+                if (b3Badge) {
+                    b3Badge.innerText = "● NOMINAL";
+                    b3Badge.className = "block-badge badge-amber";
+                }
+                const b5Badge = document.getElementById("block5Status");
+                if (b5Badge) {
+                    b5Badge.innerText = "● 12 SECTORS ACTIVE";
+                    b5Badge.className = "block-badge badge-teal";
+                }
+                startDemoSimulation();
+            } else {
+                if (btn) {
+                    btn.classList.remove("demo-active");
+                    btn.classList.add("demo-off");
+                }
+                if (label) label.innerText = "📡 Live RPi: ON";
+                stopDemoSimulation();
+                setDashesUI();
+                const ticker = document.getElementById("liveTickerText");
+                if (ticker) ticker.innerText = "[📡 LIVE RPi TELEMETRY] Awaiting live sensor packet on topic: agrisarthi/telemetry (Showing dashes until sensors broadcast)...";
+            }
+        }
+
+        function startDemoSimulation() {
+            if (demoInterval) clearInterval(demoInterval);
+            runDemoTick();
+            demoInterval = setInterval(runDemoTick, 2500);
+        }
+
+        function stopDemoSimulation() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+                demoInterval = null;
+            }
+        }
+
+        function runDemoTick() {
+            if (!isDemoMode) return;
+            const t = (27.4 + Math.random() * 0.9).toFixed(1);
+            const h = (63.8 + Math.random() * 2.2).toFixed(1);
+            const s15 = (34.2 + Math.random() * 1.4).toFixed(1);
+            const s30 = (40.8 + Math.random() * 1.1).toFixed(1);
+            const vpd = (1.10 + Math.random() * 0.12).toFixed(2);
+            const ec = (1.38 + Math.random() * 0.08).toFixed(2);
+            const w = Math.round(77 + Math.random() * 2);
+            const b = Math.round(85 + Math.random() * 2);
+            const solar = Math.round(315 + Math.random() * 15);
+            const invTemp = (38.1 + Math.random() * 0.6).toFixed(1);
+            const odo = 1420 + Math.floor(Math.random() * 80);
+
+            updateUI(t, h, s15, w, 0, b, { s30, vpd, ec, solar, invTemp, odometry: odo });
+        }
+
+        // Apply initial state
+        applyDemoModeUI();
+
+        // Local RPi REST Polling Fallback (active when not in demo or alongside)
+        setInterval(async () => {
+            if (isDemoMode) return; // Don't overwrite demo values when demo is active
+            try {
+                const res = await fetch(`${RPiConfig.getApiBaseUrl()}/api/telemetry`, { signal: AbortSignal.timeout(2500) });
+                const data = await res.json();
+                if (data && !isDemoMode) {
+                    updateUI(data.temp, data.hum, data.soil, data.water, data.pump, data.battery, {
+                        s30: data.soil_30,
+                        vpd: data.vpd,
+                        ec: data.ec,
+                        solar: data.solar,
+                        invTemp: data.inv_temp
+                    });
+                }
+            } catch (e) {
+                // Ignore transient errors
+            }
+        }, 3000);
+    }
+
+    if (isDirectMode) {
+        initDirectRoverMode();
+    } else {
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
                 try {
-                    const res = await fetch(`${RPiConfig.getApiBaseUrl()}/api/telemetry`, { signal: AbortSignal.timeout(2500) });
-                    const data = await res.json();
-                    if (data) {
-                        updateUI(data.temp, data.hum, data.soil, data.water, data.pump, data.battery);
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        const userData = userDoc.data();
+                        const welcomeEl = document.getElementById("welcomeText");
+                        if (welcomeEl) welcomeEl.innerText = `Welcome, ${userData.name || "Operator"}!`;
+                        config.channelId = userData.channelId;
+                    }
+                    if (config.channelId) {
+                        const channelDoc = await getDoc(doc(db, "channels", config.channelId));
+                        if (channelDoc.exists()) {
+                            config.readKey = channelDoc.data().readKey;
+                            config.writeKey = channelDoc.data().writeKey;
+                            fetchData();
+                            setInterval(fetchData, 15000);
+                        }
                     }
                 } catch (e) {
-                    // Ignore transient errors
+                    console.error("Dashboard auth state error:", e);
+                } finally {
+                    const loader = document.getElementById("loader");
+                    if (loader) loader.style.display = 'none';
                 }
-            }, 3000);
+            } else {
+                window.location.href = "login.html";
+            }
+        });
+    }
+
+    async function fetchData() {
+        if (isDemoMode || !config.readKey || !config.channelId) return;
+        try {
+            const url = `https://api.thingspeak.com/channels/${config.channelId}/feeds.json?api_key=${config.readKey}&results=1`;
+            const res = await fetch(url);
+            const data = await res.json();
+            if (data.feeds && data.feeds.length > 0 && !isDemoMode) {
+                const f = data.feeds[0];
+                updateUI(f.field1, f.field2, f.field3, f.field4, f.field5, f.field6);
+            }
+        } catch (e) { console.error("ThingSpeak fetch error:", e); }
+    }
+
+    function updateUI(temp, humid, soil, water, pump, battery, extra = {}) {
+        // In live RPi mode, only show numeric value if sensor actually transmitted a valid number, otherwise '--'
+        const hasTemp = temp !== null && temp !== undefined && temp !== '' && !isNaN(temp);
+        const hasHum = humid !== null && humid !== undefined && humid !== '' && !isNaN(humid);
+        const hasSoil = soil !== null && soil !== undefined && soil !== '' && !isNaN(soil);
+        const hasWater = water !== null && water !== undefined && water !== '' && !isNaN(water);
+        const hasBat = battery !== null && battery !== undefined && battery !== '' && !isNaN(battery);
+        const hasS30 = extra.s30 !== null && extra.s30 !== undefined && extra.s30 !== '' && !isNaN(extra.s30);
+        const hasVpd = extra.vpd !== null && extra.vpd !== undefined && extra.vpd !== '' && !isNaN(extra.vpd);
+        const hasEc = extra.ec !== null && extra.ec !== undefined && extra.ec !== '' && !isNaN(extra.ec);
+        const hasSolar = extra.solar !== null && extra.solar !== undefined && extra.solar !== '' && !isNaN(extra.solar);
+        const hasInvTemp = extra.invTemp !== null && extra.invTemp !== undefined && extra.invTemp !== '' && !isNaN(extra.invTemp);
+
+        const tVal = hasTemp ? parseFloat(temp).toFixed(1) : "--";
+        const hVal = hasHum ? parseFloat(humid).toFixed(1) : "--";
+        const sVal = hasSoil ? parseFloat(soil).toFixed(1) : "--";
+        const wVal = hasWater ? parseFloat(water).toFixed(0) : "--";
+        const bVal = hasBat ? parseFloat(battery).toFixed(0) : "--";
+        const s30Val = hasS30 ? parseFloat(extra.s30).toFixed(1) : (hasSoil ? (parseFloat(soil) + 6.4).toFixed(1) : "--");
+        const vpdVal = hasVpd ? parseFloat(extra.vpd).toFixed(2) : "--";
+        const ecVal = hasEc ? parseFloat(extra.ec).toFixed(2) : "--";
+        const solarVal = hasSolar ? `${Math.round(extra.solar)}W` : "--W";
+        const invTempVal = hasInvTemp ? `${parseFloat(extra.invTemp).toFixed(1)}°C` : "--°C";
+        const hasOdo = extra.odometry !== null && extra.odometry !== undefined && extra.odometry !== '' && !isNaN(extra.odometry);
+        const odoVal = hasOdo ? `${Math.round(extra.odometry).toLocaleString()} m` : "-- m";
+
+        const dispT = document.getElementById("disp-t");
+        if (dispT) dispT.innerText = tVal;
+
+        const dispH = document.getElementById("disp-h");
+        if (dispH) dispH.innerText = hVal;
+
+        const dispS = document.getElementById("disp-s");
+        if (dispS) dispS.innerText = sVal;
+
+        const dispS30 = document.getElementById("disp-s30");
+        if (dispS30) dispS30.innerText = s30Val;
+
+        const dispVpd = document.getElementById("disp-vpd");
+        if (dispVpd) dispVpd.innerText = vpdVal;
+
+        const dispEc = document.getElementById("disp-ec");
+        if (dispEc) dispEc.innerText = ecVal;
+
+        const dispW = document.getElementById("disp-w");
+        if (dispW) dispW.innerText = wVal;
+
+        const dispWLiters = document.getElementById("disp-w-liters");
+        if (dispWLiters) dispWLiters.innerText = hasWater ? `${Math.round(parseFloat(water) * 5)}L` : "--L";
+
+        const dispOdo = document.getElementById("disp-odo-dist");
+        if (dispOdo) dispOdo.innerText = odoVal;
+
+        if (hasOdo) {
+            const b5Badge = document.getElementById("block5Status");
+            if (b5Badge) {
+                b5Badge.innerText = "● ODOMETRY ACTIVE";
+                b5Badge.className = "block-badge badge-teal";
+            }
         }
 
-        if (isDirectMode) {
-            initDirectRoverMode();
-        } else {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    try {
-                        const userDoc = await getDoc(doc(db, "users", user.uid));
-                        if (userDoc.exists()) {
-                            const userData = userDoc.data();
-                            const welcomeEl = document.getElementById("welcomeText");
-                            if (welcomeEl) welcomeEl.innerText = `Welcome, ${userData.name || "Operator"}!`;
-                            config.channelId = userData.channelId;
-                        }
-                        if (config.channelId) {
-                            const channelDoc = await getDoc(doc(db, "channels", config.channelId));
-                            if (channelDoc.exists()) {
-                                config.readKey = channelDoc.data().readKey;
-                                config.writeKey = channelDoc.data().writeKey;
-                                fetchData();
-                                setInterval(fetchData, 15000);
-                            }
-                        }
-                    } catch (e) {
-                        console.error("Dashboard auth state error:", e);
-                    } finally {
-                        const loader = document.getElementById("loader");
-                        if (loader) loader.style.display = 'none';
-                    }
-                } else {
-                    window.location.href = "login.html";
-                }
-            });
+        const dispB = document.getElementById("disp-b");
+        if (dispB) dispB.innerText = bVal;
+
+        const dispSolar = document.getElementById("disp-solar");
+        if (dispSolar) dispSolar.innerText = solarVal;
+
+        const dispTempInv = document.getElementById("disp-temp-inv");
+        if (dispTempInv) dispTempInv.innerText = invTempVal;
+
+        const heroTank = document.getElementById("heroTankVal");
+        if (heroTank) heroTank.innerText = hasWater ? `${wVal}%` : "--%";
+
+        const headerBat = document.getElementById("headerBatVal");
+        if (headerBat) headerBat.innerText = hasBat ? `${bVal}%` : "--%";
+
+        // If real data arrived, show LIVE badge
+        if (hasTemp || hasSoil || hasWater) {
+            const b1Badge = document.getElementById("block1Status");
+            if (b1Badge) {
+                b1Badge.innerText = "● LIVE STREAMING";
+                b1Badge.className = "block-badge badge-green";
+            }
+        }
+        if (hasWater || hasBat) {
+            const b3Badge = document.getElementById("block3Status");
+            if (b3Badge) {
+                b3Badge.innerText = "● NOMINAL";
+                b3Badge.className = "block-badge badge-amber";
+            }
         }
 
-        async function fetchData() {
-            if (!config.readKey || !config.channelId) return;
-            try {
-                const url = `https://api.thingspeak.com/channels/${config.channelId}/feeds.json?api_key=${config.readKey}&results=1`;
-                const res = await fetch(url);
-                const data = await res.json();
-                if (data.feeds && data.feeds.length > 0) {
-                    const f = data.feeds[0];
-                    updateUI(f.field1, f.field2, f.field3, f.field4, f.field5, f.field6);
-                }
-            } catch (e) { console.error("ThingSpeak fetch error:", e); }
+        const toggle = document.getElementById("pumpToggle");
+        const label = document.getElementById("pumpLabel");
+
+        if (toggle && label && pump !== undefined && pump !== null) {
+            if (parseInt(pump) === 1) {
+                toggle.checked = true;
+                label.innerText = "PUMP ON";
+                label.style.color = "#00e599";
+            } else {
+                toggle.checked = false;
+                label.innerText = "PUMP OFF";
+                label.style.color = "var(--text-dim)";
+            }
         }
 
-        function updateUI(temp, humid, soil, water, pump, battery) {
-            const tVal = parseFloat(temp || 27.8).toFixed(1);
-            const hVal = parseFloat(humid || 64.2).toFixed(1);
-            const sVal = parseFloat(soil || 34.8).toFixed(1);
-            const wVal = parseFloat(water || 78).toFixed(0);
-            const bVal = parseFloat(battery || 86).toFixed(0);
+        const ticker = document.getElementById("liveTickerText");
+        if (ticker) {
+            const modePrefix = isDemoMode ? "[🧪 DEMO SIMULATION]" : "[📡 LIVE RPi TELEMETRY]";
+            ticker.innerText = `${modePrefix} Temp: ${tVal}°C | Hum: ${hVal}% | Soil (15cm): ${sVal}% | Soil (30cm): ${s30Val}% | VPD: ${vpdVal}kPa | Tank: ${wVal}% | Batt: ${bVal}%`;
+        }
+    }
 
-            const dispT = document.getElementById("disp-t");
-            if (dispT) dispT.innerText = tVal;
-
-            const dispH = document.getElementById("disp-h");
-            if (dispH) dispH.innerText = hVal;
-
-            const dispS = document.getElementById("disp-s");
-            if (dispS) dispS.innerText = sVal;
-
-            const dispW = document.getElementById("disp-w");
-            if (dispW) dispW.innerText = wVal;
-
-            const heroTank = document.getElementById("heroTankVal");
-            if (heroTank) heroTank.innerText = `${wVal}%`;
-
-            const headerBat = document.getElementById("headerBatVal");
-            if (headerBat) headerBat.innerText = `${bVal}%`;
-
-            const toggle = document.getElementById("pumpToggle");
+    // Pump Toggle Action (dispatches to RPi / MQTT and ThingSpeak)
+    const pumpToggleEl = document.getElementById("pumpToggle");
+    if (pumpToggleEl) {
+        pumpToggleEl.addEventListener('change', async (e) => {
+            const state = e.target.checked ? 1 : 0;
             const label = document.getElementById("pumpLabel");
-
-            if (toggle && label) {
-                if (parseInt(pump) === 1) {
-                    toggle.checked = true;
-                    label.innerText = "PUMP ON";
-                    label.style.color = "#00e599";
-                } else {
-                    toggle.checked = false;
-                    label.innerText = "PUMP OFF";
-                    label.style.color = "var(--text-dim)";
-                }
+            if (label) {
+                label.innerText = state === 1 ? "PUMP ON" : "PUMP OFF";
+                label.style.color = state === 1 ? "#00e599" : "var(--text-dim)";
             }
 
-            const ticker = document.getElementById("liveTickerText");
-            if (ticker) {
-                ticker.innerText = `Temp: ${tVal}°C | Hum: ${hVal}% | Soil: ${sVal}% | Tank: ${wVal}% | Pump: ${pump == 1 ? 'ON' : 'OFF'}`;
+            // Dispatch to Raspberry Pi Actuators
+            RPiConfig.dispatchActuatorCommand(mqttClient, { target: "pump", state: state });
+
+            if (config.writeKey) {
+                try {
+                    await fetch(`https://api.thingspeak.com/update?api_key=${config.writeKey}&field5=${state}`);
+                } catch (err) {
+                    console.warn("ThingSpeak cloud pump update failed:", err);
+                }
             }
-        }
+        });
+    }
 
-        // Pump Toggle Action (dispatches to RPi / MQTT and ThingSpeak)
-        const pumpToggleEl = document.getElementById("pumpToggle");
-        if (pumpToggleEl) {
-            pumpToggleEl.addEventListener('change', async (e) => {
-                const state = e.target.checked ? 1 : 0;
-                const label = document.getElementById("pumpLabel");
-                if (label) {
-                    label.innerText = state === 1 ? "PUMP ON" : "PUMP OFF";
-                    label.style.color = state === 1 ? "#00e599" : "var(--text-dim)";
-                }
-
-                // Dispatch to Raspberry Pi Actuators
-                RPiConfig.dispatchActuatorCommand(mqttClient, { target: "pump", state: state });
-
-                if (config.writeKey) {
-                    try {
-                        await fetch(`https://api.thingspeak.com/update?api_key=${config.writeKey}&field5=${state}`);
-                    } catch (err) {
-                        console.warn("ThingSpeak cloud pump update failed:", err);
-                    }
-                }
-            });
-        }
-
-        const logoutBtn = document.getElementById("logoutBtn");
-        if (logoutBtn) {
-            logoutBtn.onclick = () => {
-                localStorage.removeItem('agrisarthi_direct_mode');
-                signOut(auth).then(() => window.location.href = "login.html").catch(() => window.location.href = "login.html");
-            };
-        }
-    </script>
+    const logoutBtn = document.getElementById("logoutBtn");
+    if (logoutBtn) {
+        logoutBtn.onclick = () => {
+            localStorage.removeItem('agrisarthi_direct_mode');
+            signOut(auth).then(() => window.location.href = "login.html").catch(() => window.location.href = "login.html");
+        };
+    }
+</script>
 </body>
 
 </html>

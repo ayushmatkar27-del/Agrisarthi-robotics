@@ -73,8 +73,19 @@
             telemetry: 'agrisarthi/telemetry',
             motion: 'agrisarthi/control/motion',
             actuators: 'agrisarthi/control/actuators',
+            odometry: 'agrisarthi/odometry',
+            sectors: 'agrisarthi/sectors',
             alerts: 'agrisarthi/alerts',
             camera: 'agrisarthi/camera/cmd'
+        },
+
+        // Wheel Odometry Mathematical Algorithm: D = pulses * (pi * D_wheel) / PPR
+        calculateOdometryDistance: function (pulses, wheelDiameterMm, ppr) {
+            const dMeters = (wheelDiameterMm || 260) / 1000.0;
+            const p = pulses || 0;
+            const pulsesPerRev = ppr || 20;
+            const circumference = Math.PI * dMeters;
+            return (p * circumference) / pulsesPerRev;
         },
 
         // Unified MQTT Client Initializer (supports mqtt.js CDN)
@@ -151,19 +162,19 @@
                 headers: { 'Content-Type': 'application/json' },
                 body: dataStr
             })
-            .then(res => res.json())
-            .then(resData => {
-                console.log('[RPiConfig] 🌐 Actuator acknowledged via REST:', resData);
-                if (onDone) onDone(true, resData);
-            })
-            .catch(err => {
-                if (mqttSuccess) {
-                    if (onDone) onDone(true, { via: 'mqtt' });
-                } else {
-                    console.warn('[RPiConfig] Both MQTT and HTTP REST failed:', err.message);
-                    if (onDone) onDone(false, err);
-                }
-            });
+                .then(res => res.json())
+                .then(resData => {
+                    console.log('[RPiConfig] 🌐 Actuator acknowledged via REST:', resData);
+                    if (onDone) onDone(true, resData);
+                })
+                .catch(err => {
+                    if (mqttSuccess) {
+                        if (onDone) onDone(true, { via: 'mqtt' });
+                    } else {
+                        console.warn('[RPiConfig] Both MQTT and HTTP REST failed:', err.message);
+                        if (onDone) onDone(false, err);
+                    }
+                });
         },
 
         // Global Settings Modal Helper

@@ -1,0 +1,1270 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - All Sensors Telemetry & Multi-Depth Analytics</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.85);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-cyan: #38bdf8;
+            --accent-teal: #2dd4bf;
+            --accent-amber: #fbbf24;
+            --accent-purple: #c084fc;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+            --input-bg: rgba(9, 19, 34, 0.85);
+            --terminal-bg: #060b13;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Fullscreen Animated Background Slideshow */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.84) 0%, rgba(7, 13, 24, 0.76) 45%, rgba(7, 13, 24, 0.92) 100%),
+                linear-gradient(to right, rgba(0, 229, 153, 0.03) 1px, transparent 1px),
+                linear-gradient(to bottom, rgba(0, 229, 153, 0.03) 1px, transparent 1px),
+                radial-gradient(circle at 20% 25%, rgba(0, 229, 153, 0.10) 0%, transparent 60%),
+                radial-gradient(circle at 80% 75%, rgba(0, 180, 216, 0.08) 0%, transparent 50%);
+            background-size: 100% 100%, 36px 36px, 36px 36px, 100% 100%, 100% 100%;
+            backdrop-filter: blur(6px);
+            -webkit-backdrop-filter: blur(6px);
+        }
+
+        /* Top Navigation Header */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            background: rgba(0, 229, 153, 0.12);
+            border: 1px solid var(--primary);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            box-shadow: 0 0 16px var(--primary-glow);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .badge-farm {
+            background: rgba(0, 229, 153, 0.15);
+            color: var(--primary);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(0, 229, 153, 0.3);
+        }
+
+        .badge-unit {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .nav-right-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .btn-demo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(13, 22, 38, 0.9);
+            color: #ffffff;
+        }
+
+        .btn-demo-pill.demo-active {
+            background: rgba(251, 191, 36, 0.18);
+            border-color: rgba(251, 191, 36, 0.6);
+            color: #fbbf24;
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+        }
+
+        .btn-demo-pill.demo-off {
+            background: rgba(0, 229, 153, 0.15);
+            border-color: rgba(0, 229, 153, 0.5);
+            color: #00e599;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.35);
+        }
+
+        .demo-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+        .btn-rpi-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-rpi-pill:hover {
+            background: #38bdf8;
+            color: #051410;
+        }
+
+        .btn-dashboard-back {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-dashboard-back:hover {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .main-container {
+            flex: 1;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 26px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Hero Subheader */
+        .page-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+            padding-bottom: 16px;
+        }
+
+        .page-title-group h1 {
+            font-size: 26px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.6px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .page-title-group p {
+            font-size: 13px;
+            color: var(--text-muted);
+            margin-top: 4px;
+        }
+
+        .range-picker {
+            display: flex;
+            gap: 6px;
+            background: rgba(9, 19, 34, 0.9);
+            padding: 4px;
+            border-radius: 12px;
+            border: 1px solid var(--border-card);
+        }
+
+        .range-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-dim);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 6px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .range-btn.active, .range-btn:hover {
+            background: rgba(0, 229, 153, 0.15);
+            color: var(--primary);
+        }
+
+        /* 8 Key Sensor Cards Grid */
+        .sensors-grid-8 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1180px) {
+            .sensors-grid-8 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .sensors-grid-8 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .sensor-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+            transition: transform 0.25s, border-color 0.25s, box-shadow 0.25s;
+            position: relative;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .sensor-card:hover {
+            transform: translateY(-3px);
+            border-color: var(--border-accent);
+            box-shadow: 0 14px 35px rgba(0, 0, 0, 0.45);
+        }
+
+        .sensor-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .sensor-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-muted);
+            letter-spacing: 0.5px;
+        }
+
+        .status-badge-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-optimal {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+        }
+
+        .badge-cyan {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+        }
+
+        .badge-teal {
+            background: rgba(45, 212, 191, 0.12);
+            color: var(--accent-teal);
+            border: 1px solid rgba(45, 212, 191, 0.3);
+        }
+
+        .badge-amber {
+            background: rgba(251, 191, 36, 0.12);
+            color: var(--accent-amber);
+            border: 1px solid rgba(251, 191, 36, 0.3);
+        }
+
+        .sensor-card-val {
+            font-size: 38px;
+            font-weight: 800;
+            line-height: 1;
+            letter-spacing: -1px;
+            color: #ffffff;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .sensor-card-val .unit {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .sensor-card-val.cyan .unit { color: var(--accent-cyan); }
+        .sensor-card-val.teal .unit { color: var(--accent-teal); }
+        .sensor-card-val.amber .unit { color: var(--accent-amber); }
+        .sensor-card-val.purple .unit { color: var(--accent-purple); }
+
+        .sensor-card-sub {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            padding-top: 8px;
+        }
+
+        .sensor-card-sub strong {
+            color: var(--text-main);
+        }
+
+        /* 4 Charts Grid (2x2) */
+        .charts-quad-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        @media (max-width: 992px) {
+            .charts-quad-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .chart-card {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+        }
+
+        .chart-header-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .chart-titles {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .chart-main-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.5px;
+        }
+
+        .chart-sub-title {
+            font-size: 12px;
+            color: var(--text-dim);
+        }
+
+        .chart-legend-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .legend-green {
+            background: rgba(0, 229, 153, 0.12);
+            color: var(--primary);
+            border: 1px solid rgba(0, 229, 153, 0.25);
+        }
+
+        .legend-cyan {
+            background: rgba(56, 189, 248, 0.12);
+            color: var(--accent-cyan);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+        }
+
+        .legend-teal {
+            background: rgba(45, 212, 191, 0.12);
+            color: var(--accent-teal);
+            border: 1px solid rgba(45, 212, 191, 0.25);
+        }
+
+        .legend-amber {
+            background: rgba(251, 191, 36, 0.12);
+            color: var(--accent-amber);
+            border: 1px solid rgba(251, 191, 36, 0.25);
+        }
+
+        .chart-canvas-wrap {
+            width: 100%;
+            height: 250px;
+            position: relative;
+        }
+
+        /* Live MQTT Packet Stream Terminal */
+        .terminal-card {
+            background: #060b13;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 20px;
+            padding: 20px 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        }
+
+        .terminal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 10px;
+        }
+
+        .term-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .terminal-body {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: #a7f3d0;
+            background: #03070d;
+            border: 1px solid rgba(0, 229, 153, 0.15);
+            border-radius: 12px;
+            padding: 14px 18px;
+            max-height: 130px;
+            overflow-y: auto;
+            line-height: 1.6;
+            white-space: pre-wrap;
+        }
+
+        /* Bottom Footer */
+        .status-footer {
+            padding: 14px 40px;
+            background: rgba(5, 10, 19, 0.95);
+            border-top: 1px solid var(--border-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Backdrop Slideshow -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="top-navbar">
+        <a class="brand-section" href="dashboard.html" style="text-decoration:none;">
+            <div class="brand-icon-box">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M12 2a10 10 0 0 1 10 10c0 5.523-4.477 10-10 10S2 17.523 2 12a10 10 0 0 1 10-10z"></path>
+                    <path d="M7 13c1.5-2 3-3 5-3s3.5 1 5 3"></path>
+                    <circle cx="12" cy="7" r="1.5"></circle>
+                </svg>
+            </div>
+            <div class="brand-text-col">
+                <div class="brand-title-line">
+                    <span class="brand-h1">AgriSarthi</span>
+                    <span class="badge-farm">Smart Farm</span>
+                    <span class="badge-unit">ROVER-04</span>
+                </div>
+                <span class="brand-sub">Block 01 // Sensor Array &amp; Microclimate Telemetry</span>
+            </div>
+        </a>
+
+        <div class="nav-right-cluster">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+                <span id="demoDot" class="demo-status-dot"></span>
+                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+            </button>
+            <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
+                <span>⚙️</span><span>RPi Connect</span>
+            </button>
+            <a href="dashboard.html" class="btn-dashboard-back">
+                <span>&larr;</span><span>Mission Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- Page Subheader -->
+        <div class="page-header-row">
+            <div class="page-title-group">
+                <h1>🌡️ All Sensors Telemetry &amp; Multi-Depth Analytics</h1>
+                <p>Complete multi-parameter microclimate monitoring: Topsoil &amp; subsurface moisture, air temperature, humidity, VPD, and electrical conductivity.</p>
+            </div>
+            <div class="range-picker">
+                <button class="range-btn active">1H LIVE</button>
+                <button class="range-btn">6H</button>
+                <button class="range-btn">24H</button>
+                <button class="range-btn">7D</button>
+            </div>
+        </div>
+
+        <!-- 8 Sensor Metric Cards -->
+        <div class="sensors-grid-8">
+            <!-- 1. Air Temperature -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">🌡️ AIR TEMPERATURE</span>
+                    <span class="status-badge-pill badge-optimal">OPTIMAL</span>
+                </div>
+                <div class="sensor-card-val">
+                    <span id="card-t">27.8</span><span class="unit">°C</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Range: <strong>22.0 - 32.5°C</strong></span>
+                    <span>Status: <strong style="color:var(--primary);">Comfort Zone</strong></span>
+                </div>
+            </div>
+
+            <!-- 2. Relative Humidity -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">☁️ RELATIVE HUMIDITY</span>
+                    <span class="status-badge-pill badge-cyan">NOMINAL</span>
+                </div>
+                <div class="sensor-card-val cyan">
+                    <span id="card-h">64.2</span><span class="unit">%</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Dew Pt: <strong id="card-dew">18.4°C</strong></span>
+                    <span>Comfort: <strong style="color:var(--accent-cyan);">Good</strong></span>
+                </div>
+            </div>
+
+            <!-- 3. Topsoil Moisture (15cm) -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">🌱 TOPSOIL (15CM)</span>
+                    <span class="status-badge-pill badge-teal">ADEQUATE</span>
+                </div>
+                <div class="sensor-card-val teal">
+                    <span id="card-s15">34.8</span><span class="unit">%</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Layer: <strong>Root Zone</strong></span>
+                    <span>Field Cap: <strong>Optimal</strong></span>
+                </div>
+            </div>
+
+            <!-- 4. Deep Subsoil Moisture (30cm) -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">💧 SUBSOIL (30CM)</span>
+                    <span class="status-badge-pill badge-cyan">RESERVE</span>
+                </div>
+                <div class="sensor-card-val cyan">
+                    <span id="card-s30">41.2</span><span class="unit">%</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Layer: <strong>Percolation</strong></span>
+                    <span>Seepage: <strong>Stable</strong></span>
+                </div>
+            </div>
+
+            <!-- 5. Vapor Pressure Deficit (VPD) -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">🍃 TRANSPIRATION (VPD)</span>
+                    <span class="status-badge-pill badge-optimal">FAVORABLE</span>
+                </div>
+                <div class="sensor-card-val">
+                    <span id="card-vpd">1.15</span><span class="unit">kPa</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Stomata: <strong>Open</strong></span>
+                    <span>Transpiration: <strong>Ideal</strong></span>
+                </div>
+            </div>
+
+            <!-- 6. Soil Electrical Conductivity (EC) -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">⚡ SALINITY (EC)</span>
+                    <span class="status-badge-pill badge-amber">BALANCED</span>
+                </div>
+                <div class="sensor-card-val amber">
+                    <span id="card-ec">1.40</span><span class="unit">mS/cm</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Fertility: <strong>Standard</strong></span>
+                    <span>Salinity: <strong>Low</strong></span>
+                </div>
+            </div>
+
+            <!-- 7. Ambient PAR Solar Light -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">☀️ SOLAR IRRADIANCE</span>
+                    <span class="status-badge-pill badge-amber">HIGH</span>
+                </div>
+                <div class="sensor-card-val amber">
+                    <span id="card-lux">48.2</span><span class="unit">kLux</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>UV Index: <strong>6.8 Mod</strong></span>
+                    <span>PAR: <strong>850 µmol</strong></span>
+                </div>
+            </div>
+
+            <!-- 8. Soil Probe Thermistor -->
+            <div class="sensor-card">
+                <div class="sensor-card-header">
+                    <span class="sensor-tag">🌡️ SOIL TEMPERATURE</span>
+                    <span class="status-badge-pill badge-teal">NOMINAL</span>
+                </div>
+                <div class="sensor-card-val teal">
+                    <span id="card-soil-temp">23.6</span><span class="unit">°C</span>
+                </div>
+                <div class="sensor-card-sub">
+                    <span>Diff vs Air: <strong>-4.2°C</strong></span>
+                    <span>Microbial: <strong>Active</strong></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 4 Proper Interactive Charts (2x2 Grid) -->
+        <div class="charts-quad-grid">
+            <!-- Chart 1: Air Temp & Dew Point -->
+            <div class="chart-card">
+                <div class="chart-header-row">
+                    <div class="chart-titles">
+                        <span class="chart-main-title">ATMOSPHERIC TEMPERATURE &amp; DEW POINT</span>
+                        <span class="chart-sub-title">Thermistor array reading vs Calculated Dew Point (°C)</span>
+                    </div>
+                    <span class="chart-legend-badge legend-green">● Temp / Dew Pt</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="tempChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 2: Relative Humidity Dynamic Range -->
+            <div class="chart-card">
+                <div class="chart-header-row">
+                    <div class="chart-titles">
+                        <span class="chart-main-title">RELATIVE HUMIDITY ENVELOPE</span>
+                        <span class="chart-sub-title">Capacitive humidity sensor dynamic progression (%)</span>
+                    </div>
+                    <span class="chart-legend-badge legend-cyan">● Humidity %</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="humidChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 3: Dual-Depth Soil Moisture Matrix -->
+            <div class="chart-card">
+                <div class="chart-header-row">
+                    <div class="chart-titles">
+                        <span class="chart-main-title">DUAL-DEPTH SOIL MOISTURE (15cm vs 30cm)</span>
+                        <span class="chart-sub-title">Volumetric Water Content (VWC %) profile across soil horizons</span>
+                    </div>
+                    <span class="chart-legend-badge legend-teal">● 15cm Root / 30cm Deep</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="soilChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Chart 4: VPD & Soil EC Salinity -->
+            <div class="chart-card">
+                <div class="chart-header-row">
+                    <div class="chart-titles">
+                        <span class="chart-main-title">VAPOR PRESSURE DEFICIT (VPD) &amp; CONDUCTIVITY</span>
+                        <span class="chart-sub-title">Atmospheric transpirational pull vs Subsurface nutrient salt index</span>
+                    </div>
+                    <span class="chart-legend-badge legend-amber">● VPD (kPa) &amp; EC (mS/cm)</span>
+                </div>
+                <div class="chart-canvas-wrap">
+                    <canvas id="vpdEcChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Telemetry Stream Packet Terminal -->
+        <div class="terminal-card">
+            <div class="terminal-header">
+                <span class="term-title">
+                    <span class="status-dot-green"></span>
+                    <span>&gt;_ LIVE_TELEMETRY_PACKET_STREAM (agrisarthi/telemetry)</span>
+                </span>
+                <span style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--text-dim);">QoS 1 • UTF-8 JSON</span>
+            </div>
+            <div class="terminal-body" id="rawMqttLog">Connecting to telemetry bus...</div>
+        </div>
+
+    </main>
+
+    <!-- Bottom Status Footer -->
+    <footer class="status-footer">
+        <div><span>AgriSarthi Technologies</span> • <span>Precision Farm Monitoring Rover-04</span></div>
+        <div><span>Subsurface Probe: <strong>TDR Dual-Depth</strong></span> • <span>Status: <strong style="color:var(--primary);">Active Calibrated</strong></span></div>
+    </footer>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+        setInterval(cycleSlide, 6000);
+    </script>
+
+    <!-- Chart Setup and Telemetry Engine -->
+    <script>
+        // Demo Mode State
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false';
+        let demoInterval = null;
+        let mqttClient = null;
+
+        function toggleDemoMode() {
+            isDemoMode = !isDemoMode;
+            localStorage.setItem('agrisarthi_demo_mode', isDemoMode ? 'true' : 'false');
+            applyDemoModeUI();
+        }
+
+        function setSensorsDashes() {
+            const ids = ["card-t", "card-h", "card-s15", "card-s30", "card-vpd", "card-ec", "card-lux", "card-soil-temp"];
+            ids.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = "--";
+            });
+            const dewEl = document.getElementById("card-dew");
+            if (dewEl) dewEl.innerText = "--°C";
+
+            // Reset chart lines to null while awaiting live telemetry
+            [tempChart, humidChart, soilChart, vpdEcChart].forEach(chart => {
+                chart.data.datasets.forEach(ds => {
+                    ds.data = [null, null, null, null, null, null];
+                });
+                chart.update('none');
+            });
+        }
+
+        function applyDemoModeUI() {
+            const btn = document.getElementById("demoToggleBtn");
+            const label = document.getElementById("demoBtnLabel");
+            if (isDemoMode) {
+                if (btn) {
+                    btn.classList.add("demo-active");
+                    btn.classList.remove("demo-off");
+                }
+                if (label) label.innerText = "🧪 Demo Data: ON";
+                startDemoSimulation();
+            } else {
+                if (btn) {
+                    btn.classList.remove("demo-active");
+                    btn.classList.add("demo-off");
+                }
+                if (label) label.innerText = "📡 Live RPi: ON";
+                stopDemoSimulation();
+                setSensorsDashes();
+                appendTerminalLog("Switched to LIVE RPi Mode: Sensors showing '--' until hardware broadcasts packets on agrisarthi/telemetry...");
+            }
+        }
+
+        // Initialize 4 Chart.js charts
+        const timeLabels = ['-25m', '-20m', '-15m', '-10m', '-5m', 'NOW'];
+
+        // 1. Temp Chart
+        const ctxTemp = document.getElementById('tempChart').getContext('2d');
+        const tempChart = new Chart(ctxTemp, {
+            type: 'line',
+            data: {
+                labels: [...timeLabels],
+                datasets: [
+                    {
+                        label: 'Air Temp (°C)',
+                        data: [26.8, 27.1, 27.3, 27.5, 27.6, 27.8],
+                        borderColor: '#00e599',
+                        backgroundColor: 'rgba(0, 229, 153, 0.12)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'Dew Point (°C)',
+                        data: [18.0, 18.2, 18.1, 18.3, 18.4, 18.4],
+                        borderColor: '#38bdf8',
+                        borderDash: [5, 5],
+                        borderWidth: 2,
+                        tension: 0.35
+                    }
+                ]
+            },
+            options: getChartOptions('°C', 15, 35)
+        });
+
+        // 2. Humidity Chart
+        const ctxHumid = document.getElementById('humidChart').getContext('2d');
+        const humidChart = new Chart(ctxHumid, {
+            type: 'line',
+            data: {
+                labels: [...timeLabels],
+                datasets: [{
+                    label: 'Humidity (%)',
+                    data: [67.0, 66.2, 65.5, 64.8, 64.4, 64.2],
+                    borderColor: '#38bdf8',
+                    backgroundColor: 'rgba(56, 189, 248, 0.15)',
+                    fill: true,
+                    tension: 0.35,
+                    borderWidth: 2.5
+                }]
+            },
+            options: getChartOptions('%', 40, 85)
+        });
+
+        // 3. Dual-Depth Soil Moisture Chart
+        const ctxSoil = document.getElementById('soilChart').getContext('2d');
+        const soilChart = new Chart(ctxSoil, {
+            type: 'line',
+            data: {
+                labels: [...timeLabels],
+                datasets: [
+                    {
+                        label: '15cm Root VWC (%)',
+                        data: [33.5, 33.8, 34.1, 34.4, 34.6, 34.8],
+                        borderColor: '#2dd4bf',
+                        backgroundColor: 'rgba(45, 212, 191, 0.12)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: '30cm Deep VWC (%)',
+                        data: [40.8, 41.0, 41.0, 41.1, 41.2, 41.2],
+                        borderColor: '#38bdf8',
+                        backgroundColor: 'rgba(56, 189, 248, 0.08)',
+                        fill: true,
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    }
+                ]
+            },
+            options: getChartOptions('%', 20, 60)
+        });
+
+        // 4. VPD & Soil EC Chart
+        const ctxVpd = document.getElementById('vpdEcChart').getContext('2d');
+        const vpdEcChart = new Chart(ctxVpd, {
+            type: 'line',
+            data: {
+                labels: [...timeLabels],
+                datasets: [
+                    {
+                        label: 'VPD (kPa)',
+                        data: [1.08, 1.10, 1.12, 1.13, 1.14, 1.15],
+                        borderColor: '#fbbf24',
+                        backgroundColor: 'rgba(251, 191, 36, 0.12)',
+                        fill: true,
+                        yAxisID: 'y',
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    },
+                    {
+                        label: 'EC (mS/cm)',
+                        data: [1.38, 1.39, 1.39, 1.40, 1.40, 1.40],
+                        borderColor: '#c084fc',
+                        backgroundColor: 'rgba(192, 132, 252, 0.10)',
+                        fill: true,
+                        yAxisID: 'y1',
+                        tension: 0.35,
+                        borderWidth: 2.5
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+                    },
+                    y: {
+                        type: 'linear',
+                        display: true,
+                        position: 'left',
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#fbbf24', font: { family: 'JetBrains Mono', size: 10 } }
+                    },
+                    y1: {
+                        type: 'linear',
+                        display: true,
+                        position: 'right',
+                        grid: { drawOnChartArea: false },
+                        ticks: { color: '#c084fc', font: { family: 'JetBrains Mono', size: 10 } }
+                    }
+                },
+                plugins: {
+                    legend: { labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } } }
+                }
+            }
+        });
+
+        function getChartOptions(unit, min, max) {
+            return {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        labels: { color: '#94a3b8', font: { family: 'JetBrains Mono', size: 11 } }
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: { color: '#64748b', font: { family: 'JetBrains Mono', size: 10 } }
+                    },
+                    y: {
+                        min: min,
+                        max: max,
+                        grid: { color: 'rgba(255, 255, 255, 0.05)' },
+                        ticks: {
+                            color: '#94a3b8',
+                            font: { family: 'JetBrains Mono', size: 10 },
+                            callback: (v) => `${v}${unit}`
+                        }
+                    }
+                }
+            };
+        }
+
+        // Live Log Terminal
+        const termLog = document.getElementById("rawMqttLog");
+        function appendTerminalLog(msg) {
+            if (!termLog) return;
+            const now = new Date().toLocaleTimeString();
+            termLog.innerText = `[${now}] ${msg}\n` + termLog.innerText.split('\n').slice(0, 6).join('\n');
+        }
+
+        // Push new point into chart
+        function pushDataPoint(chart, datasetIdx, val) {
+            const data = chart.data.datasets[datasetIdx].data;
+            data.shift();
+            data.push(val);
+            chart.update('none');
+        }
+
+        // Update All Sensors UI
+        function updateSensorsUI(t, h, s15, s30, vpd, ec, lux, soilTemp) {
+            const tEl = document.getElementById("card-t");
+            const hEl = document.getElementById("card-h");
+            const s15El = document.getElementById("card-s15");
+            const s30El = document.getElementById("card-s30");
+            const vpdEl = document.getElementById("card-vpd");
+            const ecEl = document.getElementById("card-ec");
+            const luxEl = document.getElementById("card-lux");
+            const soilTempEl = document.getElementById("card-soil-temp");
+            const dewEl = document.getElementById("card-dew");
+
+            const isValid = (v) => v !== undefined && v !== null && v !== '' && !isNaN(v);
+
+            if (tEl) tEl.innerText = isValid(t) ? parseFloat(t).toFixed(1) : "--";
+            if (hEl) hEl.innerText = isValid(h) ? parseFloat(h).toFixed(1) : "--";
+            if (s15El) s15El.innerText = isValid(s15) ? parseFloat(s15).toFixed(1) : "--";
+            if (s30El) s30El.innerText = isValid(s30) ? parseFloat(s30).toFixed(1) : "--";
+            if (vpdEl) vpdEl.innerText = isValid(vpd) ? parseFloat(vpd).toFixed(2) : "--";
+            if (ecEl) ecEl.innerText = isValid(ec) ? parseFloat(ec).toFixed(2) : "--";
+            if (luxEl) luxEl.innerText = isValid(lux) ? parseFloat(lux).toFixed(1) : "--";
+            if (soilTempEl) soilTempEl.innerText = isValid(soilTemp) ? parseFloat(soilTemp).toFixed(1) : "--";
+
+            // Compute Dew Point approximation if temp & hum exist
+            if (isValid(t) && isValid(h)) {
+                const dew = (parseFloat(t) - ((100 - parseFloat(h)) / 5)).toFixed(1);
+                if (dewEl) dewEl.innerText = `${dew}°C`;
+                pushDataPoint(tempChart, 1, parseFloat(dew));
+            } else {
+                if (dewEl) dewEl.innerText = "--°C";
+            }
+
+            // Update Charts with valid values
+            if (isValid(t)) pushDataPoint(tempChart, 0, parseFloat(t));
+            if (isValid(h)) pushDataPoint(humidChart, 0, parseFloat(h));
+            if (isValid(s15)) pushDataPoint(soilChart, 0, parseFloat(s15));
+            if (isValid(s30)) pushDataPoint(soilChart, 1, parseFloat(s30));
+            if (isValid(vpd)) pushDataPoint(vpdEcChart, 0, parseFloat(vpd));
+            if (isValid(ec)) pushDataPoint(vpdEcChart, 1, parseFloat(ec));
+        }
+
+        // Demo Simulator
+        function startDemoSimulation() {
+            if (demoInterval) clearInterval(demoInterval);
+            runDemoTick();
+            demoInterval = setInterval(runDemoTick, 2800);
+        }
+
+        function stopDemoSimulation() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+                demoInterval = null;
+            }
+        }
+
+        function runDemoTick() {
+            if (!isDemoMode) return;
+            const t = (27.4 + Math.random() * 0.9).toFixed(1);
+            const h = (63.8 + Math.random() * 2.2).toFixed(1);
+            const s15 = (34.2 + Math.random() * 1.4).toFixed(1);
+            const s30 = (40.8 + Math.random() * 1.1).toFixed(1);
+            const vpd = (1.10 + Math.random() * 0.12).toFixed(2);
+            const ec = (1.38 + Math.random() * 0.08).toFixed(2);
+            const lux = (47.5 + Math.random() * 2.0).toFixed(1);
+            const soilTemp = (23.2 + Math.random() * 0.8).toFixed(1);
+
+            updateSensorsUI(t, h, s15, s30, vpd, ec, lux, soilTemp);
+            appendTerminalLog(`SIM_PACKET: {"temp":${t},"hum":${h},"soil_15":${s15},"soil_30":${s30},"vpd":${vpd},"ec":${ec}}`);
+        }
+
+        // Connect Real MQTT & RPi API
+        function initRealTelemetry() {
+            mqttClient = RPiConfig.initMqtt({
+                onConnect: (client) => {
+                    client.subscribe(RPiConfig.TOPICS.telemetry);
+                    appendTerminalLog(`Subscribed to MQTT topic: ${RPiConfig.TOPICS.telemetry}`);
+                },
+                onMessage: (topic, data, raw) => {
+                    if (data) {
+                        if (isDemoMode) {
+                            isDemoMode = false;
+                            localStorage.setItem('agrisarthi_demo_mode', 'false');
+                            stopDemoSimulation();
+                            const btn = document.getElementById("demoToggleBtn");
+                            const label = document.getElementById("demoBtnLabel");
+                            if (btn) { btn.classList.remove("demo-active"); btn.classList.add("demo-off"); }
+                            if (label) label.innerText = "📡 Live RPi: ON";
+                        }
+                        const t = data.temp;
+                        const h = data.hum;
+                        const s15 = data.soil;
+                        const s30 = data.soil_30;
+                        const vpd = data.vpd;
+                        const ec = data.ec;
+                        const lux = data.lux;
+                        const soilTemp = data.soil_temp;
+
+                        updateSensorsUI(t, h, s15, s30, vpd, ec, lux, soilTemp);
+                        appendTerminalLog(`LIVE_HARDWARE_PACKET: ${raw}`);
+                    }
+                }
+            });
+
+            // REST fallback
+            setInterval(async () => {
+                if (isDemoMode) return;
+                try {
+                    const res = await fetch(`${RPiConfig.getApiBaseUrl()}/api/telemetry`, { signal: AbortSignal.timeout(2500) });
+                    const data = await res.json();
+                    if (data && !isDemoMode) {
+                        const t = data.temp;
+                        const h = data.hum;
+                        const s15 = data.soil;
+                        const s30 = data.soil_30;
+                        const vpd = data.vpd;
+                        const ec = data.ec;
+                        const lux = data.lux;
+                        const soilTemp = data.soil_temp;
+
+                        updateSensorsUI(t, h, s15, s30, vpd, ec, lux, soilTemp);
+                        appendTerminalLog(`REST_POLL_OK: ${JSON.stringify(data)}`);
+                    }
+                } catch (e) {
+                    // Ignore transient network errors
+                }
+            }, 3000);
+        }
+
+        // Startup
+        applyDemoModeUI();
+        initRealTelemetry();
+    </script>
+</body>
+</html>

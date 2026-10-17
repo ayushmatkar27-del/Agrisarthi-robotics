@@ -1,0 +1,1322 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AgriSarthi - Precision Field Sectors &amp; Wheel Odometry Planner</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- MQTT.js CDN -->
+    <script src="https://unpkg.com/mqtt/dist/mqtt.min.js"></script>
+    <!-- AgriSarthi Centralized RPi Config Engine -->
+    <script src="rpi_config.js"></script>
+
+    <style>
+        :root {
+            --bg-dark: #070d18;
+            --bg-card: rgba(13, 22, 38, 0.85);
+            --border-card: rgba(255, 255, 255, 0.08);
+            --border-accent: rgba(0, 229, 153, 0.25);
+            --primary: #00e599;
+            --primary-glow: rgba(0, 229, 153, 0.35);
+            --accent-cyan: #38bdf8;
+            --accent-teal: #2dd4bf;
+            --accent-amber: #fbbf24;
+            --accent-red: #ef4444;
+            --accent-blue: #38bdf8;
+            --text-main: #f3f4f6;
+            --text-muted: #94a3b8;
+            --text-dim: #64748b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            min-height: 100vh;
+            color: var(--text-main);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* Backdrop Slideshow */
+        .slideshow-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: 0;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .slideshow-slide {
+            position: absolute;
+            inset: 0;
+            background-size: cover;
+            background-position: center;
+            opacity: 0;
+            transform: scale(1.08);
+            transition: opacity 1.8s ease-in-out, transform 8s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        .slideshow-slide.active {
+            opacity: 1;
+            transform: scale(1.0);
+        }
+
+        .slideshow-overlay {
+            position: absolute;
+            inset: 0;
+            background: 
+                linear-gradient(to bottom, rgba(7, 13, 24, 0.86) 0%, rgba(7, 13, 24, 0.80) 45%, rgba(7, 13, 24, 0.94) 100%),
+                radial-gradient(circle at 20% 25%, rgba(45, 212, 191, 0.10) 0%, transparent 60%),
+                radial-gradient(circle at 80% 75%, rgba(0, 229, 153, 0.08) 0%, transparent 50%);
+            backdrop-filter: blur(6px);
+        }
+
+        /* Top Navbar */
+        .top-navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 40px;
+            background: rgba(7, 13, 24, 0.85);
+            backdrop-filter: blur(16px);
+            border-bottom: 1px solid var(--border-card);
+            position: relative;
+            z-index: 20;
+        }
+
+        .brand-section {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .brand-icon-box {
+            width: 42px;
+            height: 42px;
+            background: rgba(45, 212, 191, 0.12);
+            border: 1px solid var(--accent-teal);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent-teal);
+            box-shadow: 0 0 16px rgba(45, 212, 191, 0.35);
+        }
+
+        .brand-text-col {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .brand-title-line {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .brand-h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.5px;
+        }
+
+        .badge-farm {
+            background: rgba(45, 212, 191, 0.15);
+            color: var(--accent-teal);
+            font-size: 12px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+            border: 1px solid rgba(45, 212, 191, 0.3);
+        }
+
+        .badge-unit {
+            font-family: 'JetBrains Mono', monospace;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text-muted);
+            font-size: 11px;
+            font-weight: 700;
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+
+        .brand-sub {
+            font-size: 11px;
+            color: var(--text-dim);
+            font-weight: 500;
+        }
+
+        .nav-right-cluster {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+        }
+
+        .btn-demo-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 15px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            background: rgba(13, 22, 38, 0.9);
+            color: #ffffff;
+        }
+
+        .btn-demo-pill.demo-active {
+            background: rgba(251, 191, 36, 0.18);
+            border-color: rgba(251, 191, 36, 0.6);
+            color: #fbbf24;
+            box-shadow: 0 0 14px rgba(251, 191, 36, 0.35);
+        }
+
+        .btn-demo-pill.demo-off {
+            background: rgba(0, 229, 153, 0.15);
+            border-color: rgba(0, 229, 153, 0.5);
+            color: #00e599;
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.35);
+        }
+
+        .demo-status-dot {
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: currentColor;
+            display: inline-block;
+        }
+
+        .btn-rpi-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+            cursor: pointer;
+            transition: all 0.25s ease;
+        }
+
+        .btn-rpi-pill:hover {
+            background: #38bdf8;
+            color: #051410;
+        }
+
+        .btn-dashboard-back {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.18);
+            color: #ffffff;
+            padding: 7px 16px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-dashboard-back:hover {
+            background: var(--primary);
+            color: #051410;
+            border-color: var(--primary);
+            box-shadow: 0 0 15px var(--primary-glow);
+            transform: translateY(-1px);
+        }
+
+        /* Container */
+        .main-container {
+            flex: 1;
+            max-width: 1440px;
+            width: 100%;
+            margin: 0 auto;
+            padding: 24px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 22px;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Odometry Calibration Banner */
+        .odometry-banner {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 22px;
+            padding: 22px 26px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.35);
+            flex-wrap: wrap;
+        }
+
+        .odo-left {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .odo-title-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .odo-title-row h2 {
+            font-size: 20px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: -0.4px;
+        }
+
+        .odo-params-cluster {
+            display: flex;
+            align-items: center;
+            gap: 24px;
+            flex-wrap: wrap;
+        }
+
+        .odo-param-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            font-family: 'JetBrains Mono', monospace;
+        }
+
+        .odo-param-item span.lbl {
+            font-size: 10px;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+        }
+
+        .odo-param-item strong.val {
+            font-size: 16px;
+            color: #ffffff;
+        }
+
+        .odo-slider-box {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: rgba(9, 19, 34, 0.85);
+            padding: 8px 14px;
+            border-radius: 12px;
+            border: 1px solid var(--border-card);
+        }
+
+        .odo-slider-box input[type="range"] {
+            -webkit-appearance: none;
+            width: 130px;
+            height: 6px;
+            background: #1e293b;
+            border-radius: 4px;
+            outline: none;
+        }
+
+        .odo-slider-box input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: var(--accent-teal);
+            cursor: pointer;
+            box-shadow: 0 0 10px var(--accent-teal);
+        }
+
+        /* 4x3 Translucent Interactive Field Grid */
+        .field-map-container {
+            background: var(--bg-card);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+            position: relative;
+        }
+
+        .map-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+            padding-bottom: 14px;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+
+        .map-legend-row {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            flex-wrap: wrap;
+        }
+
+        .legend-tag {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding: 4px 10px;
+            border-radius: 8px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .legend-tag.red { background: rgba(239, 68, 68, 0.15); color: #f87171; border-color: rgba(239, 68, 68, 0.3); }
+        .legend-tag.green { background: rgba(34, 197, 94, 0.15); color: #4ade80; border-color: rgba(34, 197, 94, 0.3); }
+        .legend-tag.blue { background: rgba(56, 189, 248, 0.15); color: #38bdf8; border-color: rgba(56, 189, 248, 0.3); }
+
+        /* The Grid: 4 columns x 3 rows */
+        .sectors-grid-4x3 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        @media (max-width: 1024px) {
+            .sectors-grid-4x3 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
+            .sectors-grid-4x3 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Translucent Sector Block Card */
+        .sector-tile {
+            position: relative;
+            border-radius: 18px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            gap: 14px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            backdrop-filter: blur(12px);
+            overflow: hidden;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .sector-tile:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.5);
+            border-color: #ffffff;
+        }
+
+        /* Explicit Translucent Overlays (NOT dark, see-through with glowing rim) */
+        .sector-tile.dry {
+            background: rgba(239, 68, 68, 0.22);
+            border-color: rgba(239, 68, 68, 0.45);
+            box-shadow: inset 0 0 20px rgba(239, 68, 68, 0.2);
+        }
+
+        .sector-tile.optimal {
+            background: rgba(34, 197, 94, 0.20);
+            border-color: rgba(34, 197, 94, 0.45);
+            box-shadow: inset 0 0 20px rgba(34, 197, 94, 0.2);
+        }
+
+        .sector-tile.overwatered {
+            background: rgba(56, 189, 248, 0.22);
+            border-color: rgba(56, 189, 248, 0.45);
+            box-shadow: inset 0 0 20px rgba(56, 189, 248, 0.2);
+        }
+
+        .sector-tile.selected {
+            outline: 2px solid #ffffff;
+            box-shadow: 0 0 25px rgba(255, 255, 255, 0.4);
+        }
+
+        .sector-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .sector-id-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .sector-status-badge {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 800;
+            padding: 3px 8px;
+            border-radius: 6px;
+            letter-spacing: 0.5px;
+        }
+
+        .badge-dry { background: rgba(239, 68, 68, 0.3); color: #fca5a5; border: 1px solid #ef4444; }
+        .badge-opt { background: rgba(34, 197, 94, 0.3); color: #86efac; border: 1px solid #22c55e; }
+        .badge-over { background: rgba(56, 189, 248, 0.3); color: #bae6fd; border: 1px solid #38bdf8; }
+
+        .sector-moisture-main {
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 32px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .sector-moisture-main span.unit {
+            font-size: 16px;
+            color: var(--text-muted);
+        }
+
+        .sector-sub-stats {
+            display: flex;
+            justify-content: space-between;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            color: rgba(255, 255, 255, 0.7);
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            padding-top: 8px;
+        }
+
+        .rover-marker-indicator {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #fbbf24;
+            color: #051410;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 9px;
+            font-weight: 800;
+            padding: 2px 6px;
+            border-radius: 4px;
+            box-shadow: 0 0 10px rgba(251, 191, 36, 0.8);
+            animation: pulsePin 1.5s infinite ease-in-out;
+        }
+
+        @keyframes pulsePin {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.1); opacity: 0.8; }
+        }
+
+        /* Sector Detail Prescription Modal / Drawer */
+        .sector-modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 50;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .sector-modal-backdrop.open {
+            display: flex;
+        }
+
+        .sector-modal-box {
+            background: #091322;
+            border: 1px solid var(--border-card);
+            border-radius: 24px;
+            max-width: 620px;
+            width: 100%;
+            padding: 28px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.8), 0 0 30px rgba(0, 229, 153, 0.1);
+            position: relative;
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border: none;
+            color: #ffffff;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close-btn:hover {
+            background: #ef4444;
+        }
+
+        .modal-header-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .modal-title-group h3 {
+            font-size: 22px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .modal-telemetry-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+        }
+
+        .modal-stat-chip {
+            background: rgba(13, 22, 38, 0.9);
+            border: 1px solid var(--border-card);
+            border-radius: 12px;
+            padding: 10px 14px;
+            font-family: 'JetBrains Mono', monospace;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .modal-stat-chip span.lbl { font-size: 10px; color: var(--text-dim); }
+        .modal-stat-chip strong.val { font-size: 15px; color: #ffffff; }
+
+        /* Prescription Card */
+        .prescription-card {
+            background: rgba(13, 22, 38, 0.95);
+            border: 1px solid rgba(0, 229, 153, 0.3);
+            border-radius: 16px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .presc-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--primary);
+        }
+
+        .presc-text {
+            font-size: 13px;
+            line-height: 1.6;
+            color: var(--text-main);
+        }
+
+        .btn-action-targeted {
+            background: linear-gradient(135deg, #00e599 0%, #2dd4bf 100%);
+            border: none;
+            color: #051410;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 800;
+            padding: 14px 20px;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            box-shadow: 0 0 20px rgba(0, 229, 153, 0.35);
+        }
+
+        .btn-action-targeted:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 30px rgba(0, 229, 153, 0.6);
+        }
+
+        /* Farmer Resource Savings Banner */
+        .savings-analytics-strip {
+            background: var(--bg-card);
+            border: 1px solid var(--border-card);
+            border-radius: 20px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            flex-wrap: wrap;
+            gap: 14px;
+        }
+
+        .savings-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .savings-icon {
+            font-size: 26px;
+        }
+
+        .savings-info {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .savings-info span.lbl { font-size: 10px; color: var(--text-dim); }
+        .savings-info strong.val { font-size: 15px; color: var(--primary); }
+
+        /* Footer */
+        .status-footer {
+            padding: 14px 40px;
+            background: rgba(5, 10, 19, 0.95);
+            border-top: 1px solid var(--border-card);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--text-dim);
+            position: relative;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Animated Backdrop Slideshow -->
+    <div class="slideshow-backdrop" id="slideshowBackdrop">
+        <div class="slideshow-overlay"></div>
+    </div>
+
+    <!-- Top Navigation Header -->
+    <header class="top-navbar">
+        <a class="brand-section" href="dashboard.html" style="text-decoration:none;">
+            <div class="brand-icon-box">
+                <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="3" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="3" width="7" height="7"></rect>
+                    <rect x="14" y="14" width="7" height="7"></rect>
+                    <rect x="3" y="14" width="7" height="7"></rect>
+                </svg>
+            </div>
+            <div class="brand-text-col">
+                <div class="brand-title-line">
+                    <span class="brand-h1">AgriSarthi</span>
+                    <span class="badge-farm">Field Planner</span>
+                    <span class="badge-unit">ROVER-04</span>
+                </div>
+                <span class="brand-sub">Block 05 // Field Planning, Wheel Odometry &amp; Precision Sectors</span>
+            </div>
+        </a>
+
+        <div class="nav-right-cluster">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+                <span id="demoDot" class="demo-status-dot"></span>
+                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+            </button>
+            <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
+                <span>⚙️</span><span>RPi Connect</span>
+            </button>
+            <a href="dashboard.html" class="btn-dashboard-back">
+                <span>&larr;</span><span>Mission Dashboard</span>
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="main-container">
+
+        <!-- Top Odometry & Wheel Calibration Cockpit -->
+        <section class="odometry-banner">
+            <div class="odo-left">
+                <div class="odo-title-row">
+                    <span>📐</span>
+                    <h2>Wheel Odometry &amp; Sector Traversal Engine</h2>
+                </div>
+                <p style="font-size: 12px; color: var(--text-muted);">
+                    Calculates distance traveled via wheel circumference formula ($D = \text{pulses} \times \frac{\pi \times D_{\text{wheel}}}{\text{PPR}}$) and maps rover position into discrete farm sectors.
+                </p>
+            </div>
+
+            <div class="odo-params-cluster">
+                <!-- Wheel Diameter Slider -->
+                <div class="odo-param-item">
+                    <span class="lbl">WHEEL DIAMETER ($D_{\text{wheel}}$):</span>
+                    <div class="odo-slider-box">
+                        <input type="range" id="wheelDiameterSlider" min="150" max="400" value="260" oninput="updateWheelCalibration(this.value)">
+                        <strong class="val" id="wheelDiameterLabel" style="color:var(--accent-teal);">260 mm</strong>
+                    </div>
+                </div>
+
+                <!-- Distance Traveled -->
+                <div class="odo-param-item">
+                    <span class="lbl">TOTAL DISTANCE TRAVELED:</span>
+                    <strong class="val" id="dispTotalDistance" style="color:var(--primary);">1,420 m (1.42 km)</strong>
+                </div>
+
+                <!-- Encoders Pulses -->
+                <div class="odo-param-item">
+                    <span class="lbl">ENCODER PULSES:</span>
+                    <strong class="val" id="dispEncoderPulses">3,478 Pulses</strong>
+                </div>
+
+                <!-- Active Sector -->
+                <div class="odo-param-item">
+                    <span class="lbl">CURRENT ROVER SECTOR:</span>
+                    <strong class="val" id="dispCurrentSector" style="color:#fbbf24;">Sector B2 (Row 2, Col 2)</strong>
+                </div>
+            </div>
+        </section>
+
+        <!-- 4x3 Translucent Field Grid Visualizer -->
+        <section class="field-map-container">
+            <div class="map-header">
+                <div>
+                    <h3 style="font-size:16px; font-weight:800; color:#ffffff; display:flex; align-items:center; gap:8px;">
+                        <span>🗺️</span><span>Interactive Farm Field Sector Grid (4x3 Partition)</span>
+                    </h3>
+                    <p style="font-size:12px; color:var(--text-dim); margin-top:2px;">
+                        Click on any partitioned sector to view its localized telemetry and execute targeted prescriptive treatment.
+                    </p>
+                </div>
+
+                <!-- Color Coding Legend -->
+                <div class="map-legend-row">
+                    <div class="legend-tag red"><span>🔴</span><span>DRY (&lt;25% Moisture)</span></div>
+                    <div class="legend-tag green"><span>🟢</span><span>PERFECT (28-45% Optimal)</span></div>
+                    <div class="legend-tag blue"><span>🔵</span><span>OVER-WATERED (&gt;50% Saturated)</span></div>
+                </div>
+            </div>
+
+            <!-- The 12 Sector Cards Grid -->
+            <div class="sectors-grid-4x3" id="sectorsGrid">
+                <!-- Dynamically populated or rendered via JS -->
+            </div>
+        </section>
+
+        <!-- Resource Savings Strip -->
+        <section class="savings-analytics-strip">
+            <div class="savings-item">
+                <span class="savings-icon">💧</span>
+                <div class="savings-info">
+                    <span class="lbl">PRECISION WATER CONSERVED</span>
+                    <strong class="val" id="dispWaterSaved">380 Liters Saved (76% Reduction)</strong>
+                </div>
+            </div>
+            <div class="savings-item">
+                <span class="savings-icon">🌿</span>
+                <div class="savings-info">
+                    <span class="lbl">CHEMICAL &amp; HERBICIDE SAVINGS</span>
+                    <strong class="val" id="dispChemSaved">65% Targeted Spot Spray Reduction</strong>
+                </div>
+            </div>
+            <div class="savings-item">
+                <span class="savings-icon">⚡</span>
+                <div class="savings-info">
+                    <span class="lbl">ROVER POWER SAVED</span>
+                    <strong class="val">1.2 kWh Saved vs Blanket Traverse</strong>
+                </div>
+            </div>
+            <div class="savings-item">
+                <span class="savings-icon">📍</span>
+                <div class="savings-info">
+                    <span class="lbl">TOTAL COVERAGE AREA</span>
+                    <strong class="val" style="color:#ffffff;">4,500 m² (12 Sectors)</strong>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Clickable Sector Detail Modal & Smart Prescription -->
+    <div class="sector-modal-backdrop" id="sectorModal" onclick="closeModalOnBackdrop(event)">
+        <div class="sector-modal-box">
+            <button class="modal-close-btn" onclick="closeSectorModal()">&times;</button>
+
+            <div class="modal-header-row">
+                <span style="font-size:28px;" id="modalSectorIcon">🌱</span>
+                <div class="modal-title-group">
+                    <h3 id="modalSectorTitle">SECTOR B2 — DETAIL &amp; PRESCRIPTION</h3>
+                    <span style="font-size:11px; color:var(--text-dim);" id="modalSectorSub">Coordinates: Row 2, Col 2 • Area: 375 m²</span>
+                </div>
+            </div>
+
+            <!-- Telemetry Metrics in Sector -->
+            <div class="modal-telemetry-grid">
+                <div class="modal-stat-chip">
+                    <span class="lbl">TOPSOIL (15cm)</span>
+                    <strong class="val" id="modalSoil15">--%</strong>
+                </div>
+                <div class="modal-stat-chip">
+                    <span class="lbl">SUBSOIL (30cm)</span>
+                    <strong class="val" id="modalSoil30">--%</strong>
+                </div>
+                <div class="modal-stat-chip">
+                    <span class="lbl">SALINITY (EC)</span>
+                    <strong class="val" id="modalEc">-- mS/cm</strong>
+                </div>
+                <div class="modal-stat-chip">
+                    <span class="lbl">TEMPERATURE</span>
+                    <strong class="val" id="modalTemp">--°C</strong>
+                </div>
+                <div class="modal-stat-chip">
+                    <span class="lbl">WEED DETECTIONS</span>
+                    <strong class="val" id="modalWeeds">--</strong>
+                </div>
+                <div class="modal-stat-chip">
+                    <span class="lbl">TRAVERSE DISTANCE</span>
+                    <strong class="val" id="modalDist">-- m</strong>
+                </div>
+            </div>
+
+            <!-- Smart Agronomic Prescription Card -->
+            <div class="prescription-card">
+                <div class="presc-header">
+                    <span>💡</span>
+                    <span>SMART AGRONOMIC PRESCRIPTION</span>
+                </div>
+                <p class="presc-text" id="modalPrescriptionText">
+                    Analyzing localized soil matrix and plant health...
+                </p>
+            </div>
+
+            <!-- Trigger Selective Actuator Action -->
+            <button class="btn-action-targeted" id="btnExecuteTreatment" onclick="executeSelectiveTreatment()">
+                <span>🚀</span>
+                <span id="btnTreatmentLabel">Execute Targeted Treatment for this Sector</span>
+            </button>
+            <div id="treatmentStatusMsg" style="font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--primary); text-align:center; display:none;"></div>
+        </div>
+    </div>
+
+    <!-- Bottom Status Footer -->
+    <footer class="status-footer">
+        <div><span>AgriSarthi Technologies</span> • <span>Precision Farm Monitoring Rover-04</span></div>
+        <div><span>Field Grid: <strong>4x3 Matrix</strong></span> • <span>Dead Reckoning Odometry: <strong style="color:var(--primary);">Active Calibrated</strong></span></div>
+    </footer>
+
+    <!-- Background Image Slideshow Script -->
+    <script>
+        const backgroundImages = [
+            "images/farm.jpg",
+            "images/farming.jpg",
+            "images/dashboard-bg.jpg",
+            "images/dashboard-bg1.jpg",
+            "images/dashboard-bg3.jpg",
+            "images/dashimg.jpg"
+        ];
+
+        const backdropContainer = document.getElementById("slideshowBackdrop");
+        const slideNodes = [];
+
+        backgroundImages.forEach((imgSrc, idx) => {
+            const slide = document.createElement("div");
+            slide.className = "slideshow-slide" + (idx === 0 ? " active" : "");
+            slide.style.backgroundImage = `url('${imgSrc}')`;
+            backdropContainer.insertBefore(slide, backdropContainer.firstChild);
+            slideNodes.push(slide);
+        });
+
+        let currentIdx = 0;
+        function cycleSlide() {
+            if (slideNodes.length <= 1) return;
+            slideNodes[currentIdx].classList.remove("active");
+            currentIdx = (currentIdx + 1) % slideNodes.length;
+            slideNodes[currentIdx].classList.add("active");
+        }
+        setInterval(cycleSlide, 6000);
+    </script>
+
+    <!-- Field Sectors & Odometry Engine Script -->
+    <script>
+        // State
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false';
+        let demoInterval = null;
+        let mqttClient = null;
+
+        // Odometry parameters
+        let wheelDiameterMm = 260; // standard 260mm wheel
+        let encoderPPR = 20;       // 20 pulses per revolution
+        let totalPulses = 3478;    // simulated cumulative pulses
+        let currentRoverSectorId = "B2";
+        let activeSectorObj = null;
+
+        // 12 Sectors Model (4 columns A-D x 3 rows 1-3)
+        const sectorsData = [
+            { id: "A1", row: 1, col: 1, name: "Sector A1", soil15: 36.2, soil30: 42.1, ec: 1.38, temp: 27.2, weeds: 0, status: "optimal" },
+            { id: "A2", row: 1, col: 2, name: "Sector A2", soil15: 21.4, soil30: 27.8, ec: 1.18, temp: 29.4, weeds: 2, status: "dry" },
+            { id: "A3", row: 1, col: 3, name: "Sector A3", soil15: 34.8, soil30: 41.2, ec: 1.40, temp: 27.6, weeds: 0, status: "optimal" },
+            { id: "A4", row: 1, col: 4, name: "Sector A4", soil15: 54.2, soil30: 58.0, ec: 1.62, temp: 26.1, weeds: 0, status: "overwatered" },
+
+            { id: "B1", row: 2, col: 1, name: "Sector B1", soil15: 35.0, soil30: 40.8, ec: 1.36, temp: 27.4, weeds: 0, status: "optimal" },
+            { id: "B2", row: 2, col: 2, name: "Sector B2", soil15: 22.8, soil30: 28.5, ec: 1.22, temp: 28.9, weeds: 1, status: "dry" },
+            { id: "B3", row: 2, col: 3, name: "Sector B3", soil15: 33.6, soil30: 39.5, ec: 1.39, temp: 27.5, weeds: 0, status: "optimal" },
+            { id: "B4", row: 2, col: 4, name: "Sector B4", soil15: 37.1, soil30: 43.0, ec: 1.42, temp: 27.3, weeds: 0, status: "optimal" },
+
+            { id: "C1", row: 3, col: 1, name: "Sector C1", soil15: 52.8, soil30: 56.4, ec: 1.58, temp: 26.4, weeds: 0, status: "overwatered" },
+            { id: "C2", row: 3, col: 2, name: "Sector C2", soil15: 34.2, soil30: 41.0, ec: 1.41, temp: 27.5, weeds: 0, status: "optimal" },
+            { id: "C3", row: 3, col: 3, name: "Sector C3", soil15: 19.8, soil30: 26.2, ec: 1.15, temp: 29.8, weeds: 3, status: "dry" },
+            { id: "C4", row: 3, col: 4, name: "Sector C4", soil15: 35.5, soil30: 41.8, ec: 1.40, temp: 27.2, weeds: 0, status: "optimal" }
+        ];
+
+        // Demo Toggle
+        function toggleDemoMode() {
+            isDemoMode = !isDemoMode;
+            localStorage.setItem('agrisarthi_demo_mode', isDemoMode ? 'true' : 'false');
+            applyDemoModeUI();
+        }
+
+        function applyDemoModeUI() {
+            const btn = document.getElementById("demoToggleBtn");
+            const label = document.getElementById("demoBtnLabel");
+
+            if (isDemoMode) {
+                if (btn) {
+                    btn.classList.add("demo-active");
+                    btn.classList.remove("demo-off");
+                }
+                if (label) label.innerText = "🧪 Demo Data: ON";
+                startDemoSimulation();
+            } else {
+                if (btn) {
+                    btn.classList.remove("demo-active");
+                    btn.classList.add("demo-off");
+                }
+                if (label) label.innerText = "📡 Live RPi: ON";
+                stopDemoSimulation();
+                renderSectorsGridDashes();
+            }
+        }
+
+        // Wheel Calibration Slider
+        function updateWheelCalibration(val) {
+            wheelDiameterMm = parseInt(val);
+            const label = document.getElementById("wheelDiameterLabel");
+            if (label) label.innerText = `${wheelDiameterMm} mm`;
+            recomputeOdometry();
+        }
+
+        // Mathematical Odometry Algorithm
+        function recomputeOdometry() {
+            const distMeters = RPiConfig.calculateOdometryDistance(totalPulses, wheelDiameterMm, encoderPPR);
+            const distKm = (distMeters / 1000.0).toFixed(2);
+            const distEl = document.getElementById("dispTotalDistance");
+            if (distEl) {
+                if (isDemoMode) {
+                    distEl.innerText = `${Math.round(distMeters).toLocaleString()} m (${distKm} km)`;
+                } else {
+                    distEl.innerText = "-- m";
+                }
+            }
+            const pulseEl = document.getElementById("dispEncoderPulses");
+            if (pulseEl) pulseEl.innerText = isDemoMode ? `${totalPulses.toLocaleString()} Pulses` : "-- Pulses";
+        }
+
+        // Render Field Grid (Demo Mode: colors and values)
+        function renderSectorsGridDemo() {
+            const container = document.getElementById("sectorsGrid");
+            if (!container) return;
+            container.innerHTML = "";
+
+            sectorsData.forEach(sector => {
+                const tile = document.createElement("div");
+                tile.className = `sector-tile ${sector.status}`;
+                tile.onclick = () => openSectorModal(sector);
+
+                // Status formatting
+                let statusLabel = "PERFECT";
+                let badgeClass = "badge-opt";
+                let icon = "🟢";
+
+                if (sector.status === "dry") {
+                    statusLabel = "DRY";
+                    badgeClass = "badge-dry";
+                    icon = "🔴";
+                } else if (sector.status === "overwatered") {
+                    statusLabel = "OVER-WATERED";
+                    badgeClass = "badge-over";
+                    icon = "🔵";
+                }
+
+                const isRoverHere = sector.id === currentRoverSectorId;
+
+                tile.innerHTML = `
+                    ${isRoverHere ? `<div class="rover-marker-indicator">🚜 ROVER ACTIVE</div>` : ''}
+                    <div class="sector-top-row">
+                        <div class="sector-id-pill">
+                            <span>${icon}</span>
+                            <span>${sector.name}</span>
+                        </div>
+                        <span class="sector-status-badge ${badgeClass}">${statusLabel}</span>
+                    </div>
+
+                    <div class="sector-moisture-main">
+                        <span>${sector.soil15.toFixed(1)}</span>
+                        <span class="unit">% VWC</span>
+                    </div>
+
+                    <div class="sector-sub-stats">
+                        <span>30cm: <strong>${sector.soil30.toFixed(1)}%</strong></span>
+                        <span>EC: <strong>${sector.ec.toFixed(2)}</strong></span>
+                        <span>Weeds: <strong>${sector.weeds}</strong></span>
+                    </div>
+                `;
+
+                container.appendChild(tile);
+            });
+        }
+
+        // Render Field Grid (Live RPi Mode: Dashes until real data arrives)
+        function renderSectorsGridDashes() {
+            const container = document.getElementById("sectorsGrid");
+            if (!container) return;
+            container.innerHTML = "";
+
+            sectorsData.forEach(sector => {
+                const tile = document.createElement("div");
+                tile.className = "sector-tile";
+                tile.style.background = "rgba(13, 22, 38, 0.7)";
+                tile.style.borderColor = "rgba(255, 255, 255, 0.1)";
+                tile.onclick = () => openSectorModal({ ...sector, isLiveDashes: true });
+
+                tile.innerHTML = `
+                    <div class="sector-top-row">
+                        <div class="sector-id-pill">
+                            <span>○</span>
+                            <span>${sector.name}</span>
+                        </div>
+                        <span class="sector-status-badge" style="background:rgba(255,255,255,0.08); color:var(--text-dim);">AWAITING</span>
+                    </div>
+
+                    <div class="sector-moisture-main">
+                        <span>--</span>
+                        <span class="unit">% VWC</span>
+                    </div>
+
+                    <div class="sector-sub-stats">
+                        <span>30cm: <strong>--%</strong></span>
+                        <span>EC: <strong>--</strong></span>
+                        <span>Weeds: <strong>--</strong></span>
+                    </div>
+                `;
+
+                container.appendChild(tile);
+            });
+
+            const distEl = document.getElementById("dispTotalDistance");
+            if (distEl) distEl.innerText = "-- m";
+            const pulseEl = document.getElementById("dispEncoderPulses");
+            if (pulseEl) pulseEl.innerText = "-- Pulses";
+            const curSectorEl = document.getElementById("dispCurrentSector");
+            if (curSectorEl) curSectorEl.innerText = "-- (Awaiting Odometry)";
+        }
+
+        // Sector Detail Modal
+        function openSectorModal(sector) {
+            activeSectorObj = sector;
+            const modal = document.getElementById("sectorModal");
+            const titleEl = document.getElementById("modalSectorTitle");
+            const subEl = document.getElementById("modalSectorSub");
+            const iconEl = document.getElementById("modalSectorIcon");
+            const soil15El = document.getElementById("modalSoil15");
+            const soil30El = document.getElementById("modalSoil30");
+            const ecEl = document.getElementById("modalEc");
+            const tempEl = document.getElementById("modalTemp");
+            const weedsEl = document.getElementById("modalWeeds");
+            const distEl = document.getElementById("modalDist");
+            const prescEl = document.getElementById("modalPrescriptionText");
+            const btnLabel = document.getElementById("btnTreatmentLabel");
+            const statusMsg = document.getElementById("treatmentStatusMsg");
+
+            if (statusMsg) statusMsg.style.display = 'none';
+
+            titleEl.innerText = `${sector.name.toUpperCase()} — DETAIL & PRESCRIPTION`;
+            subEl.innerText = `Coordinates: Row ${sector.row}, Col ${sector.col} • Area: 375 m² (Furrows ${(sector.row - 1) * 4 + 1} to ${sector.row * 4})`;
+
+            if (sector.isLiveDashes) {
+                iconEl.innerText = "○";
+                soil15El.innerText = "--%";
+                soil30El.innerText = "--%";
+                ecEl.innerText = "-- mS/cm";
+                tempEl.innerText = "--°C";
+                weedsEl.innerText = "--";
+                distEl.innerText = "-- m";
+                prescEl.innerText = "Awaiting real-time telemetry from Raspberry Pi MQTT topic 'agrisarthi/telemetry' for this sector...";
+                btnLabel.innerText = "Awaiting Sector Telemetry";
+                modal.classList.add("open");
+                return;
+            }
+
+            soil15El.innerText = `${sector.soil15.toFixed(1)}%`;
+            soil30El.innerText = `${sector.soil30.toFixed(1)}%`;
+            ecEl.innerText = `${sector.ec.toFixed(2)} mS/cm`;
+            tempEl.innerText = `${sector.temp.toFixed(1)}°C`;
+            weedsEl.innerText = `${sector.weeds} Detected`;
+            distEl.innerText = `${(sector.row * 120 + sector.col * 85)} meters`;
+
+            // Smart Agronomic Prescription Logic
+            if (sector.status === "dry") {
+                iconEl.innerText = "🔴";
+                prescEl.innerHTML = `
+                    <strong style="color:#ef4444;">⚠️ MOISTURE DEFICIT DETECTED (${sector.soil15}% VWC):</strong><br>
+                    Root zone is below permanent wilting point. Recommend <strong>2.8 Liters</strong> targeted drip pulse via Solenoid Zone ${sector.col}. Expected root hydration recovery: <strong>40 minutes</strong>. Conserves 92% water compared to full-field blanket irrigation.
+                `;
+                btnLabel.innerText = `Execute Targeted Drip Irrigation for ${sector.name}`;
+            } else if (sector.status === "overwatered") {
+                iconEl.innerText = "🔵";
+                prescEl.innerHTML = `
+                    <strong style="color:#38bdf8;">⚠️ ROOT SATURATION ALERT (${sector.soil15}% VWC):</strong><br>
+                    Soil is saturated; risk of anaerobic root suffocation. <strong>Suspend all irrigation spray lines for 48 hours</strong>. Recommend deploying rotary weeder at +20mm clearance to aerate surface crust and promote evaporation.
+                `;
+                btnLabel.innerText = `Deploy Aeration Routine for ${sector.name}`;
+            } else {
+                iconEl.innerText = "🟢";
+                prescEl.innerHTML = `
+                    <strong style="color:#22c55e;">✅ OPTIMAL SECTOR HEALTH (${sector.soil15}% VWC):</strong><br>
+                    Soil volumetric moisture and electrical conductivity (${sector.ec} mS/cm) are in equilibrium. No precision water or chemical intervention needed.
+                `;
+                btnLabel.innerText = `Sector Balanced (Log Verification)`;
+            }
+
+            modal.classList.add("open");
+        }
+
+        function closeSectorModal() {
+            const modal = document.getElementById("sectorModal");
+            if (modal) modal.classList.remove("open");
+        }
+
+        function closeModalOnBackdrop(e) {
+            if (e.target.id === "sectorModal") {
+                closeSectorModal();
+            }
+        }
+
+        // Execute Selective Treatment Action
+        function executeSelectiveTreatment() {
+            if (!activeSectorObj) return;
+            const statusMsg = document.getElementById("treatmentStatusMsg");
+            if (statusMsg) {
+                statusMsg.style.display = 'block';
+                statusMsg.innerText = `🚀 Command dispatched via MQTT: Target ${activeSectorObj.name} precision treatment initiated!`;
+            }
+
+            // Dispatch command to RPi via Centralized Config Engine
+            const payload = {
+                target: "sector_precision_treatment",
+                sector_id: activeSectorObj.id,
+                action: activeSectorObj.status === 'dry' ? 'targeted_irrigation' : (activeSectorObj.status === 'overwatered' ? 'soil_aeration' : 'log_pass'),
+                volume_liters: activeSectorObj.status === 'dry' ? 2.8 : 0,
+                timestamp: Date.now()
+            };
+
+            RPiConfig.dispatchActuatorCommand(mqttClient, payload);
+        }
+
+        // Demo Simulator
+        function startDemoSimulation() {
+            if (demoInterval) clearInterval(demoInterval);
+            renderSectorsGridDemo();
+            recomputeOdometry();
+
+            // Simulate rover movement between sectors every 5 seconds
+            demoInterval = setInterval(() => {
+                if (!isDemoMode) return;
+                totalPulses += 35;
+                recomputeOdometry();
+
+                // Cycle rover marker between sectors
+                const sectorIds = ["A1", "A2", "A3", "A4", "B4", "B3", "B2", "B1", "C1", "C2", "C3", "C4"];
+                const currIdx = sectorIds.indexOf(currentRoverSectorId);
+                currentRoverSectorId = sectorIds[(currIdx + 1) % sectorIds.length];
+
+                const curSectorEl = document.getElementById("dispCurrentSector");
+                if (curSectorEl) curSectorEl.innerText = `Sector ${currentRoverSectorId}`;
+
+                renderSectorsGridDemo();
+            }, 4500);
+        }
+
+        function stopDemoSimulation() {
+            if (demoInterval) {
+                clearInterval(demoInterval);
+                demoInterval = null;
+            }
+        }
+
+        // MQTT Real Telemetry Listener
+        function initRealTelemetry() {
+            mqttClient = RPiConfig.initMqtt({
+                onConnect: (client) => {
+                    client.subscribe(RPiConfig.TOPICS.odometry);
+                    client.subscribe(RPiConfig.TOPICS.telemetry);
+                    console.log("Subscribed to odometry & telemetry topics");
+                },
+                onMessage: (topic, data) => {
+                    if (data && !isDemoMode) {
+                        if (data.pulses !== undefined) {
+                            totalPulses = data.pulses;
+                            recomputeOdometry();
+                        }
+                        if (data.sector_id) {
+                            currentRoverSectorId = data.sector_id;
+                            const curSectorEl = document.getElementById("dispCurrentSector");
+                            if (curSectorEl) curSectorEl.innerText = `Sector ${data.sector_id}`;
+                        }
+                    }
+                }
+            });
+        }
+
+        // Startup
+        applyDemoModeUI();
+        initRealTelemetry();
+    </script>
+</body>
+</html>
