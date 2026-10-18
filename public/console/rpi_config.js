@@ -20,13 +20,31 @@
     }
 
     const RPiConfig = {
+        // Robust IP / Hostname Sanitizer (strips http://, :5000, paths, 0.0.0.0)
+        cleanHostOrIp: function (raw) {
+            if (!raw) return '192.168.4.1';
+            let cleaned = String(raw).trim();
+            // Strip protocol
+            cleaned = cleaned.replace(/^(https?|wss?):\/\//i, '');
+            // Strip path or query params
+            cleaned = cleaned.split('/')[0].split('?')[0];
+            // Strip trailing port e.g. :5000, :9001, :81, etc.
+            cleaned = cleaned.replace(/:[0-9]+$/, '');
+            // 0.0.0.0 is an internal listen address, not reachable by client browsers
+            if (cleaned === '0.0.0.0') {
+                cleaned = '127.0.0.1';
+            }
+            return cleaned || '192.168.4.1';
+        },
+
         // Core Networking
         getRoverIp: function () {
-            return localStorage.getItem(STORAGE_KEY_IP) || detectDefaultIp();
+            const raw = localStorage.getItem(STORAGE_KEY_IP) || detectDefaultIp();
+            return this.cleanHostOrIp(raw);
         },
         setRoverIp: function (ip) {
             if (!ip) return;
-            const cleanIp = ip.trim().replace(/^https?:\/\//, '').split('/')[0];
+            const cleanIp = this.cleanHostOrIp(ip);
             localStorage.setItem(STORAGE_KEY_IP, cleanIp);
             console.log('[RPiConfig] Updated Rover IP:', cleanIp);
             return cleanIp;
@@ -243,22 +261,35 @@
         openSettingsModal: function () {
             let modal = document.getElementById('rpiConfigModal');
             if (!modal) {
+                const currentIp = this.getRoverIp();
+                const isHttps = window.location.protocol === 'https:';
+
                 modal = document.createElement('div');
                 modal.id = 'rpiConfigModal';
                 modal.innerHTML = `
                     <div style="position:fixed;inset:0;background:rgba(0,0,0,0.75);backdrop-filter:blur(8px);z-index:99999;display:flex;align-items:center;justify-content:center;padding:20px;">
-                        <div style="background:#0d1626;border:1px solid rgba(0,229,153,0.3);border-radius:16px;width:100%;max-width:440px;padding:24px;color:#f3f4f6;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);font-family:'Plus Jakarta Sans',sans-serif;">
+                        <div style="background:#0d1626;border:1px solid rgba(0,229,153,0.3);border-radius:16px;width:100%;max-width:460px;padding:24px;color:#f3f4f6;box-shadow:0 25px 50px -12px rgba(0,0,0,0.8);font-family:'Plus Jakarta Sans',sans-serif;">
                             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px;">
-                                <h3 style="font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;color:#00e599;">
+                                <h3 style="font-size:1.1rem;font-weight:700;display:flex;align-items:center;gap:8px;color:#00e599;margin:0;">
                                     <span>⚙️</span> Rover Connection Settings
                                 </h3>
                                 <button id="rpiCloseModalBtn" style="background:none;border:none;color:#94a3b8;font-size:22px;cursor:pointer;">&times;</button>
                             </div>
+
+                            ${isHttps ? `
+                            <div style="background:rgba(239,68,68,0.15);border:1px solid rgba(239,68,68,0.4);border-radius:8px;padding:10px 12px;margin-bottom:14px;font-size:12px;color:#fca5a5;line-height:1.4;">
+                                <strong>⚠️ Mixed Content Warning:</strong> You are accessing this console via HTTPS. Modern web browsers block unencrypted HTTP connections to local IPs (192.168.x.x). Please open the console via <code>http://localhost:5173/console/dashboard.html</code> or direct HTTP!
+                            </div>
+                            ` : ''}
                             
                             <div style="margin-bottom:14px;">
-                                <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Raspberry Pi 4 IP Address / Hostname</label>
-                                <input id="rpiIpInput" type="text" value="${this.getRoverIp()}" placeholder="e.g. 192.168.4.1 or raspberrypi.local" style="width:100%;background:rgba(7,13,24,0.9);border:1px solid rgba(255,255,255,0.12);padding:10px 14px;border-radius:8px;color:#00e599;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" />
-                                <span style="font-size:11px;color:#64748b;display:block;margin-top:4px;">Used for YOLO camera stream (:5000), REST APIs, and local MQTT.</span>
+                                <label style="display:block;font-size:12px;font-weight:600;color:#94a3b8;margin-bottom:6px;text-transform:uppercase;letter-spacing:0.05em;">Raspberry Pi / Host IP Address</label>
+                                <div style="display:flex;gap:8px;">
+                                    <input id="rpiIpInput" type="text" value="${currentIp}" placeholder="e.g. 192.168.1.50 or localhost" style="flex:1;background:rgba(7,13,24,0.9);border:1px solid rgba(255,255,255,0.12);padding:10px 14px;border-radius:8px;color:#00e599;font-family:'JetBrains Mono',monospace;font-size:13px;outline:none;" />
+                                    <button id="rpiTestPingBtn" type="button" style="padding:10px 14px;border-radius:8px;background:rgba(56,189,248,0.15);border:1px solid rgba(56,189,248,0.35);color:#38bdf8;font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:700;cursor:pointer;white-space:nowrap;">Test Ping</button>
+                                </div>
+                                <span style="font-size:11px;color:#94a3b8;display:block;margin-top:5px;">Enter IP/hostname only (e.g. <code>192.168.1.50</code>). Do <strong>NOT</strong> include <code>:5000</code> or <code>http://</code>.</span>
+                                <div id="rpiPingFeedback" style="display:none;font-size:11px;font-family:'JetBrains Mono',monospace;margin-top:6px;padding:6px 10px;border-radius:6px;"></div>
                             </div>
 
                             <div style="margin-bottom:18px;">
@@ -280,10 +311,46 @@
 
                 document.getElementById('rpiCloseModalBtn').onclick = () => modal.remove();
                 document.getElementById('rpiCancelBtn').onclick = () => modal.remove();
+
+                // Live Test Ping handler
+                document.getElementById('rpiTestPingBtn').onclick = async () => {
+                    const testInput = document.getElementById('rpiIpInput').value.trim();
+                    const cleanIp = RPiConfig.cleanHostOrIp(testInput);
+                    const feedback = document.getElementById('rpiPingFeedback');
+                    feedback.style.display = 'block';
+                    feedback.style.background = 'rgba(255,255,255,0.06)';
+                    feedback.style.color = '#38bdf8';
+                    feedback.innerText = `Testing connection to http://${cleanIp}:5000/status ...`;
+
+                    const controller = new AbortController();
+                    const timer = setTimeout(() => controller.abort(), 2500);
+                    const t0 = performance.now();
+
+                    try {
+                        const res = await fetch(`http://${cleanIp}:5000/status`, { signal: controller.signal, mode: 'cors' });
+                        clearTimeout(timer);
+                        const ms = Math.round(performance.now() - t0);
+                        if (res.ok) {
+                            feedback.style.background = 'rgba(0,229,153,0.15)';
+                            feedback.style.color = '#00e599';
+                            feedback.innerText = `✅ Connected! Latency: ${ms}ms (Stream & Telemetry Active)`;
+                        } else {
+                            feedback.style.background = 'rgba(239,68,68,0.15)';
+                            feedback.style.color = '#f87171';
+                            feedback.innerText = `❌ Server replied with HTTP ${res.status}`;
+                        }
+                    } catch (e) {
+                        clearTimeout(timer);
+                        feedback.style.background = 'rgba(239,68,68,0.15)';
+                        feedback.style.color = '#f87171';
+                        feedback.innerText = `❌ Connection failed: Unable to reach http://${cleanIp}:5000. Is main.py running?`;
+                    }
+                };
+
                 document.getElementById('rpiSaveBtn').onclick = () => {
-                    const newIp = document.getElementById('rpiIpInput').value.trim();
+                    const rawIp = document.getElementById('rpiIpInput').value.trim();
                     const newMode = document.getElementById('rpiModeSelect').value;
-                    RPiConfig.setRoverIp(newIp);
+                    RPiConfig.setRoverIp(rawIp);
                     RPiConfig.setConnectionMode(newMode);
                     modal.remove();
                     window.location.reload();
