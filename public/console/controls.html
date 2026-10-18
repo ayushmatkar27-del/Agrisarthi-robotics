@@ -327,6 +327,122 @@
         .badge-amber { background: rgba(251, 191, 36, 0.15); color: var(--accent-amber); border: 1px solid rgba(251, 191, 36, 0.3); }
         .badge-red { background: rgba(239, 68, 68, 0.15); color: var(--accent-red); border: 1px solid rgba(239, 68, 68, 0.3); }
 
+        /* RPi Online / Offline Indicator Pill */
+        .rpi-status-indicator {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 14px;
+            border-radius: 9999px;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #f87171;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            box-shadow: 0 0 10px rgba(239, 68, 68, 0.1);
+            user-select: none;
+        }
+
+        .rpi-status-indicator.connected {
+            background: rgba(0, 229, 153, 0.12);
+            border-color: rgba(0, 229, 153, 0.35);
+            color: var(--primary);
+            box-shadow: 0 0 14px rgba(0, 229, 153, 0.2);
+        }
+
+        .status-pulse-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #ef4444;
+            display: inline-block;
+            transition: background 0.3s;
+        }
+
+        .rpi-status-indicator.connected .status-pulse-dot {
+            background: var(--primary);
+            box-shadow: 0 0 8px var(--primary);
+            animation: rpiPulseGlow 1.6s infinite;
+        }
+
+        @keyframes rpiPulseGlow {
+            0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 229, 153, 0.7); }
+            70% { transform: scale(1.15); box-shadow: 0 0 0 6px rgba(0, 229, 153, 0); }
+            100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(0, 229, 153, 0); }
+        }
+
+        /* Camera Header Source Picker & Controls */
+        .cam-header-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .cam-source-picker {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(4, 8, 16, 0.85);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 3px 8px 3px 10px;
+            border-radius: 8px;
+        }
+
+        .cam-source-picker label {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            color: var(--text-dim);
+            letter-spacing: 0.5px;
+        }
+
+        .cam-source-select {
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            outline: none;
+            cursor: pointer;
+        }
+
+        .cam-source-select option {
+            background: #091322;
+            color: #ffffff;
+        }
+
+        .btn-stream-toggle {
+            background: rgba(0, 229, 153, 0.15);
+            border: 1px solid rgba(0, 229, 153, 0.35);
+            color: var(--primary);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 5px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s ease;
+        }
+
+        .btn-stream-toggle:hover {
+            background: var(--primary);
+            color: #051410;
+        }
+
+        .btn-stream-toggle.streaming {
+            background: rgba(239, 68, 68, 0.18);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+
         /* Camera Viewport */
         .camera-viewport-wrap {
             position: relative;
@@ -339,10 +455,111 @@
             box-shadow: inset 0 0 40px rgba(0, 0, 0, 0.8);
         }
 
+        .camera-stream-media {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+            z-index: 1;
+        }
+
         #cameraFeedCanvas {
+            position: relative;
             width: 100%;
             height: 100%;
             display: block;
+            z-index: 2;
+            pointer-events: none;
+        }
+
+        /* Stream Offline / Error Helper Overlay */
+        .cam-offline-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(4, 8, 16, 0.88);
+            backdrop-filter: blur(8px);
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .offline-card {
+            background: rgba(9, 19, 34, 0.95);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 16px;
+            padding: 22px 26px;
+            max-width: 400px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.6);
+        }
+
+        .offline-icon-pulse {
+            font-size: 32px;
+            animation: bounceIcon 2s infinite ease-in-out;
+        }
+
+        @keyframes bounceIcon {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-4px); }
+        }
+
+        .offline-title {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 14px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 0.3px;
+        }
+
+        .offline-desc {
+            font-size: 12px;
+            color: var(--text-dim);
+            line-height: 1.5;
+            word-break: break-all;
+        }
+
+        .offline-actions {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            margin-top: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-offline-retry, .btn-offline-config, .btn-offline-sim {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            font-weight: 700;
+            padding: 7px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            border: 1px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .btn-offline-retry {
+            background: var(--primary);
+            color: #051410;
+        }
+
+        .btn-offline-config {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.3);
+            color: var(--accent-cyan);
+        }
+
+        .btn-offline-sim {
+            background: rgba(255, 255, 255, 0.08);
+            border-color: rgba(255, 255, 255, 0.15);
+            color: #ffffff;
         }
 
         .cam-hud-overlay {
@@ -357,6 +574,7 @@
             font-size: 11px;
             color: var(--primary);
             text-shadow: 0 0 4px rgba(0, 0, 0, 0.8);
+            z-index: 3;
         }
 
         .cam-hud-top {
@@ -769,6 +987,12 @@
         </a>
 
         <div class="nav-right-cluster">
+            <!-- Live RPi Connection Status Indicator Badge -->
+            <div class="rpi-status-indicator" id="rpiStatusPill" onclick="RPiConfig.openSettingsModal()" title="Click to view/change Raspberry Pi IP settings">
+                <span class="status-pulse-dot" id="rpiStatusDot"></span>
+                <span id="rpiStatusText">RPi: Checking...</span>
+            </div>
+
             <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
                 <span id="demoDot" class="demo-status-dot"></span>
                 <span id="demoBtnLabel">🧪 Demo Data: ON</span>
@@ -795,22 +1019,61 @@
                         <span>📹</span>
                         <span>LIVE VISION HUD &amp; PTZ CAMERA STREAM</span>
                     </div>
-                    <span class="box-badge badge-green" id="camStreamBadge">● 1080p 30FPS</span>
+                    <div class="cam-header-actions">
+                        <div class="cam-source-picker" title="Select Video Feed Source">
+                            <label for="camSourceSelect">SOURCE:</label>
+                            <select id="camSourceSelect" onchange="switchCameraSource(this.value)">
+                                <option value="rpi_yolo">📹 RPi YOLOv8 Stream (:5000)</option>
+                                <option value="esp32_cam">📡 ESP32-CAM Stream (:81)</option>
+                                <option value="browser_webcam">💻 Local Webcam / USB Cam</option>
+                                <option value="simulation">🧪 AI Simulation HUD</option>
+                                <option value="custom">⚙️ Custom Stream URL...</option>
+                            </select>
+                        </div>
+                        <button type="button" class="btn-stream-toggle" id="btnStreamToggle" onclick="toggleStreamFeed()" title="Toggle Camera Video Stream">
+                            <span id="streamToggleIcon">▶</span> <span id="streamToggleLabel">Access Video</span>
+                        </button>
+                        <span class="box-badge badge-green" id="camStreamBadge">● 1080p 30FPS</span>
+                    </div>
                 </div>
 
-                <div class="camera-viewport-wrap">
+                <div class="camera-viewport-wrap" id="cameraViewportWrap">
+                    <!-- Real RPi / ESP32 MJPEG Video Stream Image -->
+                    <img id="rpiLiveStreamImg" class="camera-stream-media" alt="Raspberry Pi Video Stream" style="display:none;" />
+
+                    <!-- Browser / USB Webcam Feed -->
+                    <video id="browserWebcamFeed" class="camera-stream-media" autoplay playsinline muted style="display:none;"></video>
+
+                    <!-- Real-time HUD Canvas Overlay -->
                     <canvas id="cameraFeedCanvas"></canvas>
+
+                    <!-- Stream Offline / Error Helper Overlay -->
+                    <div id="camOfflineOverlay" class="cam-offline-overlay" style="display:none;">
+                        <div class="offline-card">
+                            <div class="offline-icon-pulse">📡</div>
+                            <div class="offline-title" id="offlineTitle">Raspberry Pi Stream Offline</div>
+                            <div class="offline-desc" id="offlineDesc">Cannot reach http://<span id="offlineIp">192.168.4.1</span>:5000/video_feed</div>
+                            <div class="offline-actions">
+                                <button type="button" class="btn-offline-retry" onclick="reconnectCameraStream()">🔄 Retry Connect</button>
+                                <button type="button" class="btn-offline-config" onclick="RPiConfig.openSettingsModal()">⚙️ Rover IP</button>
+                                <button type="button" class="btn-offline-sim" onclick="switchCameraSource('simulation')">🧪 View Simulation</button>
+                            </div>
+                        </div>
+                    </div>
+
                     <div class="cam-hud-overlay">
                         <div class="cam-hud-top">
                             <span>CAM: <strong style="color:#ffffff;" id="hudCamLens">MACRO 60mm</strong></span>
+                            <span>SOURCE: <strong style="color:var(--primary);" id="hudCamSource">RPi YOLOv8</strong></span>
                             <span>AZIMUTH: <strong style="color:var(--accent-cyan);" id="hudAzimuth">182° S</strong></span>
                             <span>EXPOSURE: <strong>AUTO</strong></span>
                         </div>
                         <div class="cam-hud-center"></div>
                         <div class="cam-hud-bottom">
-                            <span>YOLOv8: <strong style="color:var(--primary);">TRACKING ACTIVE</strong></span>
+                            <span>YOLOv8: <strong style="color:var(--primary);" id="hudYoloState">TRACKING ACTIVE</strong></span>
+                            <span>FEED: <strong style="color:var(--accent-cyan);" id="hudFeedFps">LIVE</strong></span>
                             <span>ZOOM: <strong id="hudZoomVal">1.0x</strong></span>
-                            <span>STATUS: <strong style="color:var(--accent-cyan);">STABILIZED</strong></span>
+                            <span>STATUS: <strong style="color:var(--accent-cyan);" id="hudCamStatus">STABILIZED</strong></span>
                         </div>
                     </div>
                 </div>
@@ -821,6 +1084,7 @@
                     <button class="btn-cam-tool" id="btnCamNight" onclick="toggleNightVision()">🌙 IR Night Vision</button>
                     <button class="btn-cam-tool" onclick="takeSnapshot()">📸 Snapshot</button>
                     <button class="btn-cam-tool active" id="btnBbox" onclick="toggleBboxes()">🎯 YOLO Boxes</button>
+                    <button class="btn-cam-tool" onclick="reconnectCameraStream()" title="Reload camera connection">🔄 Refresh Feed</button>
                 </div>
             </div>
 
@@ -1387,64 +1651,404 @@
             logDispatch("BEACON: Safety acoustic warning chirped [105dB].");
         }
 
-        // Camera feed rendering canvas
+        // ========================================================================
+        // 10. RASPBERRY PI CONNECTION MONITOR
+        // ========================================================================
+        let isRpiOnline = false;
+
+        async function updateRpiStatus() {
+            const pill = document.getElementById("rpiStatusPill");
+            const textEl = document.getElementById("rpiStatusText");
+            const hudCamStatus = document.getElementById("hudCamStatus");
+            const offlineIp = document.getElementById("offlineIp");
+            const ip = RPiConfig.getRoverIp();
+            if (offlineIp) offlineIp.innerText = ip;
+
+            try {
+                const res = await RPiConfig.checkStatus(2500);
+                if (res.online) {
+                    isRpiOnline = true;
+                    if (pill) {
+                        pill.classList.add("connected");
+                        pill.title = `Raspberry Pi 5 connected at ${res.ip} (${res.latency}ms). Click to edit settings.`;
+                    }
+                    if (textEl) {
+                        textEl.innerHTML = `● RPi: ONLINE <span style="font-size:9.5px;opacity:0.85;">(${res.latency}ms)</span>`;
+                    }
+                    if (hudCamStatus && isStreamLoaded) {
+                        hudCamStatus.innerText = "ONLINE";
+                    }
+                } else {
+                    isRpiOnline = false;
+                    if (pill) {
+                        pill.classList.remove("connected");
+                        pill.title = `Cannot connect to Raspberry Pi at ${ip}. Click to change IP.`;
+                    }
+                    if (textEl) {
+                        textEl.innerText = "● RPi: OFFLINE";
+                    }
+                    if (hudCamStatus && currentCamSource === 'rpi_yolo' && isStreamActive && !isStreamLoaded) {
+                        hudCamStatus.innerText = "OFFLINE";
+                    }
+                }
+            } catch (err) {
+                isRpiOnline = false;
+                if (pill) pill.classList.remove("connected");
+                if (textEl) textEl.innerText = "● RPi: OFFLINE";
+            }
+        }
+
+        // Start ping loop on interval
+        updateRpiStatus();
+        setInterval(updateRpiStatus, 3500);
+
+        // ========================================================================
+        // 11. CAMERA FEED & VIDEO SOURCE ENGINE
+        // ========================================================================
+        let currentCamSource = localStorage.getItem('agrisarthi_cam_source') || 'rpi_yolo';
+        let isStreamActive = true;       // Stream access on by default
+        let isStreamLoaded = false;      // Track when video/image is actually producing frames
+        let customStreamUrl = localStorage.getItem('agrisarthi_custom_stream_url') || '';
+        let localMediaStream = null;
+
+        const rpiLiveImg = document.getElementById("rpiLiveStreamImg");
+        const webcamVideo = document.getElementById("browserWebcamFeed");
+        const offlineOverlay = document.getElementById("camOfflineOverlay");
         const camCanvas = document.getElementById("cameraFeedCanvas");
         const ctx = camCanvas.getContext("2d");
         let camTick = 0;
 
         function resizeCamCanvas() {
-            camCanvas.width = camCanvas.parentElement.clientWidth;
-            camCanvas.height = camCanvas.parentElement.clientHeight;
+            const parent = camCanvas.parentElement;
+            if (parent) {
+                camCanvas.width = parent.clientWidth;
+                camCanvas.height = parent.clientHeight;
+            }
         }
         window.addEventListener('resize', resizeCamCanvas);
         resizeCamCanvas();
 
+        // Switch Camera Source
+        function switchCameraSource(source) {
+            currentCamSource = source;
+            localStorage.setItem('agrisarthi_cam_source', source);
+
+            const selectEl = document.getElementById("camSourceSelect");
+            if (selectEl && selectEl.value !== source) selectEl.value = source;
+
+            const hudSource = document.getElementById("hudCamSource");
+            const labels = {
+                'rpi_yolo': 'RPi YOLOv8',
+                'esp32_cam': 'ESP32-CAM',
+                'browser_webcam': 'LOCAL WEBCAM',
+                'simulation': 'AI SIMULATION',
+                'custom': 'CUSTOM STREAM'
+            };
+            if (hudSource) hudSource.innerText = labels[source] || source.toUpperCase();
+
+            if (source === 'custom') {
+                const userUrl = prompt("Enter custom MJPEG / HTTP camera stream URL:", customStreamUrl || `http://${RPiConfig.getRoverIp()}:5000/video_feed`);
+                if (userUrl) {
+                    customStreamUrl = userUrl.trim();
+                    localStorage.setItem('agrisarthi_custom_stream_url', customStreamUrl);
+                } else {
+                    switchCameraSource('rpi_yolo');
+                    return;
+                }
+            }
+
+            logDispatch(`CAM_SOURCE: Switched active video pipeline to ${labels[source] || source}`);
+            connectCameraStream();
+        }
+
+        // Connect Camera Stream based on selected source
+        function connectCameraStream() {
+            stopCameraStream(false); // Clean previous connections without turning stream off
+
+            const badge = document.getElementById("camStreamBadge");
+            const offlineDesc = document.getElementById("offlineDesc");
+            const offlineTitle = document.getElementById("offlineTitle");
+            const hudFps = document.getElementById("hudFeedFps");
+
+            if (!isStreamActive) {
+                if (offlineOverlay) offlineOverlay.style.display = 'none';
+                return;
+            }
+
+            if (currentCamSource === 'simulation') {
+                isStreamLoaded = true;
+                if (offlineOverlay) offlineOverlay.style.display = 'none';
+                if (rpiLiveImg) rpiLiveImg.style.display = 'none';
+                if (webcamVideo) webcamVideo.style.display = 'none';
+                if (badge) {
+                    badge.innerText = "● SIMULATION 30FPS";
+                    badge.className = "box-badge badge-cyan";
+                }
+                if (hudFps) hudFps.innerText = "SIMULATED";
+                return;
+            }
+
+            if (currentCamSource === 'browser_webcam') {
+                if (rpiLiveImg) rpiLiveImg.style.display = 'none';
+                if (offlineOverlay) offlineOverlay.style.display = 'none';
+
+                if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                    navigator.mediaDevices.getUserMedia({ video: { width: { ideal: 1280 }, height: { ideal: 720 } } })
+                        .then(stream => {
+                            localMediaStream = stream;
+                            if (webcamVideo) {
+                                webcamVideo.srcObject = stream;
+                                webcamVideo.style.display = 'block';
+                                webcamVideo.play();
+                            }
+                            isStreamLoaded = true;
+                            if (badge) {
+                                badge.innerText = "● WEBCAM LIVE";
+                                badge.className = "box-badge badge-green";
+                            }
+                            if (hudFps) hudFps.innerText = "WEBCAM 30FPS";
+                            logDispatch("WEBCAM: Local camera stream captured and bound to HUD.");
+                        })
+                        .catch(err => {
+                            console.warn("Webcam access error:", err);
+                            isStreamLoaded = false;
+                            if (offlineTitle) offlineTitle.innerText = "Webcam Access Denied / Unavailable";
+                            if (offlineDesc) offlineDesc.innerText = err.message || "Please allow browser camera permissions.";
+                            if (offlineOverlay) offlineOverlay.style.display = 'flex';
+                            if (badge) {
+                                badge.innerText = "● CAM OFFLINE";
+                                badge.className = "box-badge badge-red";
+                            }
+                        });
+                } else {
+                    alert("Your browser does not support local webcam access via navigator.mediaDevices.");
+                }
+                return;
+            }
+
+            // MJPEG Network Streams (RPi YOLOv8, ESP32-CAM, or Custom URL)
+            let streamUrl = "";
+            const roverIp = RPiConfig.getRoverIp();
+
+            if (currentCamSource === 'rpi_yolo') {
+                streamUrl = `http://${roverIp}:5000/video_feed`;
+                if (offlineTitle) offlineTitle.innerText = "Raspberry Pi Stream Offline";
+                if (offlineDesc) offlineDesc.innerHTML = `Cannot connect to <code style="color:var(--accent-cyan);">${streamUrl}</code><br><span style="font-size:11px;color:#94a3b8;">Ensure server.py or main.py is running on your Raspberry Pi.</span>`;
+            } else if (currentCamSource === 'esp32_cam') {
+                streamUrl = `http://${roverIp}:81/stream`;
+                if (offlineTitle) offlineTitle.innerText = "ESP32-CAM Stream Offline";
+                if (offlineDesc) offlineDesc.innerHTML = `Cannot connect to <code style="color:var(--accent-cyan);">${streamUrl}</code>`;
+            } else if (currentCamSource === 'custom') {
+                streamUrl = customStreamUrl;
+                if (offlineTitle) offlineTitle.innerText = "Custom Stream Offline";
+                if (offlineDesc) offlineDesc.innerHTML = `Cannot connect to <code style="color:var(--accent-cyan);">${streamUrl}</code>`;
+            }
+
+            if (webcamVideo) webcamVideo.style.display = 'none';
+
+            if (rpiLiveImg) {
+                // Add cache-busting timestamp to avoid cached connection failures
+                const connectUrl = streamUrl + (streamUrl.includes('?') ? '&' : '?') + '_t=' + Date.now();
+                rpiLiveImg.src = connectUrl;
+
+                rpiLiveImg.onload = () => {
+                    isStreamLoaded = true;
+                    rpiLiveImg.style.display = 'block';
+                    if (offlineOverlay) offlineOverlay.style.display = 'none';
+                    if (badge) {
+                        badge.innerText = "● LIVE 30FPS";
+                        badge.className = "box-badge badge-green";
+                    }
+                    if (hudFps) hudFps.innerText = "LIVE 30FPS";
+                    logDispatch(`CAMERA: Video feed locked from ${streamUrl}`);
+                };
+
+                rpiLiveImg.onerror = () => {
+                    isStreamLoaded = false;
+                    rpiLiveImg.style.display = 'none';
+                    if (offlineOverlay) offlineOverlay.style.display = 'flex';
+                    if (badge) {
+                        badge.innerText = "● STREAM OFFLINE";
+                        badge.className = "box-badge badge-red";
+                    }
+                    if (hudFps) hudFps.innerText = "OFFLINE";
+                };
+            }
+        }
+
+        // Stop Camera Stream
+        function stopCameraStream(setInactive = true) {
+            if (setInactive) {
+                isStreamActive = false;
+                const toggleBtn = document.getElementById("btnStreamToggle");
+                const icon = document.getElementById("streamToggleIcon");
+                const label = document.getElementById("streamToggleLabel");
+                if (toggleBtn) {
+                    toggleBtn.classList.remove("streaming");
+                }
+                if (icon) icon.innerText = "▶";
+                if (label) label.innerText = "Access Video";
+            }
+
+            // Stop local webcam tracks
+            if (localMediaStream) {
+                localMediaStream.getTracks().forEach(track => track.stop());
+                localMediaStream = null;
+            }
+            if (webcamVideo) {
+                webcamVideo.pause();
+                webcamVideo.srcObject = null;
+                webcamVideo.style.display = 'none';
+            }
+
+            // Stop MJPEG stream image
+            if (rpiLiveImg) {
+                rpiLiveImg.onerror = null;
+                rpiLiveImg.onload = null;
+                rpiLiveImg.src = "";
+                rpiLiveImg.style.display = 'none';
+            }
+
+            isStreamLoaded = false;
+        }
+
+        // Toggle Video Feed On/Off
+        function toggleStreamFeed() {
+            isStreamActive = !isStreamActive;
+            const toggleBtn = document.getElementById("btnStreamToggle");
+            const icon = document.getElementById("streamToggleIcon");
+            const label = document.getElementById("streamToggleLabel");
+
+            if (isStreamActive) {
+                if (toggleBtn) toggleBtn.classList.add("streaming");
+                if (icon) icon.innerText = "⏹";
+                if (label) label.innerText = "Stop Video";
+                connectCameraStream();
+            } else {
+                stopCameraStream(true);
+                if (offlineOverlay) offlineOverlay.style.display = 'none';
+                logDispatch("CAMERA: Video stream stopped. Showing HUD stand-by.");
+            }
+        }
+
+        // Force Reconnect
+        function reconnectCameraStream() {
+            logDispatch("CAMERA: Reconnecting video stream pipeline...");
+            isStreamActive = true;
+            const toggleBtn = document.getElementById("btnStreamToggle");
+            const icon = document.getElementById("streamToggleIcon");
+            const label = document.getElementById("streamToggleLabel");
+            if (toggleBtn) toggleBtn.classList.add("streaming");
+            if (icon) icon.innerText = "⏹";
+            if (label) label.innerText = "Stop Video";
+            connectCameraStream();
+        }
+
+        // Fallback helper to switch to simulation
+        function switchToSimulation() {
+            switchCameraSource('simulation');
+        }
+
+        // ========================================================================
+        // 12. HUD CANVAS RENDERING ENGINE (Transparent Overlay or Simulation)
+        // ========================================================================
         function renderCameraFeed() {
             camTick++;
             const w = camCanvas.width;
             const h = camCanvas.height;
 
-            // Draw background field scene
-            const grad = ctx.createLinearGradient(0, 0, 0, h);
-            if (isNightVisionActive) {
-                grad.addColorStop(0, '#021008');
-                grad.addColorStop(0.5, '#062615');
-                grad.addColorStop(1, '#021008');
-            } else {
-                grad.addColorStop(0, '#0a1d2e');
-                grad.addColorStop(0.5, '#123023');
-                grad.addColorStop(1, '#1b3b1e');
-            }
-            ctx.fillStyle = grad;
-            ctx.fillRect(0, 0, w, h);
+            // Mode A: Live Video Stream Active & Loaded (Transparent HUD Overlay)
+            if (isStreamActive && isStreamLoaded && currentCamSource !== 'simulation') {
+                ctx.clearRect(0, 0, w, h);
 
-            // Draw furrow guidelines
-            ctx.strokeStyle = isNightVisionActive ? 'rgba(0, 255, 128, 0.25)' : 'rgba(0, 229, 153, 0.25)';
-            ctx.lineWidth = 1.5;
-            for (let i = -3; i <= 3; i++) {
+                // Transparent furrow projection grid
+                ctx.strokeStyle = isNightVisionActive ? 'rgba(0, 255, 128, 0.35)' : 'rgba(0, 229, 153, 0.3)';
+                ctx.lineWidth = 1.5;
+                for (let i = -3; i <= 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(w / 2 + i * 45, h * 0.45);
+                    ctx.lineTo(w / 2 + i * 180, h);
+                    ctx.stroke();
+                }
+
+                // AI Crosshair reticle corners
+                const cx = w / 2;
+                const cy = h / 2;
+                ctx.strokeStyle = isNightVisionActive ? '#22c55e' : 'var(--primary)';
+                ctx.lineWidth = 2;
+                const r = 24;
+
+                // Center crosshairs
                 ctx.beginPath();
-                ctx.moveTo(w / 2 + i * 40, h * 0.45);
-                ctx.lineTo(w / 2 + i * 160, h);
+                ctx.moveTo(cx - r, cy); ctx.lineTo(cx - 8, cy);
+                ctx.moveTo(cx + 8, cy); ctx.lineTo(cx + r, cy);
+                ctx.moveTo(cx, cy - r); ctx.lineTo(cx, cy - 8);
+                ctx.moveTo(cx, cy + 8); ctx.lineTo(cx, cy + r);
                 ctx.stroke();
-            }
 
-            // Draw simulated crop foliage patches
-            for (let j = 0; j < 5; j++) {
-                const px = (w * 0.2) + j * (w * 0.15) + Math.sin(camTick * 0.05 + j) * 4;
-                const py = h * 0.65 + (j % 2) * 30;
-                ctx.fillStyle = isNightVisionActive ? '#22c55e' : '#10b981';
-                ctx.beginPath();
-                ctx.arc(px, py, 18, 0, Math.PI * 2);
-                ctx.fill();
-
-                // YOLO bounding boxes
-                if (showBboxes && (j === 1 || j === 3)) {
-                    ctx.strokeStyle = j === 1 ? '#00e599' : '#f59e0b';
+                // Dynamic YOLO tracking box overlay if toggled
+                if (showBboxes) {
+                    const bx = cx - 70 + Math.sin(camTick * 0.04) * 20;
+                    const by = cy + 20 + Math.cos(camTick * 0.03) * 15;
+                    ctx.strokeStyle = '#00e599';
                     ctx.lineWidth = 2;
-                    ctx.strokeRect(px - 26, py - 26, 52, 52);
-                    ctx.fillStyle = j === 1 ? '#00e599' : '#f59e0b';
-                    ctx.font = "10px JetBrains Mono";
-                    ctx.fillText(j === 1 ? "Crop: Healthy 98%" : "Weed: Target 89%", px - 26, py - 30);
+                    ctx.strokeRect(bx, by, 75, 75);
+                    ctx.fillStyle = '#00e599';
+                    ctx.font = "11px 'JetBrains Mono', monospace";
+                    ctx.fillText("Crop: Healthy 98%", bx, by - 6);
+
+                    // Weed target box
+                    const wx = cx + 80 + Math.cos(camTick * 0.04) * 25;
+                    const wy = cy + 40;
+                    ctx.strokeStyle = '#fbbf24';
+                    ctx.strokeRect(wx, wy, 60, 60);
+                    ctx.fillStyle = '#fbbf24';
+                    ctx.fillText("Weed: Target 89%", wx, wy - 6);
+                }
+            } 
+            // Mode B: Simulation Mode or Stand-by Fallback (Animated Landscape Scene)
+            else {
+                const grad = ctx.createLinearGradient(0, 0, 0, h);
+                if (isNightVisionActive) {
+                    grad.addColorStop(0, '#021008');
+                    grad.addColorStop(0.5, '#062615');
+                    grad.addColorStop(1, '#021008');
+                } else {
+                    grad.addColorStop(0, '#0a1d2e');
+                    grad.addColorStop(0.5, '#123023');
+                    grad.addColorStop(1, '#1b3b1e');
+                }
+                ctx.fillStyle = grad;
+                ctx.fillRect(0, 0, w, h);
+
+                // Furrow guidelines
+                ctx.strokeStyle = isNightVisionActive ? 'rgba(0, 255, 128, 0.25)' : 'rgba(0, 229, 153, 0.25)';
+                ctx.lineWidth = 1.5;
+                for (let i = -3; i <= 3; i++) {
+                    ctx.beginPath();
+                    ctx.moveTo(w / 2 + i * 40, h * 0.45);
+                    ctx.lineTo(w / 2 + i * 160, h);
+                    ctx.stroke();
+                }
+
+                // Crop foliage dots
+                for (let j = 0; j < 5; j++) {
+                    const px = (w * 0.2) + j * (w * 0.15) + Math.sin(camTick * 0.05 + j) * 4;
+                    const py = h * 0.65 + (j % 2) * 30;
+                    ctx.fillStyle = isNightVisionActive ? '#22c55e' : '#10b981';
+                    ctx.beginPath();
+                    ctx.arc(px, py, 18, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Simulated YOLO boxes
+                    if (showBboxes && (j === 1 || j === 3)) {
+                        ctx.strokeStyle = j === 1 ? '#00e599' : '#f59e0b';
+                        ctx.lineWidth = 2;
+                        ctx.strokeRect(px - 26, py - 26, 52, 52);
+                        ctx.fillStyle = j === 1 ? '#00e599' : '#f59e0b';
+                        ctx.font = "10px 'JetBrains Mono', monospace";
+                        ctx.fillText(j === 1 ? "Crop: Healthy 98%" : "Weed: Target 89%", px - 26, py - 30);
+                    }
                 }
             }
 
@@ -1473,7 +2077,24 @@
         }
 
         function takeSnapshot() {
-            logDispatch("CAMERA: High-resolution frame captured & saved to /telemetry/snapshots/");
+            // Snapshot current viewport (either from image or canvas)
+            const snapCanvas = document.createElement("canvas");
+            snapCanvas.width = camCanvas.width;
+            snapCanvas.height = camCanvas.height;
+            const snapCtx = snapCanvas.getContext("2d");
+
+            if (isStreamLoaded && rpiLiveImg && rpiLiveImg.style.display !== 'none') {
+                try { snapCtx.drawImage(rpiLiveImg, 0, 0, snapCanvas.width, snapCanvas.height); } catch(e){}
+            } else if (isStreamLoaded && webcamVideo && webcamVideo.style.display !== 'none') {
+                try { snapCtx.drawImage(webcamVideo, 0, 0, snapCanvas.width, snapCanvas.height); } catch(e){}
+            }
+            snapCtx.drawImage(camCanvas, 0, 0);
+
+            const link = document.createElement('a');
+            link.download = `agrisarthi_snap_${Date.now()}.png`;
+            link.href = snapCanvas.toDataURL();
+            link.click();
+            logDispatch("CAMERA: Frame captured and downloaded to local device.");
         }
 
         // Keyboard WASD Listeners
@@ -1523,8 +2144,9 @@
             }
         });
 
-        // Startup
+        // Initialize camera feed & UI
         applyDemoModeUI();
+        switchCameraSource(currentCamSource);
     </script>
 </body>
 </html>

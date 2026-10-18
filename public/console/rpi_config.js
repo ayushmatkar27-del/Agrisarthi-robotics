@@ -177,6 +177,68 @@
                 });
         },
 
+        // Helper to get active MQTT port
+        getMqttPort: function () {
+            return this.getConnectionMode() === 'cloud' ? 8084 : 9001;
+        },
+
+        // Send rover motion command via MQTT with REST fallback
+        dispatchMotionCommand: function (client, payload, onDone) {
+            const dataStr = JSON.stringify(payload);
+            let mqttSuccess = false;
+
+            if (client && client.connected) {
+                try {
+                    client.publish(this.TOPICS.motion, dataStr, { qos: 0 });
+                    mqttSuccess = true;
+                } catch (e) {
+                    console.warn('[RPiConfig] MQTT motion publish error:', e);
+                }
+            }
+
+            // HTTP POST fallback to Flask /api/control
+            const restUrl = `${this.getApiBaseUrl()}/api/control`;
+            fetch(restUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ target: 'motion', ...payload })
+            })
+                .then(res => res.json())
+                .then(resData => {
+                    if (onDone) onDone(true, resData);
+                })
+                .catch(err => {
+                    if (mqttSuccess) {
+                        if (onDone) onDone(true, { via: 'mqtt' });
+                    } else if (onDone) {
+                        onDone(false, err);
+                    }
+                });
+        },
+
+        // Asynchronous Health Check / Connection Ping to Raspberry Pi
+        checkStatus: async function (timeoutMs = 2500) {
+            const statusUrl = `${this.getApiBaseUrl()}/status`;
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+            const startTime = performance.now();
+
+            try {
+                const response = await fetch(statusUrl, { signal: controller.signal, mode: 'cors' });
+                clearTimeout(timeoutId);
+                const latency = Math.round(performance.now() - startTime);
+
+                if (response.ok) {
+                    const data = await response.json();
+                    return { online: true, latency, data, ip: this.getRoverIp() };
+                }
+                return { online: false, latency, error: `HTTP ${response.status}`, ip: this.getRoverIp() };
+            } catch (err) {
+                clearTimeout(timeoutId);
+                return { online: false, error: err.name === 'AbortError' ? 'Timeout' : err.message, ip: this.getRoverIp() };
+            }
+        },
+
         // Global Settings Modal Helper
         openSettingsModal: function () {
             let modal = document.getElementById('rpiConfigModal');
