@@ -264,6 +264,75 @@
             }
         },
 
+        // Update both RPi and ESP32 Status Indicator Badges in Console Header
+        updateStatusPills: function (statusRes) {
+            const rpiPill = document.getElementById("rpiStatusPill");
+            const rpiText = document.getElementById("rpiStatusText");
+            const espPill = document.getElementById("espStatusPill");
+            const espText = document.getElementById("espStatusText");
+            const espLinkDetail = document.getElementById("esp32LinkStatusText");
+
+            if (!statusRes || !statusRes.online) {
+                if (rpiPill) {
+                    rpiPill.classList.remove("connected");
+                    rpiPill.title = `Cannot connect to Raspberry Pi at ${this.getRoverIp()}. Click to change IP.`;
+                }
+                if (rpiText) rpiText.innerText = "● RPi: OFFLINE";
+
+                if (espPill) {
+                    espPill.classList.remove("connected");
+                    espPill.title = "Raspberry Pi offline. ESP32 status unknown.";
+                }
+                if (espText) espText.innerText = "● ESP32: --";
+                if (espLinkDetail) {
+                    espLinkDetail.style.color = "#ef4444";
+                    espLinkDetail.innerText = "● RPi OFFLINE";
+                }
+                return;
+            }
+
+            // 1. RPi Online
+            if (rpiPill) {
+                rpiPill.classList.add("connected");
+                rpiPill.title = `Raspberry Pi connected at ${statusRes.ip} (${statusRes.latency}ms). Click to edit settings.`;
+            }
+            if (rpiText) rpiText.innerHTML = `● RPi: ONLINE <span style="font-size:9.5px;opacity:0.85;">(${statusRes.latency}ms)</span>`;
+
+            // 2. ESP32 Link Status
+            const data = statusRes.data || {};
+            const isEspConnected = (data.esp32_link === true || data.esp32_connected === true || data.link_status === "CONNECTED");
+            this.setEspConnected(isEspConnected);
+        },
+
+        // Set ESP32 Link indicator state directly (from MQTT or REST telemetry)
+        setEspConnected: function (connected) {
+            const espPill = document.getElementById("espStatusPill");
+            const espText = document.getElementById("espStatusText");
+            const espLinkDetail = document.getElementById("esp32LinkStatusText");
+
+            if (espPill) {
+                if (connected) {
+                    espPill.classList.add("connected");
+                    espPill.title = "ESP32 Co-Processor connected via USB Serial. Motor Kinematics & Gimbal Online.";
+                    if (espText) espText.innerHTML = "● ESP32: CONNECTED";
+                } else {
+                    espPill.classList.remove("connected");
+                    espPill.title = "ESP32 disconnected from Raspberry Pi. Check USB cable between ESP32 and RPi.";
+                    if (espText) espText.innerHTML = "● ESP32: OFFLINE";
+                }
+            }
+
+            if (espLinkDetail) {
+                if (connected) {
+                    espLinkDetail.style.color = "#38bdf8";
+                    espLinkDetail.innerText = "● CONNECTED (USB)";
+                } else {
+                    espLinkDetail.style.color = "#ef4444";
+                    espLinkDetail.innerText = "● DISCONNECTED";
+                }
+            }
+        },
+
         // Global Settings Modal Helper
         openSettingsModal: function () {
             let modal = document.getElementById('rpiConfigModal');
