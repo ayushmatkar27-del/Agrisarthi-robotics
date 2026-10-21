@@ -805,6 +805,128 @@
             transform: scale(0.97);
         }
 
+        /* Dual-Servo Pan & Tilt Gimbal Controller */
+        .gimbal-panel {
+            background: rgba(5, 12, 22, 0.92);
+            border: 1px solid rgba(56, 189, 248, 0.25);
+            border-radius: 16px;
+            padding: 14px 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+        }
+
+        .gimbal-header-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .gimbal-title {
+            font-family: 'Archivo', sans-serif;
+            font-size: 12px;
+            font-weight: 800;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            letter-spacing: 0.5px;
+        }
+
+        .gimbal-readout-pill {
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 11px;
+            color: var(--accent-cyan);
+            background: rgba(56, 189, 248, 0.12);
+            padding: 3px 9px;
+            border-radius: 6px;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            font-weight: 700;
+        }
+
+        .gimbal-body-grid {
+            display: grid;
+            grid-template-columns: 112px 1fr;
+            gap: 14px;
+            align-items: center;
+        }
+
+        .gimbal-dpad-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 34px);
+            grid-template-rows: repeat(3, 34px);
+            gap: 4px;
+            justify-content: center;
+        }
+
+        .gimbal-dpad-btn {
+            background: rgba(13, 22, 38, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #ffffff;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 13px;
+            font-weight: 700;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+
+        .gimbal-dpad-btn:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.15);
+            transform: scale(1.05);
+        }
+
+        .gimbal-dpad-btn:active {
+            transform: scale(0.92);
+            background: var(--primary);
+            color: #051410;
+        }
+
+        .gimbal-dpad-center {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: var(--accent-cyan);
+            font-size: 10px;
+        }
+
+        .gimbal-sliders-col {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .gimbal-presets-row {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .btn-gimbal-preset {
+            background: rgba(13, 22, 38, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: var(--text-muted);
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 5px 9px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-gimbal-preset:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: rgba(0, 229, 153, 0.12);
+        }
+
         /* 3-Column Tool Mechanisms Grid */
         .tools-tri-grid {
             display: grid;
@@ -993,9 +1115,9 @@
                 <span id="rpiStatusText">RPi: Checking...</span>
             </div>
 
-            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-off" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
                 <span id="demoDot" class="demo-status-dot"></span>
-                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+                <span id="demoBtnLabel">🧪 Demo Data: OFF</span>
             </button>
             <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
                 <span>⚙️</span><span>RPi Connect</span>
@@ -1139,6 +1261,59 @@
                                 Motor Current: <strong style="color:var(--primary);" id="motorCurrentVal">2.8 A</strong><br>
                                 Steering Trim: <strong>Center 0.0°</strong>
                             </div>
+                        </div>
+                    </div>
+
+                    <!-- Dual-Servo PTZ Camera Gimbal Controller -->
+                    <div class="gimbal-panel">
+                        <div class="gimbal-header-row">
+                            <div class="gimbal-title">
+                                <span>🎯</span>
+                                <span>CAMERA GIMBAL (PAN &amp; TILT 2-SERVO)</span>
+                            </div>
+                            <span class="gimbal-readout-pill" id="gimbalReadout">PAN: 90° | TILT: 90°</span>
+                        </div>
+
+                        <div class="gimbal-body-grid">
+                            <!-- 5-Way Gimbal Directional Nudge Pad -->
+                            <div class="gimbal-dpad-grid" title="Gimbal Nudge Controls (I/K = Tilt, J/L = Pan)">
+                                <div></div>
+                                <button type="button" class="gimbal-dpad-btn" onclick="stepGimbal(0, 10)" title="Tilt Up (+10°)">▲</button>
+                                <div></div>
+                                <button type="button" class="gimbal-dpad-btn" onclick="stepGimbal(-10, 0)" title="Pan Left (-10°)">◀</button>
+                                <button type="button" class="gimbal-dpad-btn gimbal-dpad-center" onclick="setGimbalAngles(90, 90)" title="Center (90°/90°)">90°</button>
+                                <button type="button" class="gimbal-dpad-btn" onclick="stepGimbal(10, 0)" title="Pan Right (+10°)">▶</button>
+                                <div></div>
+                                <button type="button" class="gimbal-dpad-btn" onclick="stepGimbal(0, -10)" title="Tilt Down (-10°)">▼</button>
+                                <div></div>
+                            </div>
+
+                            <!-- Pan & Tilt Precision Sliders -->
+                            <div class="gimbal-sliders-col">
+                                <div class="throttle-slider-wrap">
+                                    <div class="slider-label-row">
+                                        <span>HORIZONTAL PAN (GPIO 19):</span>
+                                        <strong id="gimbalPanVal" style="color:var(--accent-cyan);">90° Center</strong>
+                                    </div>
+                                    <input type="range" id="gimbalPanSlider" min="0" max="180" value="90" oninput="onPanSliderChange(this.value)">
+                                </div>
+                                <div class="throttle-slider-wrap">
+                                    <div class="slider-label-row">
+                                        <span>VERTICAL TILT (GPIO 23):</span>
+                                        <strong id="gimbalTiltVal" style="color:#2dd4bf;">90° Horizon</strong>
+                                    </div>
+                                    <input type="range" id="gimbalTiltSlider" min="0" max="180" value="90" oninput="onTiltSliderChange(this.value)">
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Gimbal Angle Quick Presets -->
+                        <div class="gimbal-presets-row">
+                            <button type="button" class="btn-gimbal-preset" onclick="setGimbalAngles(90, 90)">🎯 Center (90°/90°)</button>
+                            <button type="button" class="btn-gimbal-preset" onclick="setGimbalAngles(90, 35)">🌱 Crop View (90°/35°)</button>
+                            <button type="button" class="btn-gimbal-preset" onclick="setGimbalAngles(45, 90)">◀ Left 45°</button>
+                            <button type="button" class="btn-gimbal-preset" onclick="setGimbalAngles(135, 90)">▶ Right 45°</button>
+                            <button type="button" class="btn-gimbal-preset" id="btnGimbalSweep" onclick="toggleGimbalSweep()">🔄 Auto-Sweep</button>
                         </div>
                     </div>
 
@@ -1362,7 +1537,7 @@
     <!-- Cockpit & Robotics Control Logic Script -->
     <script>
         // State
-        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false';
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') === 'true'; // Default to FALSE (Real sensors only)
         let currentThrottle = 65;
         let isPumpActive = false;
         let isCutterActive = false;
@@ -1375,6 +1550,90 @@
         let currentCamMode = 'macro';
         let activeZones = { 1: true, 2: true, 3: false, 4: false };
         let mqttClient = null;
+
+        // Dual-Servo Camera Gimbal State (Pan: 0-180, Tilt: 0-180)
+        let currentGimbalPan = 90;
+        let currentGimbalTilt = 90;
+        let isGimbalSweeping = false;
+        let gimbalSweepInterval = null;
+        let gimbalDebounceTimer = null;
+
+        function updateGimbalUI() {
+            const readout = document.getElementById("gimbalReadout");
+            const panVal = document.getElementById("gimbalPanVal");
+            const tiltVal = document.getElementById("gimbalTiltVal");
+            const panSlider = document.getElementById("gimbalPanSlider");
+            const tiltSlider = document.getElementById("gimbalTiltSlider");
+
+            if (readout) readout.innerText = `PAN: ${currentGimbalPan}° | TILT: ${currentGimbalTilt}°`;
+            if (panVal) panVal.innerText = `${currentGimbalPan}° ${currentGimbalPan === 90 ? 'Center' : (currentGimbalPan < 90 ? 'Left' : 'Right')}`;
+            if (tiltVal) tiltVal.innerText = `${currentGimbalTilt}° ${currentGimbalTilt === 90 ? 'Horizon' : (currentGimbalTilt < 90 ? 'Down' : 'Up')}`;
+            if (panSlider && parseInt(panSlider.value, 10) !== currentGimbalPan) panSlider.value = currentGimbalPan;
+            if (tiltSlider && parseInt(tiltSlider.value, 10) !== currentGimbalTilt) tiltSlider.value = currentGimbalTilt;
+        }
+
+        function onPanSliderChange(val) {
+            currentGimbalPan = parseInt(val, 10);
+            updateGimbalUI();
+            dispatchGimbalCommand();
+        }
+
+        function onTiltSliderChange(val) {
+            currentGimbalTilt = parseInt(val, 10);
+            updateGimbalUI();
+            dispatchGimbalCommand();
+        }
+
+        function stepGimbal(deltaPan, deltaTilt) {
+            currentGimbalPan = Math.max(0, Math.min(180, currentGimbalPan + deltaPan));
+            currentGimbalTilt = Math.max(0, Math.min(180, currentGimbalTilt + deltaTilt));
+            updateGimbalUI();
+            dispatchGimbalCommand();
+        }
+
+        function setGimbalAngles(pan, tilt) {
+            currentGimbalPan = Math.max(0, Math.min(180, pan));
+            currentGimbalTilt = Math.max(0, Math.min(180, tilt));
+            updateGimbalUI();
+            dispatchGimbalCommand();
+        }
+
+        function dispatchGimbalCommand() {
+            if (gimbalDebounceTimer) clearTimeout(gimbalDebounceTimer);
+            gimbalDebounceTimer = setTimeout(() => {
+                const payload = {
+                    target: 'gimbal',
+                    pan: currentGimbalPan,
+                    tilt: currentGimbalTilt
+                };
+                logDispatch(`GIMBAL: Pan ${currentGimbalPan}°, Tilt ${currentGimbalTilt}° (GPIO 19/23)`);
+                if (window.RPiConfig && window.RPiConfig.dispatchActuatorCommand) {
+                    window.RPiConfig.dispatchActuatorCommand(mqttClient, payload);
+                }
+            }, 60);
+        }
+
+        function toggleGimbalSweep() {
+            const btn = document.getElementById("btnGimbalSweep");
+            if (isGimbalSweeping) {
+                clearInterval(gimbalSweepInterval);
+                isGimbalSweeping = false;
+                if (btn) btn.style.background = "";
+                logDispatch("GIMBAL: Auto-Sweep Paused.");
+            } else {
+                isGimbalSweeping = true;
+                if (btn) btn.style.background = "rgba(0, 229, 153, 0.25)";
+                logDispatch("GIMBAL: Auto-Sweep Active (20° to 160° scan).");
+                let direction = 1;
+                gimbalSweepInterval = setInterval(() => {
+                    currentGimbalPan += (5 * direction);
+                    if (currentGimbalPan >= 155) direction = -1;
+                    if (currentGimbalPan <= 25) direction = 1;
+                    updateGimbalUI();
+                    dispatchGimbalCommand();
+                }, 200);
+            }
+        }
 
         // Terminal Log
         const logBox = document.getElementById("cmdDispatchLog");
@@ -1411,10 +1670,10 @@
                     btn.classList.remove("demo-active");
                     btn.classList.add("demo-off");
                 }
-                if (label) label.innerText = "📡 Live RPi: ON";
+                if (label) label.innerText = "🧪 Demo Data: OFF";
                 if (currentEl) currentEl.innerText = "-- A";
                 if (azimEl) azimEl.innerText = "--°";
-                logDispatch("LIVE RPi MODE: Showing dashes until real telemetry broadcasts on agrisarthi/telemetry.");
+                logDispatch("LIVE RPi SENSOR MODE: Telemetry displays ONLY when real data arrives from Rover.");
             }
         }
 
@@ -2123,6 +2382,21 @@
                 e.preventDefault();
                 document.getElementById("btn-stop").classList.add("key-pressed");
                 sendMotion('stop');
+            } else if (key === 'i') {
+                // Gimbal Tilt Up
+                stepGimbal(0, 10);
+            } else if (key === 'k') {
+                // Gimbal Tilt Down
+                stepGimbal(0, -10);
+            } else if (key === 'j') {
+                // Gimbal Pan Left
+                stepGimbal(-10, 0);
+            } else if (key === 'l') {
+                // Gimbal Pan Right
+                stepGimbal(10, 0);
+            } else if (key === 'o') {
+                // Gimbal Center
+                setGimbalAngles(90, 90);
             }
         });
 
@@ -2145,6 +2419,7 @@
         });
 
         // Initialize camera feed & UI
+        updateGimbalUI();
         applyDemoModeUI();
         switchCameraSource(currentCamSource);
     </script>

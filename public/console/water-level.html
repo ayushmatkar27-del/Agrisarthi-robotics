@@ -596,9 +596,9 @@
         </a>
 
         <div class="nav-right-cluster">
-            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-off" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
                 <span id="demoDot" class="demo-status-dot"></span>
-                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+                <span id="demoBtnLabel">🧪 Demo Data: OFF</span>
             </button>
             <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
                 <span>⚙️</span><span>RPi Connect</span>
@@ -854,7 +854,7 @@
 
     <!-- Telemetry & Charts Script -->
     <script>
-        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false';
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') === 'true'; // Default FALSE (Real sensors only)
         let demoInterval = null;
         let mqttClient = null;
 
@@ -913,7 +913,7 @@
                     btn.classList.remove("demo-active");
                     btn.classList.add("demo-off");
                 }
-                if (label) label.innerText = "📡 Live RPi: ON";
+                if (label) label.innerText = "🧪 Demo Data: OFF";
                 stopDemoSimulation();
                 setWaterAndPowerDashes();
             }

@@ -1107,9 +1107,9 @@
             <div class="telemetry-pill">
                 <span>🔋 Battery: <strong style="color: var(--accent-amber);" id="headerBatVal">86%</strong></span>
             </div>
-            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-active" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
+            <button type="button" id="demoToggleBtn" class="btn-demo-pill demo-off" onclick="toggleDemoMode()" title="Toggle Simulated Test Data vs Real MQTT Sensors">
                 <span id="demoDot" class="demo-status-dot"></span>
-                <span id="demoBtnLabel">🧪 Demo Data: ON</span>
+                <span id="demoBtnLabel">🧪 Demo Data: OFF</span>
             </button>
             <a href="notifications.html" class="btn-icon-nav" title="Alerts & Notifications">🔔</a>
             <button type="button" class="btn-rpi-pill" onclick="RPiConfig.openSettingsModal()" title="Rover &amp; RPi Connection Settings">
@@ -1439,7 +1439,7 @@
             });
 
         // --- DEMO MODE & REAL MQTT ENGINE ---
-        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') !== 'false'; // default to true for interactive demo
+        let isDemoMode = localStorage.getItem('agrisarthi_demo_mode') === 'true'; // default to false (Real rover sensors only)
         let demoInterval = null;
 
         window.toggleDemoMode = function() {
@@ -1527,7 +1527,7 @@
                     btn.classList.remove("demo-active");
                     btn.classList.add("demo-off");
                 }
-                if (label) label.innerText = "📡 Live RPi: ON";
+                if (label) label.innerText = "🧪 Demo Data: OFF";
                 stopDemoSimulation();
                 setDashesUI();
                 const ticker = document.getElementById("liveTickerText");

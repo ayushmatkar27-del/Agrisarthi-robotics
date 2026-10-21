@@ -91,10 +91,12 @@
             telemetry: 'agrisarthi/telemetry',
             motion: 'agrisarthi/control/motion',
             actuators: 'agrisarthi/control/actuators',
+            gimbal: 'agrisarthi/control/gimbal',
             odometry: 'agrisarthi/odometry',
             sectors: 'agrisarthi/sectors',
             alerts: 'agrisarthi/alerts',
-            camera: 'agrisarthi/camera/cmd'
+            camera: 'agrisarthi/camera/cmd',
+            sensors: 'agrisarthi/sensors'
         },
 
         // Wheel Odometry Mathematical Algorithm: D = pulses * (pi * D_wheel) / PPR
@@ -160,6 +162,11 @@
 
         // Send hardware actuator command via MQTT with REST fallback
         dispatchActuatorCommand: function (client, payload, onDone) {
+            if (client && !client.publish && !client.connected) {
+                onDone = payload;
+                payload = client;
+                client = null;
+            }
             const dataStr = JSON.stringify(payload);
             let mqttSuccess = false;
 
