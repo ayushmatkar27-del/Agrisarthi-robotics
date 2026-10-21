@@ -300,7 +300,7 @@
 
             // 2. ESP32 Link Status
             const data = statusRes.data || {};
-            const isEspConnected = (data.esp32_link === true || data.esp32_connected === true || data.link_status === "CONNECTED");
+            const isEspConnected = Boolean(data.esp32_link === true || data.esp32_connected === true);
             this.setEspConnected(isEspConnected);
         },
 
